@@ -49,7 +49,7 @@ class RLConfig:
     initial_epsilon: float = 1.0
     final_epsilon: float = 0.05
     epsilon_decay: float = 0.96
-    training_episodes: int = 30
+    training_episodes: int = 10
     retrain_episodes: int = 10
 
     # Strategy prior strength multiplier
