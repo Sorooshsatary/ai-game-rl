@@ -61,7 +61,7 @@ class TestAPI(unittest.TestCase):
     def test_strategy_test_endpoint(self):
         payload = {
             "strategy": {
-                "name": "تست استراتژی صلب",
+                "name": "تست استراتژی قانون‌محور",
                 "coin_priority": 9.0,
                 "diamond_priority": 2.0,
                 "converter_urgency": 5.0,
