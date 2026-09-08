@@ -12,6 +12,7 @@ class Enemy:
     detection_radius: int = 3
     patrol_direction: Action = Action.RIGHT
     patrol_axis: str = "horizontal"  # "horizontal" or "vertical"
+    stun_timer: int = 0
 
     def copy(self) -> "Enemy":
         return Enemy(
@@ -19,6 +20,7 @@ class Enemy:
             detection_radius=self.detection_radius,
             patrol_direction=self.patrol_direction,
             patrol_axis=self.patrol_axis,
+            stun_timer=self.stun_timer,
         )
 
     def choose_move(
@@ -29,6 +31,10 @@ class Enemy:
         forbidden_positions: Optional[List[Position]] = None,
     ) -> Position:
         """Choose next position based on nearest agent within detection radius, or patrol."""
+        if self.stun_timer > 0:
+            self.stun_timer -= 1
+            return self.position
+
         if forbidden_positions is None:
             forbidden_positions = []
 
@@ -100,4 +106,6 @@ class Enemy:
             "y": self.position.y,
             "detection_radius": self.detection_radius,
             "patrol_direction": self.patrol_direction.name,
+            "stun_timer": self.stun_timer,
+            "is_stunned": self.stun_timer > 0,
         }

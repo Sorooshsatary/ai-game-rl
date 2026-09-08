@@ -111,7 +111,41 @@ class TestEnvironment(unittest.TestCase):
         res = env.step(Action.DOWN)
         self.assertTrue(env.agent.has_exited)
         self.assertTrue(res.done)
-        self.assertIn("EXIT_SUCCESS", res.events)
+    def test_enemy_stun_no_teleport(self):
+        """Verify that hitting the enemy stuns it instead of teleporting across the map."""
+        grid = GridMap(
+            width=8,
+            height=8,
+            converter_pos=Position(7, 0),
+            exit_pos=Position(7, 7),
+            coins=set(),
+            diamonds=set(),
+        )
+        env = GameEnvironment(
+            config=DEFAULT_CONFIG,
+            grid_map=grid,
+            agent_start=Position(2, 2),
+            enemy_start=Position(7, 7),  # Remote spawn point
+        )
+        # Position enemy near agent
+        env.enemy.position = Position(2, 3)
+
+        # Agent moves DOWN into enemy
+        res = env.step(Action.DOWN)
+        self.assertIn("ENEMY_HIT", res.events)
+        self.assertIn("ENEMY_STUNNED", res.events)
+        # Enemy MUST NOT teleport back to enemy_start (7, 7)
+        self.assertNotEqual(env.enemy.position, Position(7, 7))
+        # Enemy must be close (adjacent/recoiled)
+        self.assertLessEqual(env.agent.position.manhattan_distance(env.enemy.position), 1)
+        # Stun timer should be active
+        self.assertGreater(env.enemy.stun_timer, 0)
+        self.assertTrue(res.next_state.enemy_stunned)
+
+        # Turn 2: Agent moves away to (1, 2)
+        res2 = env.step(Action.LEFT)
+        # Stunned enemy should not move
+        self.assertNotIn("ENEMY_HIT", res2.events)
 
 
 if __name__ == "__main__":

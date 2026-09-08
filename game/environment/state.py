@@ -52,6 +52,8 @@ class State:
     walls: Set[Position] = field(default_factory=set)
     coins: List[Position] = field(default_factory=list)
     diamonds: List[Position] = field(default_factory=list)
+    enemy_stunned: bool = False
+    stun_timer: int = 0
 
     def get_legal_actions(self) -> List[Action]:
         """Returns list of actions that stay within grid bounds and avoid walls."""
@@ -151,15 +153,18 @@ class State:
         exit_dir = get_relative_direction(self.agent_pos, self.exit_pos)
 
         # 5. Enemy threat
-        dist = self.enemy_dist
-        if dist > 3:
-            enemy_threat = "SAFE"
-        elif dist <= 1:
-            enemy_threat = f"ADJ_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
-        elif dist == 2:
-            enemy_threat = f"DANGER_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
-        else:  # dist == 3
-            enemy_threat = f"WARN_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
+        if self.enemy_stunned:
+            enemy_threat = "STUNNED"
+        else:
+            dist = self.enemy_dist
+            if dist > 3:
+                enemy_threat = "SAFE"
+            elif dist <= 1:
+                enemy_threat = f"ADJ_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
+            elif dist == 2:
+                enemy_threat = f"DANGER_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
+            else:  # dist == 3
+                enemy_threat = f"WARN_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
 
         # 6. Map coins
         coins_status = "ZERO_LEFT" if self.total_coins_remaining == 0 else "AVAILABLE"
@@ -183,6 +188,8 @@ class State:
         return {
             "agent_pos": [self.agent_pos.x, self.agent_pos.y],
             "enemy_pos": [self.enemy_pos.x, self.enemy_pos.y],
+            "enemy_stunned": self.enemy_stunned,
+            "stun_timer": self.stun_timer,
             "nearest_coin_pos": [self.nearest_coin_pos.x, self.nearest_coin_pos.y] if self.nearest_coin_pos else None,
             "nearest_diamond_pos": [self.nearest_diamond_pos.x, self.nearest_diamond_pos.y] if self.nearest_diamond_pos else None,
             "converter_pos": [self.converter_pos.x, self.converter_pos.y],

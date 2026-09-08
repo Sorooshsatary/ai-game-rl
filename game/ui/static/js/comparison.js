@@ -199,6 +199,8 @@ const ComparisonUI = {
         enemy_pos: st.enemy_pos,
         coins: st.coins_left,
         diamonds: st.diamonds_left,
+        enemy_stunned: st.enemy_stunned,
+        stun_timer: st.stun_timer,
       });
 
       // Update live indicators
@@ -349,6 +351,8 @@ const ComparisonUI = {
           enemy_pos: sStep.enemy_pos,
           coins: sStep.coins_left,
           diamonds: sStep.diamonds_left,
+          enemy_stunned: sStep.enemy_stunned,
+          stun_timer: sStep.stun_timer,
         });
       }
 
@@ -358,6 +362,8 @@ const ComparisonUI = {
           enemy_pos: rStep.enemy_pos,
           coins: rStep.coins_left,
           diamonds: rStep.diamonds_left,
+          enemy_stunned: rStep.enemy_stunned,
+          stun_timer: rStep.stun_timer,
         });
       }
 

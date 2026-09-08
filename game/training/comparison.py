@@ -27,12 +27,16 @@ class ComparisonStep:
     events: List[str]
     coins_left: List[List[int]] = field(default_factory=list)
     diamonds_left: List[List[int]] = field(default_factory=list)
+    enemy_stunned: bool = False
+    stun_timer: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "step_index": self.step_index,
             "agent_pos": self.agent_pos,
             "enemy_pos": self.enemy_pos,
+            "enemy_stunned": self.enemy_stunned,
+            "stun_timer": self.stun_timer,
             "action": self.action,
             "action_fa": self.action_fa,
             "rule_or_reason": self.rule_or_reason,
@@ -272,6 +276,8 @@ class AgentComparisonEngine:
                 events=step_result.events,
                 coins_left=[[p.x, p.y] for p in env.grid_map.coins],
                 diamonds_left=[[p.x, p.y] for p in env.grid_map.diamonds],
+                enemy_stunned=env.enemy.stun_timer > 0,
+                stun_timer=env.enemy.stun_timer,
             )
             steps.append(step_data)
 

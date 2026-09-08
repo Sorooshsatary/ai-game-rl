@@ -520,41 +520,53 @@ class GridCanvasRenderer {
     this.ctx.restore();
   }
 
-  drawEnemy(x, y, cellSize) {
+  drawEnemy(x, y, cellSize, isStunned = false) {
     const cx = x * cellSize + cellSize / 2;
     const cy = y * cellSize + cellSize / 2;
     const s = cellSize * 0.42;
 
     this.ctx.save();
 
-    // 0. Threat Perception Radar Zone (Soft translucent red danger field)
-    const auraR = cellSize * 2.8;
-    const auraGrad = this.ctx.createRadialGradient(cx, cy, s * 0.4, cx, cy, auraR);
-    auraGrad.addColorStop(0, 'rgba(239, 68, 68, 0.12)');
-    auraGrad.addColorStop(0.7, 'rgba(239, 68, 68, 0.04)');
-    auraGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
-    this.ctx.fillStyle = auraGrad;
-    this.ctx.beginPath();
-    this.ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-    this.ctx.fill();
+    // 0. Threat Perception Radar Zone (Only if active and not stunned)
+    if (!isStunned) {
+      const auraR = cellSize * 2.8;
+      const auraGrad = this.ctx.createRadialGradient(cx, cy, s * 0.4, cx, cy, auraR);
+      auraGrad.addColorStop(0, 'rgba(239, 68, 68, 0.12)');
+      auraGrad.addColorStop(0.7, 'rgba(239, 68, 68, 0.04)');
+      auraGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+      this.ctx.fillStyle = auraGrad;
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+      this.ctx.fill();
 
-    // Dotted detection circle line
-    this.ctx.strokeStyle = 'rgba(239, 68, 68, 0.22)';
-    this.ctx.lineWidth = 1;
-    this.ctx.setLineDash([4, 4]);
-    this.ctx.beginPath();
-    this.ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-    this.ctx.stroke();
-    this.ctx.setLineDash([]);
+      // Dotted detection circle line
+      this.ctx.strokeStyle = 'rgba(239, 68, 68, 0.22)';
+      this.ctx.lineWidth = 1;
+      this.ctx.setLineDash([4, 4]);
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+      this.ctx.stroke();
+      this.ctx.setLineDash([]);
+    } else {
+      // Gentle yellow dizzy aura
+      const auraR = cellSize * 1.5;
+      const auraGrad = this.ctx.createRadialGradient(cx, cy, s * 0.4, cx, cy, auraR);
+      auraGrad.addColorStop(0, 'rgba(250, 204, 21, 0.25)');
+      auraGrad.addColorStop(1, 'rgba(250, 204, 21, 0)');
+      this.ctx.fillStyle = auraGrad;
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
 
     // 1. Spooky Floor Shadow
-    this.ctx.fillStyle = 'rgba(153, 27, 27, 0.25)';
+    this.ctx.fillStyle = isStunned ? 'rgba(120, 53, 15, 0.25)' : 'rgba(153, 27, 27, 0.25)';
     this.ctx.beginPath();
     this.ctx.ellipse(cx, cy + s * 0.95, s * 0.78, s * 0.25, 0, 0, Math.PI * 2);
     this.ctx.fill();
 
     // 2. Horns
-    this.ctx.fillStyle = '#7f1d1d';
+    this.ctx.fillStyle = isStunned ? '#78350f' : '#7f1d1d';
     // Left horn
     this.ctx.beginPath();
     this.ctx.moveTo(cx - s * 0.42, cy - s * 0.2);
@@ -572,56 +584,102 @@ class GridCanvasRenderer {
 
     // 3. Menacing Body
     const bodyGrad = this.ctx.createRadialGradient(cx, cy - s * 0.1, s * 0.1, cx, cy, s * 0.8);
-    bodyGrad.addColorStop(0, '#ef4444');
-    bodyGrad.addColorStop(0.6, '#dc2626');
-    bodyGrad.addColorStop(1, '#991b1b');
+    if (isStunned) {
+      bodyGrad.addColorStop(0, '#f87171');
+      bodyGrad.addColorStop(0.6, '#b91c1c');
+      bodyGrad.addColorStop(1, '#7f1d1d');
+    } else {
+      bodyGrad.addColorStop(0, '#ef4444');
+      bodyGrad.addColorStop(0.6, '#dc2626');
+      bodyGrad.addColorStop(1, '#991b1b');
+    }
     this.ctx.fillStyle = bodyGrad;
-    this.ctx.shadowColor = '#ef4444';
-    this.ctx.shadowBlur = 10;
+    this.ctx.shadowColor = isStunned ? '#eab308' : '#ef4444';
+    this.ctx.shadowBlur = isStunned ? 6 : 10;
     this.ctx.beginPath();
     this.ctx.roundRect(cx - s * 0.62, cy - s * 0.44, s * 1.24, s * 1.12, [18, 18, 22, 22]);
     this.ctx.fill();
     this.ctx.shadowBlur = 0;
 
-    // 4. Glowing Yellow Eyes
-    this.ctx.fillStyle = '#fef08a';
-    this.ctx.shadowColor = '#fbbf24';
-    this.ctx.shadowBlur = 8;
-    const eyeW = s * 0.20;
-    const eyeH = s * 0.24;
-    this.ctx.beginPath();
-    this.ctx.ellipse(cx - s * 0.26, cy - s * 0.08, eyeW, eyeH, -0.15, 0, Math.PI * 2);
-    this.ctx.fill();
-    this.ctx.beginPath();
-    this.ctx.ellipse(cx + s * 0.26, cy - s * 0.08, eyeW, eyeH, 0.15, 0, Math.PI * 2);
-    this.ctx.fill();
-    this.ctx.shadowBlur = 0;
+    // 4. Eyes (Menacing or Dizzy X X)
+    if (isStunned) {
+      // Dizzy 'X X' yellow eyes
+      this.ctx.strokeStyle = '#fef08a';
+      this.ctx.lineWidth = 2.5;
+      const eyeOffset = s * 0.26;
+      const eyeY = cy - s * 0.08;
+      const d = s * 0.11;
 
-    // Dark pupils
-    this.ctx.fillStyle = '#7f1d1d';
-    this.ctx.beginPath();
-    this.ctx.ellipse(cx - s * 0.24, cy - s * 0.08, eyeW * 0.4, eyeH * 0.65, 0, 0, Math.PI * 2);
-    this.ctx.ellipse(cx + s * 0.24, cy - s * 0.08, eyeW * 0.4, eyeH * 0.65, 0, 0, Math.PI * 2);
-    this.ctx.fill();
+      // Left eye X
+      this.ctx.beginPath();
+      this.ctx.moveTo(cx - eyeOffset - d, eyeY - d);
+      this.ctx.lineTo(cx - eyeOffset + d, eyeY + d);
+      this.ctx.moveTo(cx - eyeOffset + d, eyeY - d);
+      this.ctx.lineTo(cx - eyeOffset - d, eyeY + d);
+      // Right eye X
+      this.ctx.moveTo(cx + eyeOffset - d, eyeY - d);
+      this.ctx.lineTo(cx + eyeOffset + d, eyeY + d);
+      this.ctx.moveTo(cx + eyeOffset + d, eyeY - d);
+      this.ctx.lineTo(cx + eyeOffset - d, eyeY + d);
+      this.ctx.stroke();
+
+      // Dizzy spinning stars floating above horns
+      this.ctx.font = `${Math.floor(cellSize * 0.40)}px sans-serif`;
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      this.ctx.fillText('💫', cx, cy - s * 0.92);
+    } else {
+      // Glowing Yellow Eyes
+      this.ctx.fillStyle = '#fef08a';
+      this.ctx.shadowColor = '#fbbf24';
+      this.ctx.shadowBlur = 8;
+      const eyeW = s * 0.20;
+      const eyeH = s * 0.24;
+      this.ctx.beginPath();
+      this.ctx.ellipse(cx - s * 0.26, cy - s * 0.08, eyeW, eyeH, -0.15, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.beginPath();
+      this.ctx.ellipse(cx + s * 0.26, cy - s * 0.08, eyeW, eyeH, 0.15, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.shadowBlur = 0;
+
+      // Dark pupils
+      this.ctx.fillStyle = '#7f1d1d';
+      this.ctx.beginPath();
+      this.ctx.ellipse(cx - s * 0.24, cy - s * 0.08, eyeW * 0.4, eyeH * 0.65, 0, 0, Math.PI * 2);
+      this.ctx.ellipse(cx + s * 0.24, cy - s * 0.08, eyeW * 0.4, eyeH * 0.65, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
 
     // 5. Grinning mouth & sharp teeth
-    this.ctx.fillStyle = '#450a0a';
-    this.ctx.beginPath();
-    this.ctx.arc(cx, cy + s * 0.28, s * 0.32, 0.1 * Math.PI, 0.9 * Math.PI);
-    this.ctx.closePath();
-    this.ctx.fill();
+    if (isStunned) {
+      // Wavy dizzy mouth
+      this.ctx.strokeStyle = '#450a0a';
+      this.ctx.lineWidth = 2.5;
+      this.ctx.beginPath();
+      this.ctx.moveTo(cx - s * 0.22, cy + s * 0.32);
+      this.ctx.quadraticCurveTo(cx - s * 0.11, cy + s * 0.24, cx, cy + s * 0.32);
+      this.ctx.quadraticCurveTo(cx + s * 0.11, cy + s * 0.40, cx + s * 0.22, cy + s * 0.32);
+      this.ctx.stroke();
+    } else {
+      this.ctx.fillStyle = '#450a0a';
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy + s * 0.28, s * 0.32, 0.1 * Math.PI, 0.9 * Math.PI);
+      this.ctx.closePath();
+      this.ctx.fill();
 
-    // Teeth
-    this.ctx.fillStyle = '#ffffff';
-    this.ctx.beginPath();
-    this.ctx.moveTo(cx - s * 0.18, cy + s * 0.3);
-    this.ctx.lineTo(cx - s * 0.09, cy + s * 0.44);
-    this.ctx.lineTo(cx, cy + s * 0.3);
-    this.ctx.moveTo(cx, cy + s * 0.3);
-    this.ctx.lineTo(cx + s * 0.09, cy + s * 0.44);
-    this.ctx.lineTo(cx + s * 0.18, cy + s * 0.3);
-    this.ctx.closePath();
-    this.ctx.fill();
+      // Teeth
+      this.ctx.fillStyle = '#ffffff';
+      this.ctx.beginPath();
+      this.ctx.moveTo(cx - s * 0.18, cy + s * 0.3);
+      this.ctx.lineTo(cx - s * 0.09, cy + s * 0.44);
+      this.ctx.lineTo(cx, cy + s * 0.3);
+      this.ctx.moveTo(cx, cy + s * 0.3);
+      this.ctx.lineTo(cx + s * 0.09, cy + s * 0.44);
+      this.ctx.lineTo(cx + s * 0.18, cy + s * 0.3);
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
 
     this.ctx.restore();
   }
@@ -668,7 +726,8 @@ class GridCanvasRenderer {
     // 6. Enemy
     if (stateSnapshot.enemy_pos) {
       const [ex, ey] = stateSnapshot.enemy_pos;
-      this.drawEnemy(ex, ey, cellSize);
+      const isStunned = !!(stateSnapshot.enemy_stunned || (stateSnapshot.stun_timer && stateSnapshot.stun_timer > 0));
+      this.drawEnemy(ex, ey, cellSize, isStunned);
     }
 
     // 7. Agent Robot
@@ -721,7 +780,8 @@ class GridCanvasRenderer {
 
     // Enemy
     if (frame.enemy) {
-      this.drawEnemy(frame.enemy.x, frame.enemy.y, cellSize);
+      const isStunned = !!(frame.enemy.is_stunned || (frame.enemy.stun_timer && frame.enemy.stun_timer > 0));
+      this.drawEnemy(frame.enemy.x, frame.enemy.y, cellSize, isStunned);
     }
 
     // Agents

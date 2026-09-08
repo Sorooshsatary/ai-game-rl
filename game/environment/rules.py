@@ -112,6 +112,8 @@ class GameEnvironment:
             walls=set(self.grid_map.walls),
             coins=list(self.grid_map.coins),
             diamonds=list(self.grid_map.diamonds),
+            enemy_stunned=self.enemy.stun_timer > 0,
+            stun_timer=self.enemy.stun_timer,
         )
 
     def step(self, action: Action) -> StepResult:
@@ -122,6 +124,9 @@ class GameEnvironment:
         self.agent.steps_taken += 1
         reward = 0.0
         events: List[str] = []
+
+        prev_agent_pos = self.agent.position
+        prev_enemy_pos = self.enemy.position
 
         # 1. Agent Move
         new_pos = self.agent.position.move(action)
@@ -134,9 +139,9 @@ class GameEnvironment:
             reward += self.config.reward.normal_step
             events.append(f"MOVE_{action.name}")
 
-        # Check immediate collision with enemy upon stepping
+        # Check immediate collision with enemy upon stepping (if enemy is active)
         hit_by_enemy = False
-        if self.agent.position == self.enemy.position:
+        if self.agent.position == self.enemy.position and self.enemy.stun_timer <= 0:
             hit_by_enemy = True
 
         # 2. Cell interactions (Coin, Diamond, Converter, Exit)
@@ -175,16 +180,18 @@ class GameEnvironment:
         # 3. Enemy Turn (if not exited)
         if not self.done:
             forbidden = [self.grid_map.exit_pos] + list(self.grid_map.walls)  # Enemy cannot block exit or pass through walls
-            self.enemy.position = self.enemy.choose_move(
-                agent_positions=[self.agent.position],
-                grid_width=self.grid_map.width,
-                grid_height=self.grid_map.height,
-                forbidden_positions=forbidden,
-            )
+            # If agent didn't already step directly into enemy, enemy takes its turn
+            if not hit_by_enemy:
+                self.enemy.position = self.enemy.choose_move(
+                    agent_positions=[self.agent.position],
+                    grid_width=self.grid_map.width,
+                    grid_height=self.grid_map.height,
+                    forbidden_positions=forbidden,
+                )
 
-            # Check collision after enemy move
-            if self.enemy.position == self.agent.position:
-                hit_by_enemy = True
+                # Check collision after enemy move
+                if self.enemy.position == self.agent.position and self.enemy.stun_timer <= 0:
+                    hit_by_enemy = True
 
         # 4. Handle Enemy Damage
         if hit_by_enemy:
@@ -198,8 +205,26 @@ class GameEnvironment:
                 events.append("DEATH")
                 self.done = True
             else:
-                # Push enemy back to starting position to give the agent room to recover and escape
-                self.enemy.position = self.enemy_start
+                # Stun enemy for 2 steps (no long-distance teleport/jump!)
+                self.enemy.stun_timer = 2
+                events.append("ENEMY_STUNNED")
+
+                # If overlapping, separate them by 1 tile so they remain clearly visible
+                if self.enemy.position == self.agent.position:
+                    if prev_enemy_pos != self.agent.position and self.grid_map.is_valid_position(prev_enemy_pos):
+                        self.enemy.position = prev_enemy_pos
+                    elif prev_agent_pos != self.enemy.position and self.grid_map.is_valid_position(prev_agent_pos):
+                        self.agent.position = prev_agent_pos
+                    else:
+                        for act in [Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT]:
+                            cand = self.enemy.position.move(act)
+                            if (
+                                self.grid_map.is_valid_position(cand)
+                                and cand != self.agent.position
+                                and cand != self.grid_map.exit_pos
+                            ):
+                                self.enemy.position = cand
+                                break
 
         # 5. Check Step Limit
         if not self.done and self.current_step >= self.config.env.max_steps_per_episode:

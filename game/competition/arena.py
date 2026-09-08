@@ -237,6 +237,7 @@ class MultiAgentArena:
                 w.status.position for w in wrappers if w.status.is_alive and not w.status.has_exited
             ]
             if live_agents_pos:
+                prev_enemy_pos = enemy.position
                 enemy.position = enemy.choose_move(
                     agent_positions=live_agents_pos,
                     grid_width=grid_map.width,
@@ -247,12 +248,16 @@ class MultiAgentArena:
                 # Check collisions
                 for w in wrappers:
                     if w.status.is_alive and not w.status.has_exited:
-                        if w.status.position == enemy.position:
+                        if w.status.position == enemy.position and enemy.stun_timer <= 0:
                             w.status.lives -= 1
                             step_events.append(f"هیولا به {w.name} ضربه زد! (-۱ جان) ❤️")
                             if w.status.lives <= 0:
                                 w.status.is_alive = False
                                 step_events.append(f"{w.name} توسط هیولا حذف شد! 💀")
+                            else:
+                                enemy.stun_timer = 2
+                                if prev_enemy_pos != w.status.position:
+                                    enemy.position = prev_enemy_pos
 
             # Record frame
             frames.append(
