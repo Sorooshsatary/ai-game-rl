@@ -110,6 +110,7 @@ class SystemConfigRequest(BaseModel):
     initial_lives: int = Field(3, ge=1, le=10)
     max_steps: int = Field(100, ge=20, le=500)
     diamond_multiplier: int = Field(2, ge=1, le=50)
+    show_presets: bool = False
     rewards: Dict[str, float]
     rl: Dict[str, Any]
 

@@ -210,6 +210,12 @@ const AdminUI = {
     setVal('cfg-rl-epsilon-min', rl.final_epsilon ?? 0.05);
     setVal('cfg-rl-epsilon-decay', rl.epsilon_decay ?? 0.96);
     setVal('cfg-rl-episodes', rl.episodes ?? 30);
+
+    // Feature flags
+    const chkPresets = document.getElementById('cfg-show-presets');
+    if (chkPresets) {
+      chkPresets.checked = !!cfg.show_presets;
+    }
   },
 
   async submitSaveConfig() {
@@ -226,6 +232,7 @@ const AdminUI = {
       initial_lives: parseInt(document.getElementById('cfg-initial-lives').value),
       max_steps: parseInt(document.getElementById('cfg-max-steps').value),
       diamond_multiplier: parseInt(document.getElementById('cfg-diamond-multiplier').value) || 2,
+      show_presets: document.getElementById('cfg-show-presets') ? document.getElementById('cfg-show-presets').checked : false,
       rewards: {
         coin: getVal('cfg-rew-coin'),
         convert: getVal('cfg-rew-convert'),
@@ -267,6 +274,10 @@ const AdminUI = {
       if (typeof TrainingUI !== 'undefined' && TrainingUI.updateFromConfig) {
         TrainingUI.updateFromConfig(res.config);
       }
+      if (typeof StrategyUI !== 'undefined' && StrategyUI.updatePresetVisibility) {
+        StrategyUI.cachedConfig = res.config;
+        StrategyUI.updatePresetVisibility();
+      }
     } catch (err) {
       if (statusBox) {
         statusBox.style.display = 'block';
@@ -302,6 +313,10 @@ const AdminUI = {
       }
       if (typeof TrainingUI !== 'undefined' && TrainingUI.updateFromConfig) {
         TrainingUI.updateFromConfig(res.config);
+      }
+      if (typeof StrategyUI !== 'undefined' && StrategyUI.updatePresetVisibility) {
+        StrategyUI.cachedConfig = res.config;
+        StrategyUI.updatePresetVisibility();
       }
     } catch (err) {
       alert('خطا در بازنشانی: ' + err.message);

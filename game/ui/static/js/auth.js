@@ -93,6 +93,11 @@ const AuthUI = {
       if (btnLogout) btnLogout.style.display = 'none';
       if (tabAdminBtn) tabAdminBtn.style.display = 'none';
     }
+
+    // Refresh preset visibility based on current user role and admin flag
+    if (typeof StrategyUI !== 'undefined' && StrategyUI.updatePresetVisibility) {
+      StrategyUI.updatePresetVisibility();
+    }
   },
 
   openLoginModal() {

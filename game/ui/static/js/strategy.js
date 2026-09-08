@@ -4,6 +4,7 @@
  */
 const StrategyUI = {
   presets: [],
+  cachedConfig: null,
   conditions: [
     { id: "enemy_dist_le", name: "فاصله تا هیولا کمتر یا مساوی", hasDistance: true, defaultDist: 2 },
     { id: "enemy_dist_gt", name: "فاصله تا هیولا بیشتر از (محیط امن)", hasDistance: true, defaultDist: 2 },
@@ -51,9 +52,16 @@ const StrategyUI = {
 
   async init() {
     try {
+      this.cachedConfig = await API.getConfig();
+    } catch (e) {
+      console.warn("Could not fetch initial config for StrategyUI:", e);
+    }
+
+    try {
       this.presets = await API.getPresets();
       this.renderPresets();
       this.renderRulesList();
+      await this.updatePresetVisibility();
 
       const btnAdd = document.getElementById('btn-add-rule');
       if (btnAdd) {
@@ -67,6 +75,46 @@ const StrategyUI = {
     } catch (err) {
       console.error("Failed to load presets:", err);
       this.renderRulesList();
+      await this.updatePresetVisibility();
+    }
+  },
+
+  async updatePresetVisibility() {
+    const wrapper = document.getElementById('presets-wrapper');
+    const badge = document.getElementById('preset-admin-badge');
+    if (!wrapper) return;
+
+    try {
+      if (!this.cachedConfig) {
+        this.cachedConfig = await API.getConfig();
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    const isFlagEnabled = !!(this.cachedConfig && this.cachedConfig.show_presets);
+    const user = (typeof AuthUI !== 'undefined' && AuthUI.currentUser) ? AuthUI.currentUser : null;
+    const isAdmin = user && user.role === 'admin';
+
+    if (isAdmin) {
+      wrapper.style.display = 'block';
+      if (badge) {
+        badge.style.display = 'inline-block';
+        if (isFlagEnabled) {
+          badge.textContent = '👑 فلگ ادمین: روشن برای کاربران عادی';
+          badge.style.background = '#dcfce7';
+          badge.style.color = '#15803d';
+        } else {
+          badge.textContent = '👑 پیش‌نمایش مدیر (برای کاربر عادی خاموش است)';
+          badge.style.background = '#fef3c7';
+          badge.style.color = '#92400e';
+        }
+      }
+    } else if (isFlagEnabled) {
+      wrapper.style.display = 'block';
+      if (badge) badge.style.display = 'none';
+    } else {
+      wrapper.style.display = 'none';
     }
   },
 

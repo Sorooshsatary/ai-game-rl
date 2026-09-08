@@ -179,6 +179,38 @@ class TestAuthAndAdmin(unittest.TestCase):
         self.assertEqual(res_reset.status_code, 200)
         self.assertEqual(get_active_config().env.grid_width, 8)
 
+    def test_show_presets_admin_flag(self):
+        """Verify that show_presets flag is controllable by admin and readable via public config."""
+        admin_token = self.client.post("/api/auth/login", json={"username": "admin", "password": "admin123"}).json()["token"]
+        headers = {"Authorization": f"Bearer {admin_token}"}
+
+        # 1. Check current public config has show_presets field
+        cfg_res = self.client.get("/api/config")
+        self.assertEqual(cfg_res.status_code, 200)
+        self.assertIn("show_presets", cfg_res.json())
+
+        # 2. Update flag to True via admin endpoint
+        admin_cfg_res = self.client.get("/api/admin/config", headers=headers)
+        self.assertEqual(admin_cfg_res.status_code, 200)
+        cfg_data = admin_cfg_res.json()["config"]
+        cfg_data["show_presets"] = True
+
+        save_res = self.client.post("/api/admin/config", json=cfg_data, headers=headers)
+        self.assertEqual(save_res.status_code, 200)
+        self.assertTrue(save_res.json()["config"]["show_presets"])
+        self.assertTrue(get_active_config().show_presets)
+
+        # Public config should reflect True
+        self.assertTrue(self.client.get("/api/config").json()["show_presets"])
+
+        # 3. Toggle back to False
+        cfg_data["show_presets"] = False
+        save_res2 = self.client.post("/api/admin/config", json=cfg_data, headers=headers)
+        self.assertEqual(save_res2.status_code, 200)
+        self.assertFalse(save_res2.json()["config"]["show_presets"])
+        self.assertFalse(get_active_config().show_presets)
+        self.assertFalse(self.client.get("/api/config").json()["show_presets"])
+
 
 if __name__ == "__main__":
     unittest.main()

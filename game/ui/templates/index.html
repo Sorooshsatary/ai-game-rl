@@ -61,10 +61,13 @@
             شما با انتخاب شرط و دستور، مغز ربات را برنامه‌ریزی می‌کنید. اولین شرطی که در نقشه برقرار باشد فوراً اجرا می‌شود:
           </p>
 
-          <!-- Preset Chips -->
-          <div style="margin-bottom: 0.75rem;">
-            <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">الگوهای آماده برای شروع سریع:</span>
-            <div id="preset-chips" class="preset-chips" style="margin-top: 6px;"></div>
+          <!-- Preset Chips (Controlled by Admin Flag) -->
+          <div id="presets-wrapper" style="margin-bottom: 0.75rem; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+              <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">الگوهای آماده برای شروع سریع:</span>
+              <span id="preset-admin-badge" style="display: none; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; font-weight: 700;"></span>
+            </div>
+            <div id="preset-chips" class="preset-chips" style="margin-top: 2px;"></div>
           </div>
 
           <!-- If-Then Rule Builder List -->
@@ -501,6 +504,20 @@
               <div class="config-row">
                 <label for="cfg-rl-episodes">تعداد پیش‌فرض اپیزودهای آموزش:</label>
                 <input type="number" id="cfg-rl-episodes" min="1" max="500" dir="ltr" required>
+              </div>
+            </div>
+
+            <!-- Group 4: Feature Flags & Permissions -->
+            <div class="config-card" style="border-right: 4px solid #6366f1;">
+              <h4>🚩 فلگ‌های کنترلی و دسترسی‌ها</h4>
+              <div class="config-row" style="align-items: center; display: flex; justify-content: space-between; gap: 12px;">
+                <label for="cfg-show-presets" style="cursor: pointer; flex: 1; margin: 0;">
+                  <strong style="color: #1e293b; font-size: 0.95rem;">نمایش الگوهای آماده برای کاربران عادی:</strong>
+                  <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px; line-height: 1.5;">
+                    در صورت فعال بودن این فلگ، دکمه‌های الگوهای آماده (شکارچی سکه، محتاط و...) به کاربران عادی نمایش داده می‌شود. در صورت خاموش بودن، این بخش برای کاربران عادی کاملاً مخفی می‌ماند.
+                  </div>
+                </label>
+                <input type="checkbox" id="cfg-show-presets" style="width: 22px; height: 22px; cursor: pointer; accent-color: #4f46e5;">
               </div>
             </div>
 
