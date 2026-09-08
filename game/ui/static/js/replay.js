@@ -166,8 +166,8 @@ const ReplayUI = {
     document.getElementById('inspector-enemy-dist').textContent = `${step.state_snapshot.distances?.enemy || '-'} خانه`;
 
     // Action & Reward
-    document.getElementById('inspector-selected-action').textContent = `${step.selected_action_fa} (${step.selected_action})`;
-    document.getElementById('inspector-action-type').textContent = step.was_exploratory ? '🎲 کاوش تصادفی' : '🧠 بر اساس Q-Value';
+    document.getElementById('inspector-selected-action').textContent = step.selected_action_fa;
+    document.getElementById('inspector-action-type').textContent = step.was_exploratory ? '🎲 کاوش تصادفی' : '🧠 بر اساس ارزش آموخته‌شده';
     document.getElementById('inspector-step-reward').textContent = `${step.reward > 0 ? '+' : ''}${step.reward}`;
 
     // Side by side Q comparison

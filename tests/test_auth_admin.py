@@ -1,0 +1,146 @@
+"""Unit tests for Authentication, Role-based Access Control, and Admin Management."""
+
+import unittest
+from starlette.testclient import TestClient
+from game.ui.app import app
+from game.database.db import init_db
+from game.config import get_active_config, reset_active_config
+
+
+class TestAuthAndAdmin(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        init_db()
+        cls.client = TestClient(app)
+
+    def tearDown(self):
+        reset_active_config()
+
+    def test_login_success_admin(self):
+        res = self.client.post("/api/auth/login", json={"username": "admin", "password": "admin123"})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["success"])
+        self.assertIn("token", data)
+        self.assertEqual(data["user"]["role"], "admin")
+
+    def test_login_persian_admin_aliases_and_digits(self):
+        # 1. Login with username "admin" and password "123"
+        res1 = self.client.post("/api/auth/login", json={"username": "admin", "password": "123"})
+        self.assertEqual(res1.status_code, 200)
+        self.assertEqual(res1.json()["user"]["role"], "admin")
+
+        # 2. Login with Persian username "ادمین" and Persian digits "۱۲۳"
+        res2 = self.client.post("/api/auth/login", json={"username": "ادمین", "password": "۱۲۳"})
+        self.assertEqual(res2.status_code, 200)
+        self.assertEqual(res2.json()["user"]["role"], "admin")
+
+        # 3. Login with "ادمین ۱۲۳"
+        res3 = self.client.post("/api/auth/login", json={"username": "ادمین ۱۲۳", "password": "123"})
+        self.assertEqual(res3.status_code, 200)
+        self.assertEqual(res3.json()["user"]["role"], "admin")
+
+    def test_login_success_student(self):
+        res = self.client.post("/api/auth/login", json={"username": "student", "password": "123456"})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["user"]["role"], "user")
+
+    def test_login_invalid_credentials(self):
+        res = self.client.post("/api/auth/login", json={"username": "admin", "password": "wrongpassword"})
+        self.assertEqual(res.status_code, 401)
+
+    def test_student_forbidden_from_admin_endpoints(self):
+        # Login as student
+        login_res = self.client.post("/api/auth/login", json={"username": "student", "password": "123456"})
+        token = login_res.json()["token"]
+
+        headers = {"Authorization": f"Bearer {token}"}
+        # Try getting users
+        res = self.client.get("/api/admin/users", headers=headers)
+        self.assertEqual(res.status_code, 403)
+
+        # Try getting admin config
+        res_cfg = self.client.get("/api/admin/config", headers=headers)
+        self.assertEqual(res_cfg.status_code, 403)
+
+    def test_admin_user_crud_operations(self):
+        # Login as admin
+        admin_token = self.client.post("/api/auth/login", json={"username": "admin", "password": "admin123"}).json()["token"]
+        headers = {"Authorization": f"Bearer {admin_token}"}
+
+        # 1. List users
+        res_list = self.client.get("/api/admin/users", headers=headers)
+        self.assertEqual(res_list.status_code, 200)
+        users = res_list.json()["users"]
+        self.assertGreaterEqual(len(users), 2)
+
+        # 2. Create new user
+        new_username = "test_kid_99"
+        res_create = self.client.post("/api/admin/users", json={
+            "username": new_username,
+            "password": "kidpassword",
+            "role": "user"
+        }, headers=headers)
+        self.assertEqual(res_create.status_code, 200)
+        new_user_id = res_create.json()["user"]["id"]
+
+        # 3. Update role to admin
+        res_role = self.client.put(f"/api/admin/users/{new_user_id}/role", json={"role": "admin"}, headers=headers)
+        self.assertEqual(res_role.status_code, 200)
+
+        # 4. Delete user
+        res_del = self.client.delete(f"/api/admin/users/{new_user_id}", headers=headers)
+        self.assertEqual(res_del.status_code, 200)
+
+    def test_admin_config_update_and_persistence(self):
+        admin_token = self.client.post("/api/auth/login", json={"username": "admin", "password": "admin123"}).json()["token"]
+        headers = {"Authorization": f"Bearer {admin_token}"}
+
+        new_config_payload = {
+            "grid_width": 10,
+            "grid_height": 10,
+            "num_coins": 7,
+            "num_diamonds": 3,
+            "initial_lives": 4,
+            "max_steps": 120,
+            "diamond_multiplier": 4,
+            "rewards": {
+                "coin": 15.0,
+                "convert": 25.0,
+                "diamond": 1.0,
+                "lose_life": -10.0,
+                "death": -60.0,
+                "exit": 8.0,
+                "step": -0.2,
+            },
+            "rl": {
+                "alpha": 0.3,
+                "gamma": 0.95,
+                "episodes": 40,
+            }
+        }
+
+        # Save config
+        res_save = self.client.post("/api/admin/config", json=new_config_payload, headers=headers)
+        self.assertEqual(res_save.status_code, 200)
+        saved_cfg = res_save.json()["config"]
+        self.assertEqual(saved_cfg["grid_width"], 10)
+        self.assertEqual(saved_cfg["diamond_multiplier"], 4)
+        self.assertEqual(saved_cfg["rewards"]["coin"], 15.0)
+
+        # Verify active config in runtime is updated
+        active = get_active_config()
+        self.assertEqual(active.env.grid_width, 10)
+        self.assertEqual(active.env.diamond_to_coin_multiplier, 4)
+        self.assertEqual(active.reward.collect_coin, 15.0)
+
+        # Reset config
+        res_reset = self.client.post("/api/admin/config/reset", headers=headers)
+        self.assertEqual(res_reset.status_code, 200)
+        self.assertEqual(get_active_config().env.grid_width, 8)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>بازی آموزشی هوش مصنوعی و یادگیری تقویتی (RL)</title>
+  <title>بازی آموزشی هوش مصنوعی و یادگیری تقویتی</title>
   <!-- Google Fonts Vazirmatn -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,403 +17,505 @@
     <div class="logo-area">
       <span class="logo-icon">🤖</span>
       <div class="app-title">
-        <h1>بازی آموزشی Reinforcement Learning</h1>
-        <p>کودک ترجیحات و استراتژی اولیه را می‌سازد؛ هوش مصنوعی با تجربه مسیر بهینه را یاد می‌گیرد!</p>
+        <h1>بازی آموزشی هوش مصنوعی و یادگیری تقویتی</h1>
+        <p>طراحی استراتژی شرطی توسط انسان در برابر یادگیری خودمختار هوش مصنوعی</p>
       </div>
+    </div>
+
+    <!-- User & Auth Area in Header -->
+    <div class="header-user-area">
+      <div id="user-badge" style="display: none;"></div>
+      <button id="btn-open-login" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4);">
+        🔑 ورود به حساب
+      </button>
+      <button id="btn-logout" class="btn btn-secondary" style="display: none; padding: 6px 12px; font-size: 0.85rem; background: rgba(239, 68, 68, 0.2); color: white; border: 1px solid rgba(239, 68, 68, 0.4);">
+        خروج 🚪
+      </button>
     </div>
   </header>
 
   <!-- Navigation Tabs -->
   <nav class="tab-nav">
-    <button class="tab-btn active" data-tab="strategy">🎨 ۱. آزمایشگاه استراتژی</button>
-    <button class="tab-btn" data-tab="training">🏋️ ۲. مرکز تمرین و یادگیری</button>
-    <button class="tab-btn" data-tab="replay">🎬 ۳. تماشاخانه و تحلیل تصمیمات</button>
-    <button class="tab-btn" data-tab="arena">🏟️ ۴. میدان رقابت نهایی (Arena)</button>
+    <button class="tab-btn active" data-tab="strategy">🎮 بخش ۱: استراتژی شرطی من (قانون‌محور)</button>
+    <button class="tab-btn" data-tab="comparison">🧠 بخش ۲: هوش مصنوعی و مقایسه رو‌در‌رو</button>
+    <button id="tab-btn-admin" class="tab-btn" data-tab="admin" style="display: none;">⚙️ پنل مدیریت</button>
   </nav>
 
   <!-- Main Container -->
   <main class="container">
 
-    <!-- TAB 1: STRATEGY LAB -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 1: STRATEGY BUILDER & LIVE PERSISTENT MAP                         -->
+    <!-- ========================================================================= -->
     <section id="tab-strategy" class="tab-content active">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">💡 استراتژی اولیه خود را طراحی کنید</div>
-          <span style="font-size: 0.85rem; color: var(--text-muted);">شما به ربات مسیر نمی‌دهید، بلکه ترجیحات و ارزش‌ها را مشخص می‌کنید</span>
-        </div>
+      <div class="two-col-layout">
 
-        <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.95rem;">
-          یک الگوی آماده انتخاب کنید یا با اسلایدرهای زیر، اولویت‌های ربات خود را بسازید:
-        </p>
-
-        <!-- Preset Chips -->
-        <div id="preset-chips" class="preset-chips"></div>
-
-        <!-- Preference Sliders -->
-        <div class="sliders-grid">
-          <!-- Coin Slider -->
-          <div class="slider-card" style="border-right-color: #f59e0b;">
-            <div class="slider-label">
-              <span>🪙 علاقه به سکه (Coin Priority)</span>
-              <span id="val-coin_priority" class="slider-value">7.0</span>
-            </div>
-            <input type="range" id="slider-coin_priority" class="slider-input" min="1" max="10" step="0.5" value="7.0">
-            <small style="color: #64748b; font-size: 0.8rem;">سکه هدف نهایی برای پیروزی در بازی است.</small>
+        <!-- Right Column: If-Then Rule Builder -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div class="card-title">💡 چیدمان شروط و دستورهای ربات</div>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">اولویت‌ها از بالا به پایین بررسی می‌شوند</span>
           </div>
 
-          <!-- Diamond Slider -->
-          <div class="slider-card" style="border-right-color: #0284c7;">
-            <div class="slider-label">
-              <span>💎 اشتیاق به الماس (Diamond Priority)</span>
-              <span id="val-diamond_priority" class="slider-value">6.0</span>
-            </div>
-            <input type="range" id="slider-diamond_priority" class="slider-input" min="1" max="10" step="0.5" value="6.0">
-            <small style="color: #64748b; font-size: 0.8rem;">الماس بدون تبدیل در مبدل هیچ ارزشی ندارد!</small>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 0.75rem;">
+            شما با انتخاب شرط و دستور، مغز ربات را برنامه‌ریزی می‌کنید. اولین شرطی که در نقشه برقرار باشد فوراً اجرا می‌شود:
+          </p>
+
+          <!-- Preset Chips -->
+          <div style="margin-bottom: 0.75rem;">
+            <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">الگوهای آماده برای شروع سریع:</span>
+            <div id="preset-chips" class="preset-chips" style="margin-top: 6px;"></div>
           </div>
 
-          <!-- Converter Slider -->
-          <div class="slider-card" style="border-right-color: #8b5cf6;">
-            <div class="slider-label">
-              <span>🏪 فوریت مبدل (Converter Urgency)</span>
-              <span id="val-converter_urgency" class="slider-value">8.0</span>
-            </div>
-            <input type="range" id="slider-converter_urgency" class="slider-input" min="1" max="10" step="0.5" value="8.0">
-            <small style="color: #64748b; font-size: 0.8rem;">هر ۱ الماس در مبدل به ۲ سکه ارزشمند تبدیل می‌شود.</small>
+          <!-- If-Then Rule Builder List -->
+          <div id="rules-list-container" class="rules-container">
+            <!-- Dynamic rule rows injected by strategy.js -->
           </div>
 
-          <!-- Enemy Fear Slider -->
-          <div class="slider-card" style="border-right-color: #ef4444;">
-            <div class="slider-label">
-              <span>👾 ترس از دشمن و محافظت از جان (Enemy Fear)</span>
-              <span id="val-enemy_fear" class="slider-value">8.0</span>
-            </div>
-            <input type="range" id="slider-enemy_fear" class="slider-input" min="1" max="10" step="0.5" value="8.0">
-            <small style="color: #64748b; font-size: 0.8rem;">برخورد با هیولا ۱ جان کم می‌کند و مرگ مساوی با صفر شدن سکه‌هاست!</small>
+          <!-- Buttons to Add Rule & Reset -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; flex-wrap: wrap; gap: 8px;">
+            <button id="btn-add-rule" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px;">
+              ➕ افزودن شرط جدید
+            </button>
+            <button id="btn-reset-rules" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px; color: #64748b;">
+              🔄 بازنشانی شروط
+            </button>
           </div>
 
-          <!-- Exit Slider -->
-          <div class="slider-card" style="border-right-color: #10b981;">
-            <div class="slider-label">
-              <span>🚪 تمایل به خروج (Exit Eagerness)</span>
-              <span id="val-exit_eagerness" class="slider-value">6.0</span>
-            </div>
-            <input type="range" id="slider-exit_eagerness" class="slider-input" min="1" max="10" step="0.5" value="6.0">
-            <small style="color: #64748b; font-size: 0.8rem;">برای ثبت امتیاز، حتماً باید سکه‌ها از خروجی خارج شوند.</small>
+          <!-- Default Fallback Rule Notice -->
+          <div class="default-fallback-notice">
+            🎲 <strong>قانون پیش‌فرض (در صورت نبود شرط):</strong> اگر وضعیت نقشه با هیچ‌یک از شرط‌های شما هماهنگ نباشد، ربات گیج می‌شود و یک <strong>حرکت کاملاً تصادفی</strong> انجام می‌دهد!
+          </div>
+
+          <!-- Next Step Call to Action -->
+          <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
+            <button class="btn btn-primary" onclick="switchTab('comparison')" style="font-size: 0.95rem;">
+              رفتن به بخش مقایسه با هوش مصنوعی ➔
+            </button>
           </div>
         </div>
 
-        <!-- Smart Rules Toggles -->
-        <div class="card-header" style="margin-top: 1rem;">
-          <div class="card-title">🧩 قوانین هوشمند کودک</div>
+        <!-- Left Column: Persistent Visible Simulation Map -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div class="card-title">🗺️ نقشه زنده شبیه‌سازی استراتژی</div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <select id="part1-speed" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.8rem; font-weight: 600;">
+                <option value="600">سرعت: آهسته</option>
+                <option value="350" selected>سرعت: عادی</option>
+                <option value="150">سرعت: سریع</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+            <button id="btn-test-strategy" class="btn btn-primary" style="flex: 1; min-width: 160px; font-weight: 700;">
+              ▶ اجرای استراتژی من روی نقشه
+            </button>
+            <button id="btn-new-map-part1" class="btn btn-secondary" style="font-size: 0.9rem; padding: 8px 14px;">
+              🔄 نقشه جدید
+            </button>
+          </div>
+
+          <!-- Map Canvas -->
+          <div class="canvas-frame" style="max-width: 400px; margin: 0 auto;">
+            <canvas id="strategy-test-canvas" width="400" height="400"></canvas>
+          </div>
+
+          <!-- Live Agent Status Banner -->
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; margin-top: 10px;">
+            <div style="background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">جان عامل</div>
+              <div id="part1-agent-lives" style="font-size: 1rem; font-weight: 800;">❤️❤️❤️</div>
+            </div>
+            <div style="background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">سکه‌ها</div>
+              <div id="part1-agent-coins" style="font-size: 1rem; font-weight: 800; color: #f59e0b;">۰ 🪙</div>
+            </div>
+            <div style="background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">الماس‌ها</div>
+              <div id="part1-agent-diamonds" style="font-size: 1rem; font-weight: 800; color: #0284c7;">۰ 💎</div>
+            </div>
+            <div style="background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">گام شبیه‌سازی</div>
+              <div id="part1-step-counter" style="font-size: 1rem; font-weight: 800; color: #4f46e5;">گام ۰</div>
+            </div>
+          </div>
+
+          <!-- Step Log -->
+          <div id="strategy-test-log" style="background: #f8fafc; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 10px; min-height: 56px; font-size: 0.85rem; line-height: 1.5;">
+            نقشه آماده است. برای شروع شبیه‌سازی، دکمه «اجرای استراتژی من روی نقشه» را بزنید.
+          </div>
+
+          <!-- Educational Critique Box -->
+          <div id="strategy-test-critique" style="margin-top: 8px;"></div>
         </div>
-        <div class="rules-toggle-list">
-          <label class="rule-toggle-item">
-            <input type="checkbox" id="rule-flee_adjacent_enemy" checked>
-            <div class="rule-toggle-text">
-              <h4>فرار اضطراری از هیولای مجاور</h4>
-              <p>اگر هیولا در خانه کناری بود، نجات جان اولویت اول باشد.</p>
-            </div>
-          </label>
 
-          <label class="rule-toggle-item">
-            <input type="checkbox" id="rule-deposit_before_coins" checked>
-            <div class="rule-toggle-text">
-              <h4>تبدیل سریع الماس</h4>
-              <p>اگر الماس داری، قبل از برداشتن سکه جدید به مبدل برو.</p>
-            </div>
-          </label>
-
-          <label class="rule-toggle-item">
-            <input type="checkbox" id="rule-diamond_only_if_safe" checked>
-            <div class="rule-toggle-text">
-              <h4>برداشتن الماس فقط در شرایط امن</h4>
-              <p>اگر هیولا نزدیک است، ریسک برداشتن الماس را نکن.</p>
-            </div>
-          </label>
-
-          <label class="rule-toggle-item">
-            <input type="checkbox" id="rule-exit_if_one_life" checked>
-            <div class="rule-toggle-text">
-              <h4>فرار با آخرین جان</h4>
-              <p>اگر فقط ۱ جان باقی مانده، سریعاً به سمت در خروج حرکت کن.</p>
-            </div>
-          </label>
-
-          <label class="rule-toggle-item">
-            <input type="checkbox" id="rule-exit_if_coins_cleared" checked>
-            <div class="rule-toggle-text">
-              <h4>پایان مرحله</h4>
-              <p>وقتی تمام سکه‌های نقشه جمع شدند، به سمت در خروج برو.</p>
-            </div>
-          </label>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem;">
-          <button class="btn btn-primary" onclick="switchTab('training')">
-            تأیید استراتژی و رفتن به مرکز آموزش ➔
-          </button>
-        </div>
       </div>
     </section>
 
-    <!-- TAB 2: TRAINING CENTER -->
-    <section id="tab-training" class="tab-content">
-      <div class="training-dashboard">
-        <!-- Controls & Metrics -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🏋️ آموزش عامل روی نقشه‌های تصادفی</div>
+    <!-- ========================================================================= -->
+    <!-- SECTION 2: REINFORCEMENT LEARNING & SIDE-BY-SIDE DUAL COMPARISON           -->
+    <!-- ========================================================================= -->
+    <section id="tab-comparison" class="tab-content">
+      
+      <!-- Top Card: RL Training & Learning Curves -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏋️ مرکز آموزش هوش مصنوعی (یادگیری تقویتی)</div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">عامل با آزمون، خطا و دریافت پاداش، راه‌حل‌های بهینه را کشف می‌کند</span>
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.25rem;">
+          برخلاف استراتژی دستوری که قوانین صلب و خشک دارد، هوش مصنوعی بدون نیاز به کدنویسی شروط، خود را با محیط وفق می‌دهد. با دکمه زیر به هوش مصنوعی اجازه دهید تمرین کند:
+        </p>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.25rem;">
+          <button id="btn-start-training" class="btn btn-primary" style="font-weight: bold;">
+            🚀 آموزش هوش مصنوعی (ادامه روند یادگیری)
+          </button>
+          <button id="btn-reset-training" class="btn btn-secondary" style="border-color: #cbd5e1; color: #64748b;">
+            🔄 بازنشانی حافظه آموزش (شروع از صفر)
+          </button>
+        </div>
+
+        <div id="train-success-banner" class="explanation-banner" style="display: none; margin-bottom: 1.25rem; background: #ecfdf5; border-right-color: #10b981;">
+          🎉 آموزش هوش مصنوعی با موفقیت انجام شد و تجربیات جدید به حافظه ربات افزوده شدند! می‌توانید روند بهبود را در نمودارهای زیر مشاهده کنید یا در بخش پایین مسابقه مقایسه‌ای را اجرا نمایید.
+        </div>
+
+        <!-- Metrics Summary Cards -->
+        <div class="metrics-summary">
+          <div class="metric-box">
+            <div class="metric-lbl">نرخ موفقیت در خروج</div>
+            <div id="metric-success-rate" class="metric-val">--</div>
           </div>
-
-          <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
-            عامل در ابتدا با ترجیحات اولیه شما شروع می‌کند، اما در طول ۳۰ اپیزود با کشف (Exploration) و تجربه، مسیرها و تصمیم‌های واقعی را یاد می‌گیرد.
-          </p>
-
-          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button id="btn-start-training" class="btn btn-primary">
-              🚀 شروع آموزش کامل (۳۰ اپیزود)
-            </button>
-            <button id="btn-retrain" class="btn btn-secondary">
-              🔄 بازآموزی و اصلاح استراتژی (۱۵ اپیزود)
-            </button>
+          <div class="metric-box">
+            <div class="metric-lbl">میانگین پاداش ۵ اپیزود آخر</div>
+            <div id="metric-avg-reward" class="metric-val">--</div>
           </div>
-
-          <div id="train-success-banner" class="explanation-banner" style="display: none; margin-top: 1.5rem; background: #ecfdf5; border-right-color: #10b981;">
-            🎉 آموزش به پایان رسید! اکنون می‌توانید بازپخش (Replay) تصمیمات را بررسی کنید تا ببینید هوش مصنوعی چگونه نظر شما را اصلاح کرده است.
-            <div style="margin-top: 8px;">
-              <button class="btn btn-success" style="padding: 6px 14px; font-size: 0.9rem;" onclick="switchTab('replay')">
-                مشاهده و تحلیل Replay ➔
-              </button>
-            </div>
+          <div class="metric-box">
+            <div class="metric-lbl">اصلاح تصمیمات با تجربه</div>
+            <div id="metric-divergence" class="metric-val" style="color: #f59e0b;">--</div>
           </div>
-
-          <!-- Summary Metrics Cards -->
-          <div class="metrics-summary">
-            <div class="metric-box">
-              <div class="metric-lbl">نرخ موفقیت نهایی</div>
-              <div id="metric-success-rate" class="metric-val">--</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-lbl">میانگین پاداش ۵ اپیزود آخر</div>
-              <div id="metric-avg-reward" class="metric-val">--</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-lbl">تغییر تصمیمات توسط تجربه</div>
-              <div id="metric-divergence" class="metric-val" style="color: #f59e0b;">--</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-lbl">کل اپیزودهای تمرین</div>
-              <div id="metric-total-episodes" class="metric-val">--</div>
-            </div>
+          <div class="metric-box">
+            <div class="metric-lbl">کل مراحل تمرین‌شده</div>
+            <div id="metric-total-episodes" class="metric-val">--</div>
           </div>
         </div>
 
         <!-- Learning Charts -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">📈 نمودار یادگیری تقویتی (Learning Curves)</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-top: 1.25rem;">
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px;">
+            <h5 style="margin-bottom: 8px; color: #4338ca; font-size: 0.9rem;">📈 نمودار رشد پاداش کل در طول تمرین</h5>
+            <canvas id="chart-reward" width="460" height="160" style="width: 100%; height: 160px;"></canvas>
           </div>
-
-          <div style="margin-bottom: 1.5rem;">
-            <canvas id="chart-reward" width="480" height="180" style="width: 100%; height: 180px;"></canvas>
-          </div>
-
-          <div>
-            <canvas id="chart-coins" width="480" height="180" style="width: 100%; height: 180px;"></canvas>
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px;">
+            <h5 style="margin-bottom: 8px; color: #047857; font-size: 0.9rem;">🪙 نمودار تعداد سکه‌های موفق خروجی</h5>
+            <canvas id="chart-coins" width="460" height="160" style="width: 100%; height: 160px;"></canvas>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- TAB 3: REPLAY THEATER -->
-    <section id="tab-replay" class="tab-content">
-      <div class="theater-layout">
-        <!-- Canvas & Playback -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🎬 بازپخش بازی و نقشه</div>
-            <select id="replay-episode-select" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 700;">
-              <option>اپیزودی آموزش داده نشده</option>
+      <!-- Bottom Card: Persistent Side-by-Side Comparison on Identical Map -->
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+          <div class="card-title">⚖️ مسابقه مقایسه رو‌در‌رو روی نقشه یکسان</div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <select id="part2-speed" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.8rem; font-weight: 600;">
+              <option value="700">سرعت: آهسته</option>
+              <option value="450" selected>سرعت: عادی</option>
+              <option value="200">سرعت: سریع</option>
             </select>
           </div>
-
-          <div class="canvas-frame">
-            <canvas id="replay-canvas" width="460" height="460"></canvas>
-          </div>
-
-          <!-- Controls -->
-          <div style="margin-top: 1rem;">
-            <input type="range" id="replay-scrubber" class="playback-scrubber" min="0" max="0" value="0">
-            <div class="playback-controls">
-              <div style="display: flex; gap: 8px;">
-                <button id="btn-replay-prev" class="btn btn-secondary" style="padding: 8px 14px;">⏮ قبلی</button>
-                <button id="btn-replay-play" class="btn btn-primary" style="padding: 8px 18px;">▶ پخش</button>
-                <button id="btn-replay-next" class="btn btn-secondary" style="padding: 8px 14px;">بعدی ⏭</button>
-              </div>
-
-              <div>
-                <span style="font-size: 0.85rem; color: var(--text-muted);">سرعت: </span>
-                <select id="replay-speed" style="padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
-                  <option value="900">۰.۵ برابر (آهسته)</option>
-                  <option value="600" selected>۱ برابر (عادی)</option>
-                  <option value="300">۲ برابر (سریع)</option>
-                </select>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- Decision Inspector Card -->
-        <div class="card inspector-card">
-          <div class="card-header">
-            <div class="card-title">🔍 کالبدشکافی هوش مصنوعی (Decision Inspector)</div>
-            <span id="inspector-step-counter" style="font-weight: 800; color: var(--primary);">گام ۰</span>
-          </div>
+        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.25rem;">
+          در این آزمون عادلانه، <strong>عامل اول (استراتژی شرطی شما)</strong> و <strong>عامل دوم (هوش مصنوعی یادگیرنده)</strong> در <strong>یک نقشه کاملاً یکسان با منابع مشترک</strong> قرار می‌گیرند. مقایسه کنید که پایبندی به قوانین صلب چه تفاوت‌هایی با تصمیم‌گیری مبتنی بر تجربه و هوش مصنوعی دارد:
+        </p>
 
-          <!-- State Snapshot Summary -->
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; margin-bottom: 1rem;">
-            <div style="background: #f8fafc; padding: 8px; border-radius: 8px;">
-              <div style="font-size: 0.75rem; color: var(--text-muted);">جان عامل</div>
-              <div id="inspector-agent-lives" style="font-size: 1.1rem; margin-top: 2px;">❤️❤️❤️</div>
-            </div>
-            <div style="background: #f8fafc; padding: 8px; border-radius: 8px;">
-              <div style="font-size: 0.75rem; color: var(--text-muted);">سکه‌ها</div>
-              <div id="inspector-agent-coins" style="font-size: 1.1rem; font-weight: 800; color: #f59e0b;">۰</div>
-            </div>
-            <div style="background: #f8fafc; padding: 8px; border-radius: 8px;">
-              <div style="font-size: 0.75rem; color: var(--text-muted);">الماس‌ها</div>
-              <div id="inspector-agent-diamonds" style="font-size: 1.1rem; font-weight: 800; color: #0284c7;">۰</div>
-            </div>
-            <div style="background: #f8fafc; padding: 8px; border-radius: 8px;">
-              <div style="font-size: 0.75rem; color: var(--text-muted);">فاصله تا دشمن</div>
-              <div id="inspector-enemy-dist" style="font-size: 1.1rem; font-weight: 800; color: #ef4444;">-</div>
-            </div>
-          </div>
-
-          <!-- Action chosen & Reward -->
-          <div style="display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 10px 14px; border-radius: 10px;">
-            <div>
-              <span style="font-size: 0.85rem; color: var(--text-muted);">حرکت انتخاب‌شده: </span>
-              <strong id="inspector-selected-action" style="color: var(--primary); font-size: 1.1rem;">-</strong>
-              <span id="inspector-action-type" style="margin-right: 8px; font-size: 0.8rem; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 12px;"></span>
-            </div>
-            <div>
-              <span style="font-size: 0.85rem; color: var(--text-muted);">پاداش این گام: </span>
-              <strong id="inspector-step-reward" style="font-weight: 800;">۰</strong>
-            </div>
-          </div>
-
-          <!-- Comparison: Prior vs Learned -->
-          <div class="decision-compare-grid">
-            <div class="decision-col col-human">
-              <h4 style="font-size: 0.9rem; margin-bottom: 8px; color: #1e40af;">👤 نظر استراتژی شما (Prior)</h4>
-              <div id="inspector-prior-list"></div>
-            </div>
-
-            <div class="decision-col col-learned">
-              <h4 style="font-size: 0.9rem; margin-bottom: 8px; color: #065f46;">🧠 ارزش یادگرفته‌شده (Learned Q)</h4>
-              <div id="inspector-learned-list"></div>
-            </div>
-          </div>
-
-          <!-- Educational Explanation Banner -->
-          <div id="inspector-explanation" class="explanation-banner">
-            برای دیدن چرایی تصمیمات هوش مصنوعی، یک اپیزود را اجرا کنید.
-          </div>
-
-          <!-- Revision button -->
-          <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
-            <button class="btn btn-secondary" onclick="switchTab('strategy')">
-              ✏️ اصلاح استراتژی و تمرین دوباره
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 4: ARENA COMPETITION -->
-    <section id="tab-arena" class="tab-content">
-      <div class="arena-layout">
-        <!-- Arena Canvas & Controls -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🏟️ نقشه ندیده مسابقه نهایی</div>
-            <span id="arena-step-label" style="font-weight: 800; color: var(--primary);">گام ۰</span>
-          </div>
-
-          <div class="canvas-frame">
-            <canvas id="arena-canvas" width="480" height="480"></canvas>
-          </div>
-
-          <div style="margin-top: 1rem;">
-            <input type="range" id="arena-scrubber" class="playback-scrubber" min="0" max="0" value="0">
-            <div class="playback-controls">
-              <button id="btn-start-arena" class="btn btn-primary">
-                ⚔️ شروع مسابقه همزمان روی نقشه ندیده
-              </button>
-              <button id="btn-arena-play" class="btn btn-secondary">
-                ▶ پخش مسابقه
-              </button>
-            </div>
-          </div>
-
-          <!-- Event feed -->
-          <div style="margin-top: 1rem;">
-            <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 4px;">📡 گزارش لحظه‌ای رویدادهای میدان مسابقه:</div>
-            <div id="arena-events-feed" class="event-feed">
-              <div class="event-feed-item">منتظر آغاز مسابقه...</div>
-            </div>
-          </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 1.25rem;">
+          <button id="btn-run-dual-comparison" class="btn btn-primary" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); font-weight: 700;">
+            ⚔️ اجرای مسابقه مقایسه‌ای روی نقشه یکسان
+          </button>
+          <button id="btn-new-dual-map" class="btn btn-secondary" style="font-size: 0.9rem; padding: 8px 14px;">
+            🔄 نقشه تصادفی جدید
+          </button>
+          <span id="dual-status-banner" style="display: none; color: #475569; font-size: 0.9rem;"></span>
         </div>
 
-        <!-- Leaderboard & Rules -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🏆 جدول امتیازات مسابقه (Leaderboard)</div>
+        <!-- Persistent Side-by-Side Dual Canvases -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 20px; margin-bottom: 1.5rem;">
+          
+          <!-- Strategy Agent Map Box -->
+          <div style="background: #f0f9ff; border: 2px solid #bae6fd; border-radius: 14px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h4 style="margin: 0; color: #0369a1; font-size: 1rem;">🤖 عامل اول: استراتژی شرطی شما</h4>
+              <span style="font-size: 0.75rem; background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 4px; font-weight: bold;">قانون‌محور</span>
+            </div>
+            <div class="canvas-frame" style="max-width: 350px; margin: 0 auto;">
+              <canvas id="canvas-compare-strat" width="350" height="350"></canvas>
+            </div>
+            <div id="info-compare-strat" style="margin-top: 10px; font-size: 0.85rem; color: #334155; min-height: 48px; background: #fff; padding: 8px 10px; border-radius: 8px; border: 1px solid #e0f2fe; line-height: 1.5;">
+              نقشه آماده است. دکمه «اجرای مسابقه مقایسه‌ای» را کلیک کنید.
+            </div>
           </div>
 
-          <div class="explanation-banner" style="margin-bottom: 1rem; background: #e0f2fe; border-right-color: #0284c7;">
-            <strong>قوانین مسابقه نهایی:</strong>
-            <ul style="margin-right: 1.25rem; margin-top: 6px; font-size: 0.85rem; line-height: 1.5;">
-              <li>عامل‌ها به صورت همزمان برای برداشتن سکه‌های مشترک رقابت می‌کنند.</li>
-              <li>هر سکه توسط اولین عاملی که وارد آن شود تصاحب شده و از نقشه حذف می‌گردد!</li>
-              <li>یادگیری خاموش است و عامل‌ها از آموخته‌های دوران تمرین استفاده می‌کنند.</li>
-              <li>معیار اصلی رتبه‌بندی: <strong>تعداد سکه‌های سالم خارج شده از در خروج</strong> است.</li>
-            </ul>
+          <!-- Learned RL Agent Map Box -->
+          <div style="background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 14px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h4 style="margin: 0; color: #15803d; font-size: 1rem;">🧠 عامل دوم: هوش مصنوعی یادگیرنده</h4>
+              <span style="font-size: 0.75rem; background: #dcfce7; color: #16a34a; padding: 2px 8px; border-radius: 4px; font-weight: bold;">یادگیری تقویتی</span>
+            </div>
+            <div class="canvas-frame" style="max-width: 350px; margin: 0 auto;">
+              <canvas id="canvas-compare-rl" width="350" height="350"></canvas>
+            </div>
+            <div id="info-compare-rl" style="margin-top: 10px; font-size: 0.85rem; color: #334155; min-height: 48px; background: #fff; padding: 8px 10px; border-radius: 8px; border: 1px solid #dcfce7; line-height: 1.5;">
+              نقشه آماده است. دکمه «اجرای مسابقه مقایسه‌ای» را کلیک کنید.
+            </div>
           </div>
 
+        </div>
+
+        <!-- Educational Analysis Card -->
+        <div id="dual-analysis-card" class="card" style="display: none; background: #faf5ff; border: 1px solid #e9d5ff; margin-bottom: 1.5rem; padding: 1.2rem;">
+        </div>
+
+        <!-- Side-by-Side Comparison Table -->
+        <div>
+          <div class="card-header" style="margin-bottom: 0.75rem;">
+            <div class="card-title" style="font-size: 1.1rem;">📊 جدول مقایسه دستاوردهای دو عامل روی نقشه یکسان</div>
+          </div>
           <table class="leaderboard-table">
             <thead>
               <tr>
-                <th>رتبه</th>
-                <th>شرکت‌کننده</th>
-                <th>سکه‌های خروجی</th>
-                <th>جان</th>
-                <th>گام‌ها</th>
-                <th>وضعیت</th>
+                <th>معیار ارزیابی</th>
+                <th style="color: #0284c7;">عامل اول (استراتژی شرطی شما)</th>
+                <th style="color: #16a34a;">عامل دوم (هوش مصنوعی یادگیرنده)</th>
               </tr>
             </thead>
-            <tbody id="leaderboard-body">
+            <tbody id="dual-comparison-table-body">
               <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                  برای مشاهده رده‌بندی، دکمه «شروع مسابقه همزمان» را بزنید.
+                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                  برای مشاهده نتایج مقایسه، دکمه «اجرای مسابقه مقایسه‌ای روی نقشه یکسان» را بزنید.
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+
       </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 3: ADMIN MANAGEMENT PANEL (Visible only to Admin)                 -->
+    <!-- ========================================================================= -->
+    <section id="tab-admin" class="tab-content">
+      
+      <!-- Card A: User Management -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 مدیریت کاربران و سطوح دسترسی</div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">تعریف کاربر، ارتقای نقش و مدیریت دسترسی‌ها</span>
+        </div>
+
+        <!-- Create User Sub-Form -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 1.5rem;">
+          <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 1rem; color: #1e293b;">➕ افزودن کاربر جدید</h4>
+          <form id="form-create-user" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 1; min-width: 160px;">
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">نام کاربری:</label>
+              <input type="text" id="new-username" class="form-control" placeholder="مثال: student2" required style="padding: 8px 12px; font-size: 0.9rem;">
+            </div>
+            <div style="flex: 1; min-width: 160px;">
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">رمز عبور:</label>
+              <input type="password" id="new-password" class="form-control" placeholder="حداقل ۴ نویسه" required style="padding: 8px 12px; font-size: 0.9rem;">
+            </div>
+            <div style="width: 160px;">
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">نقش / سطح دسترسی:</label>
+              <select id="new-role" class="form-control" style="padding: 8px 12px; font-size: 0.9rem; font-weight: 600;">
+                <option value="user" selected>کاربر عادی / دانش‌آموز</option>
+                <option value="admin">مدیر سیستم (کامل)</option>
+              </select>
+            </div>
+            <div>
+              <button type="submit" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9rem;">
+                ثبت کاربر
+              </button>
+            </div>
+          </form>
+          <div id="create-user-msg" style="margin-top: 8px; font-size: 0.85rem;"></div>
+        </div>
+
+        <!-- Users Table -->
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;">شناسه</th>
+              <th>نام کاربری</th>
+              <th>سطح دسترسی</th>
+              <th>تاریخ ایجاد</th>
+              <th>عملیات مدیریت</th>
+            </tr>
+          </thead>
+          <tbody id="admin-users-tbody">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                در حال بارگذاری لیست کاربران...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Card B: Game & RL Parameters Configuration -->
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+          <div class="card-title">🎛️ تنظیمات و پیکربندی پارامترهای بازی و هوش مصنوعی</div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">تغییرات به صورت پایدار ذخیره شده و بلافاصله روی محیط اعمال می‌شود</span>
+        </div>
+
+        <form id="form-admin-config">
+          <div class="config-grid">
+            
+            <!-- Group 1: Environment Settings -->
+            <div class="config-card">
+              <h4>🗺️ مشخصات محیط و شبکه</h4>
+              <div class="config-row">
+                <label for="cfg-grid-width">عرض نقشه (ستون‌ها):</label>
+                <input type="number" id="cfg-grid-width" min="5" max="16" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-grid-height">طول نقشه (سطرها):</label>
+                <input type="number" id="cfg-grid-height" min="5" max="16" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-num-coins">تعداد سکه‌ها در نقشه:</label>
+                <input type="number" id="cfg-num-coins" min="1" max="20" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-num-diamonds">تعداد الماس‌ها در نقشه:</label>
+                <input type="number" id="cfg-num-diamonds" min="0" max="10" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-initial-lives">تعداد جان اولیه عامل:</label>
+                <input type="number" id="cfg-initial-lives" min="1" max="10" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-max-steps">حداکثر گام مجاز مرحله:</label>
+                <input type="number" id="cfg-max-steps" min="20" max="500" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-diamond-multiplier">تعداد سکه معادل یک الماس در مبدل (ضریب تبدیل):</label>
+                <input type="number" id="cfg-diamond-multiplier" min="1" max="50" step="1" required>
+              </div>
+            </div>
+
+            <!-- Group 2: Rewards Settings -->
+            <div class="config-card">
+              <h4>⚖️ مقادیر سیستم پاداش و جریمه</h4>
+              <div class="config-row">
+                <label for="cfg-rew-coin">امتیاز هر سکه (پاداش جمع‌آوری سکه):</label>
+                <input type="number" id="cfg-rew-coin" step="any" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rew-convert">پاداش تبدیل هر الماس در مبدل:</label>
+                <input type="number" id="cfg-rew-convert" step="any" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rew-diamond">پاداش برداشت الماس خام:</label>
+                <input type="number" id="cfg-rew-diamond" step="any" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rew-exit">پاداش خروج موفق از در:</label>
+                <input type="number" id="cfg-rew-exit" step="any" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rew-lose-life">جریمه ضربه هیولا:</label>
+                <input type="number" id="cfg-rew-lose-life" step="any" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rew-death">جریمه مرگ کامل عامل:</label>
+                <input type="number" id="cfg-rew-death" step="any" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rew-step">امتیاز منفی هر حرکت (جریمه هر گام عادی):</label>
+                <input type="number" id="cfg-rew-step" step="any" required>
+              </div>
+            </div>
+
+            <!-- Group 3: Reinforcement Learning Hyperparameters -->
+            <div class="config-card">
+              <h4>🧠 هایپرپارامترهای یادگیری تقویتی</h4>
+              <div class="config-row">
+                <label for="cfg-rl-alpha">نرخ یادگیری (آلفا):</label>
+                <input type="number" id="cfg-rl-alpha" min="0.001" max="1.0" step="any" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rl-gamma">ضریب تخفیف پاداش (گاما):</label>
+                <input type="number" id="cfg-rl-gamma" min="0.01" max="0.999" step="any" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rl-episodes">تعداد اپیزودهای آموزش:</label>
+                <input type="number" id="cfg-rl-episodes" min="5" max="200" required>
+              </div>
+            </div>
+
+          </div>
+
+          <div id="config-save-status" style="display: none; margin-bottom: 1rem;"></div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <button type="submit" id="btn-save-admin-config" class="btn btn-primary" style="padding: 10px 24px; font-weight: 800;">
+              💾 ذخیره تغییرات پارامترها
+            </button>
+            <button type="button" id="btn-reset-admin-config" class="btn btn-secondary" style="color: #64748b;">
+              🔄 بازنشانی به پیش‌فرض کارخانه
+            </button>
+          </div>
+        </form>
+      </div>
+
     </section>
 
   </main>
 
-  <!-- Scripts -->
+  <!-- Login Modal Dialog -->
+  <div id="modal-login" class="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>🔑 ورود به حساب کاربری</h3>
+        <button id="btn-close-login" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="login-error-msg" class="explanation-banner" style="display: none; background: #fef2f2; border-right-color: #ef4444; color: #b91c1c; margin-bottom: 1rem;"></div>
+        <form id="form-login">
+          <div class="form-group">
+            <label for="login-username">نام کاربری:</label>
+            <input type="text" id="login-username" class="form-control" placeholder="مثال: admin یا student" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label for="login-password">رمز عبور:</label>
+            <input type="password" id="login-password" class="form-control" placeholder="رمز عبور خود را وارد کنید" required autocomplete="current-password">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+            <span style="font-size: 0.8rem; color: #475569;">🔑 ورود مدیر: <b>admin</b> (یا <b>ادمین</b>) | رمز: <b>123</b> یا <b>admin123</b></span>
+            <button type="submit" id="btn-submit-login" class="btn btn-primary" style="padding: 8px 20px;">
+              ورود به حساب
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
   <script src="/static/js/api.js"></script>
   <script src="/static/js/canvas.js"></script>
   <script src="/static/js/strategy.js"></script>
   <script src="/static/js/training.js"></script>
-  <script src="/static/js/replay.js"></script>
-  <script src="/static/js/arena.js"></script>
+  <script src="/static/js/comparison.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/admin.js"></script>
   <script src="/static/js/main.js"></script>
 </body>
 </html>

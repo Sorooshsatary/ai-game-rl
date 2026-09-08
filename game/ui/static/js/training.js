@@ -7,48 +7,94 @@ const TrainingUI = {
   init() {
     const btnTrain = document.getElementById('btn-start-training');
     if (btnTrain) {
-      btnTrain.addEventListener('click', () => this.runTraining(false));
+      btnTrain.addEventListener('click', () => this.runTraining());
     }
 
-    const btnRetrain = document.getElementById('btn-retrain');
-    if (btnRetrain) {
-      btnRetrain.addEventListener('click', () => this.runTraining(true));
+    const btnReset = document.getElementById('btn-reset-training');
+    if (btnReset) {
+      btnReset.addEventListener('click', () => this.resetTraining());
     }
   },
 
-  async runTraining(isRetrain = false) {
-    const btn = isRetrain ? document.getElementById('btn-retrain') : document.getElementById('btn-start-training');
-    const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '⏳ در حال یادگیری و کاوش در محیط...';
+  async resetTraining() {
+    if (!confirm('آیا از بازنشانی کامل حافظه و تجربیات هوش مصنوعی اطمینان دارید؟ تمام آموزش‌های قبلی پاک شده و آموزش از مرحله ۱ شروع خواهد شد.')) {
+      return;
+    }
 
-    const strategy = StrategyUI.getStrategy();
-    const epCount = isRetrain ? 15 : 30;
+    const btn = document.getElementById('btn-reset-training');
+    if (btn) btn.disabled = true;
 
     try {
-      const resp = isRetrain 
-        ? await API.retrain(strategy, epCount, false)
-        : await API.train(strategy, epCount);
+      const res = await API.resetTraining();
+      this.lastSummary = null;
+
+      // Reset metrics UI
+      document.getElementById('metric-success-rate').textContent = '--';
+      document.getElementById('metric-avg-reward').textContent = '--';
+      document.getElementById('metric-divergence').textContent = '--';
+      document.getElementById('metric-total-episodes').textContent = '0';
+
+      // Clear charts
+      const c1 = document.getElementById('chart-reward');
+      if (c1) c1.getContext('2d').clearRect(0, 0, c1.width, c1.height);
+      const c2 = document.getElementById('chart-coins');
+      if (c2) c2.getContext('2d').clearRect(0, 0, c2.width, c2.height);
+
+      const banner = document.getElementById('train-success-banner');
+      if (banner) {
+        banner.style.display = 'block';
+        banner.style.background = '#f1f5f9';
+        banner.style.borderRightColor = '#64748b';
+        banner.innerHTML = `🔄 ${res.message || 'حافظه آموزش با موفقیت بازنشانی شد.'}`;
+        setTimeout(() => { banner.style.display = 'none'; }, 4000);
+      }
+    } catch (err) {
+      alert('خطا در بازنشانی: ' + err.message);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  },
+
+  async runTraining() {
+    const btn = document.getElementById('btn-start-training');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '⏳ در حال آموزش و ارتقای تجربیات هوش مصنوعی...';
+    }
+
+    const strategy = StrategyUI.getStrategy();
+    const epCount = 25; // 25 episodes per training click
+
+    try {
+      const resp = await API.train(strategy, epCount);
 
       if (resp.success) {
         this.lastSummary = resp.summary;
         this.renderMetrics(resp.summary);
         this.renderCharts(resp.summary.metrics);
 
-        // Update Replay selector
-        ReplayUI.populateEpisodeSelector(resp.summary.available_replay_episodes);
+        // Update Replay selector if present
+        if (typeof ReplayUI !== 'undefined' && ReplayUI.populateEpisodeSelector) {
+          ReplayUI.populateEpisodeSelector(resp.summary.available_replay_episodes);
+        }
 
         // Show prompt to switch to Replay
         const banner = document.getElementById('train-success-banner');
         if (banner) {
           banner.style.display = 'block';
+          banner.style.background = '#ecfdf5';
+          banner.style.borderRightColor = '#10b981';
+          banner.innerHTML = `🎉 مرحله جدید آموزش با موفقیت پایان یافت! مجموعاً <strong>${resp.summary.total_episodes} اپیزود</strong> آموزش داده شده است. می‌توانید روند پیشرفت را در نمودارهای زیر مشاهده کنید.`;
         }
       }
     } catch (err) {
       alert("خطا در آموزش: " + err.message);
     } finally {
-      btn.disabled = false;
-      btn.innerHTML = originalText;
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
     }
   },
 

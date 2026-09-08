@@ -65,41 +65,55 @@ class Trainer:
         strategy: ChildStrategy,
         config: GameConfig = DEFAULT_CONFIG,
         agent: Optional[QLearningAgent] = None,
+        mode: str = "pure",
     ):
         self.config = config
         self.strategy = strategy
-        self.agent = agent or QLearningAgent(strategy=strategy, config=config)
+        self.mode = mode
+        self.agent = agent or QLearningAgent(strategy=strategy, config=config, mode=mode)
         self.env = GameEnvironment(config=config)
         self.history_replays: Dict[int, EpisodeReplay] = {}
+        self.all_metrics: List[TrainingMetrics] = []
+        self.total_episodes_completed: int = 0
+
+    def reset(self):
+        """Completely resets agent knowledge, Q-table, and metrics."""
+        self.agent = QLearningAgent(strategy=self.strategy, config=self.config, mode=self.mode)
+        self.history_replays.clear()
+        self.all_metrics.clear()
+        self.total_episodes_completed = 0
 
     def train(
         self,
         num_episodes: Optional[int] = None,
         progress_callback: Optional[Callable[[int, int, TrainingMetrics], None]] = None,
     ) -> TrainingResult:
-        """Trains the agent across randomized maps."""
+        """Trains the agent across randomized maps, continuing from previous learning."""
         episodes_to_run = num_episodes or self.config.rl.training_episodes
-        decay = EpsilonDecay(
-            start_epsilon=self.config.rl.initial_epsilon,
-            min_epsilon=self.config.rl.final_epsilon,
-            total_episodes=episodes_to_run,
-        )
-
-        metrics_list: List[TrainingMetrics] = []
         self.agent.unlock_for_training()
 
-        # Save all episodes or key milestones
-        for ep in range(1, episodes_to_run + 1):
-            epsilon = decay.get_epsilon(ep - 1)
+        decay_rate = 0.96
+
+        # Run episodes continuing from total_episodes_completed
+        for i in range(1, episodes_to_run + 1):
+            self.total_episodes_completed += 1
+            ep_num = self.total_episodes_completed
+
+            # Epsilon decays progressively across cumulative episodes
+            epsilon = max(
+                self.config.rl.final_epsilon,
+                self.config.rl.initial_epsilon * (decay_rate ** (ep_num - 1)),
+            )
+
             replay = run_episode(
                 env=self.env,
                 agent=self.agent,
                 epsilon=epsilon,
-                episode_id=ep,
+                episode_id=ep_num,
             )
 
             metric = TrainingMetrics(
-                episode_id=ep,
+                episode_id=ep_num,
                 epsilon=epsilon,
                 total_reward=replay.total_reward,
                 coins_exited=replay.coins_exited,
@@ -110,19 +124,19 @@ class Trainer:
                 success=replay.success,
                 termination_reason=replay.termination_reason,
             )
-            metrics_list.append(metric)
+            self.all_metrics.append(metric)
 
             # Store replay (store every episode if <= 50, otherwise milestones)
-            if episodes_to_run <= 50 or ep in [1, 5, 10, 20, episodes_to_run] or replay.success:
-                self.history_replays[ep] = replay
+            if self.total_episodes_completed <= 50 or ep_num in [1, 5, 10, 20, 30, 50, 75, 100] or replay.success:
+                self.history_replays[ep_num] = replay
 
             if progress_callback:
-                progress_callback(ep, episodes_to_run, metric)
+                progress_callback(i, episodes_to_run, metric)
 
-        # Calculate summary metrics
-        last_5 = metrics_list[-5:] if len(metrics_list) >= 5 else metrics_list
-        success_rate = sum(1 for m in last_5 if m.success) / len(last_5)
-        avg_reward = sum(m.total_reward for m in last_5) / len(last_5)
+        # Calculate summary metrics over recent episodes
+        last_5 = self.all_metrics[-5:] if len(self.all_metrics) >= 5 else self.all_metrics
+        success_rate = sum(1 for m in last_5 if m.success) / len(last_5) if last_5 else 0.0
+        avg_reward = sum(m.total_reward for m in last_5) / len(last_5) if last_5 else 0.0
 
         # Measure divergence from prior
         divergence_count = 0
@@ -134,8 +148,8 @@ class Trainer:
                     divergence_count += 1
 
         return TrainingResult(
-            total_episodes=episodes_to_run,
-            metrics=metrics_list,
+            total_episodes=self.total_episodes_completed,
+            metrics=list(self.all_metrics),
             replays=self.history_replays,
             final_success_rate=success_rate,
             avg_reward_last_5=avg_reward,
@@ -150,9 +164,12 @@ class Trainer:
     ) -> TrainingResult:
         """Called when the child revises strategy after seeing replays."""
         self.strategy = new_strategy
-        self.agent.update_strategy(new_strategy, retrain_from_scratch=from_scratch)
+        if from_scratch:
+            self.reset()
+        else:
+            self.agent.update_strategy(new_strategy, retrain_from_scratch=False)
+
         episodes = num_episodes or (
             self.config.rl.training_episodes if from_scratch else self.config.rl.retrain_episodes
         )
-        self.history_replays.clear()
         return self.train(num_episodes=episodes)

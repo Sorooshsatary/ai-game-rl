@@ -1,7 +1,7 @@
 """Centralized Game Configuration."""
 
 from dataclasses import dataclass, field
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 
 @dataclass
@@ -65,6 +65,7 @@ class GameConfig:
             "num_diamonds": self.env.num_diamonds,
             "initial_lives": self.env.initial_lives,
             "max_steps": self.env.max_steps_per_episode,
+            "diamond_multiplier": self.env.diamond_to_coin_multiplier,
             "rewards": {
                 "coin": self.reward.collect_coin,
                 "convert": self.reward.convert_diamond,
@@ -81,6 +82,91 @@ class GameConfig:
             },
         }
 
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "GameConfig":
+        cfg = cls()
+        if not data:
+            return cfg
+
+        # Environment
+        if "grid_width" in data:
+            cfg.env.grid_width = int(data["grid_width"])
+        if "grid_height" in data:
+            cfg.env.grid_height = int(data["grid_height"])
+        if "num_coins" in data:
+            cfg.env.num_coins = int(data["num_coins"])
+        if "num_diamonds" in data:
+            cfg.env.num_diamonds = int(data["num_diamonds"])
+        if "initial_lives" in data:
+            cfg.env.initial_lives = int(data["initial_lives"])
+        if "max_steps" in data:
+            cfg.env.max_steps_per_episode = int(data["max_steps"])
+        if "diamond_multiplier" in data:
+            cfg.env.diamond_to_coin_multiplier = int(data["diamond_multiplier"])
+
+        # Rewards
+        rewards = data.get("rewards", {})
+        if "coin" in rewards:
+            cfg.reward.collect_coin = float(rewards["coin"])
+        if "convert" in rewards:
+            cfg.reward.convert_diamond = float(rewards["convert"])
+        if "diamond" in rewards:
+            cfg.reward.collect_diamond_raw = float(rewards["diamond"])
+        if "lose_life" in rewards:
+            cfg.reward.lose_life = float(rewards["lose_life"])
+        if "death" in rewards:
+            cfg.reward.death = float(rewards["death"])
+        if "exit" in rewards:
+            cfg.reward.successful_exit = float(rewards["exit"])
+        if "step" in rewards:
+            cfg.reward.normal_step = float(rewards["step"])
+
+        # Reinforcement Learning
+        rl = data.get("rl", {})
+        if "alpha" in rl:
+            cfg.rl.learning_rate = float(rl["alpha"])
+        if "gamma" in rl:
+            cfg.rl.discount_factor = float(rl["gamma"])
+        if "episodes" in rl:
+            cfg.rl.training_episodes = int(rl["episodes"])
+
+        return cfg
+
 
 # Global default instance
 DEFAULT_CONFIG = GameConfig()
+
+# Dynamic active configuration
+_ACTIVE_CONFIG: Optional[GameConfig] = None
+
+
+def get_active_config() -> GameConfig:
+    global _ACTIVE_CONFIG
+    if _ACTIVE_CONFIG is None:
+        try:
+            from game.database.db import load_system_config, init_db
+            init_db()
+            saved = load_system_config("active_config")
+            if saved:
+                _ACTIVE_CONFIG = GameConfig.from_dict(saved)
+            else:
+                _ACTIVE_CONFIG = GameConfig()
+        except Exception:
+            _ACTIVE_CONFIG = GameConfig()
+    return _ACTIVE_CONFIG
+
+
+def set_active_config(cfg: GameConfig) -> GameConfig:
+    global _ACTIVE_CONFIG
+    _ACTIVE_CONFIG = cfg
+    try:
+        from game.database.db import save_system_config, init_db
+        init_db()
+        save_system_config(cfg.to_dict(), "active_config")
+    except Exception:
+        pass
+    return _ACTIVE_CONFIG
+
+
+def reset_active_config() -> GameConfig:
+    return set_active_config(GameConfig())

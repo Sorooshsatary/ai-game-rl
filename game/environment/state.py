@@ -1,7 +1,7 @@
 """State Representation and Relative Feature Extraction for Generalization."""
 
-from dataclasses import dataclass
-from typing import Optional, List, Tuple, Dict, Any
+from dataclasses import dataclass, field
+from typing import Optional, List, Tuple, Dict, Any, Set
 from game.environment.entities import Position, Action
 
 
@@ -49,6 +49,20 @@ class State:
     total_coins_remaining: int
     grid_width: int
     grid_height: int
+    walls: Set[Position] = field(default_factory=set)
+
+    def get_legal_actions(self) -> List[Action]:
+        """Returns list of actions that stay within grid bounds and avoid walls."""
+        legal = []
+        for act in Action:
+            np = self.agent_pos.move(act)
+            if (
+                0 <= np.x < self.grid_width
+                and 0 <= np.y < self.grid_height
+                and np not in self.walls
+            ):
+                legal.append(act)
+        return legal if legal else [Action.UP]
 
     @property
     def enemy_dist(self) -> int:

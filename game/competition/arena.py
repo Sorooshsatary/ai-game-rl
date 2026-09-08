@@ -154,7 +154,7 @@ class MultiAgentArena:
                 enemy=enemy.to_dict(),
                 coins_left=[[p.x, p.y] for p in grid_map.coins],
                 diamonds_left=[[p.x, p.y] for p in grid_map.diamonds],
-                events=["آغاز مسابقه در میدان نبرد (Arena Start)"],
+                events=["آغاز مسابقه در میدان رقابت"],
             )
         )
 
@@ -195,6 +195,7 @@ class MultiAgentArena:
                     total_coins_remaining=len(grid_map.coins),
                     grid_width=grid_map.width,
                     grid_height=grid_map.height,
+                    walls=set(grid_map.walls),
                 )
 
                 # Select action (locked greedy)

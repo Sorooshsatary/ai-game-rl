@@ -16,7 +16,7 @@ class TestRL(unittest.TestCase):
             diamond_priority=1.0,
             enemy_fear=5.0,
         )
-        agent = QLearningAgent(strategy=strategy, config=DEFAULT_CONFIG)
+        agent = QLearningAgent(strategy=strategy, config=DEFAULT_CONFIG, mode="hybrid")
 
         # State where coin is to the RIGHT, diamond to the LEFT
         state = State(
@@ -38,6 +38,27 @@ class TestRL(unittest.TestCase):
         # RIGHT (towards coin) should have strictly higher prior than LEFT (towards diamond)
         self.assertGreater(q_vals[Action.RIGHT], q_vals[Action.LEFT])
 
+    def test_pure_rl_mode_initializes_to_zero(self):
+        """In pure RL mode, agent starts completely un-opinionated (Q=0.0)."""
+        agent = QLearningAgent(mode="pure")
+        state = State(
+            agent_pos=Position(2, 2),
+            enemy_pos=Position(7, 7),
+            nearest_coin_pos=Position(4, 2),
+            nearest_diamond_pos=Position(0, 2),
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=5,
+            grid_width=8,
+            grid_height=8,
+        )
+        q_vals = agent.get_q_values(state)
+        for act in Action:
+            self.assertEqual(q_vals[act], 0.0)
+
     def test_experience_overrides_initial_strategy(self):
         """The core educational test:
         Child says 'Diamond is super important (priority 10)', but moving towards diamond
@@ -49,7 +70,7 @@ class TestRL(unittest.TestCase):
             diamond_priority=10.0,
             enemy_fear=2.0,
         )
-        agent = QLearningAgent(strategy=strategy, config=DEFAULT_CONFIG)
+        agent = QLearningAgent(strategy=strategy, config=DEFAULT_CONFIG, mode="hybrid")
 
         state = State(
             agent_pos=Position(2, 2),
@@ -125,6 +146,93 @@ class TestRL(unittest.TestCase):
         q_after = dict(agent.get_q_values(state))
 
         self.assertEqual(q_before, q_after)
+
+    def test_boundary_action_masking_prevents_wall_bumps(self):
+        """When agent is at grid edge (x=7 on 8x8 grid), Action.RIGHT is illegal
+        and must never be selected, even if it has the highest Q-value.
+        """
+        agent = QLearningAgent(mode="pure")
+        state = State(
+            agent_pos=Position(7, 3),
+            enemy_pos=Position(0, 0),
+            nearest_coin_pos=Position(6, 3),
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(0, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=1,
+            grid_width=8,
+            grid_height=8,
+        )
+
+        legal_acts = state.get_legal_actions()
+        self.assertNotIn(Action.RIGHT, legal_acts)
+        self.assertIn(Action.LEFT, legal_acts)
+        self.assertIn(Action.UP, legal_acts)
+        self.assertIn(Action.DOWN, legal_acts)
+
+        # Force Action.RIGHT to have an artificially high Q-value
+        discrete = state.to_discrete()
+        agent.q_table[discrete] = {
+            Action.RIGHT: 999.0,  # Illegal bump into wall
+            Action.LEFT: 10.0,
+            Action.UP: 5.0,
+            Action.DOWN: 2.0,
+        }
+
+        # Greedy choice must NOT pick RIGHT despite Q=999.0
+        chosen_action, was_exploratory, _, _ = agent.select_action(state, epsilon=0.0)
+        self.assertEqual(chosen_action, Action.LEFT)
+
+    def test_exploration_never_chooses_illegal_boundary_actions(self):
+        """Even during 100% exploration (epsilon=1.0), illegal moves are never chosen."""
+        agent = QLearningAgent(mode="pure")
+        # Corner position (0, 0): only DOWN and RIGHT are legal
+        corner_state = State(
+            agent_pos=Position(0, 0),
+            enemy_pos=Position(7, 7),
+            nearest_coin_pos=None,
+            nearest_diamond_pos=None,
+            converter_pos=Position(7, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=0,
+            grid_width=8,
+            grid_height=8,
+        )
+
+        for _ in range(50):
+            action, was_exp, _, _ = agent.select_action(corner_state, epsilon=1.0)
+            self.assertTrue(was_exp)
+            self.assertIn(action, [Action.DOWN, Action.RIGHT])
+            self.assertNotIn(action, [Action.UP, Action.LEFT])
+
+    def test_internal_walls_are_masked(self):
+        """State with internal walls masks actions moving into wall positions."""
+        state = State(
+            agent_pos=Position(2, 2),
+            enemy_pos=Position(7, 7),
+            nearest_coin_pos=None,
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=0,
+            grid_width=8,
+            grid_height=8,
+            walls={Position(3, 2)},  # Wall immediately to the RIGHT
+        )
+        legal = state.get_legal_actions()
+        self.assertNotIn(Action.RIGHT, legal)
+        self.assertIn(Action.LEFT, legal)
+        self.assertIn(Action.UP, legal)
+        self.assertIn(Action.DOWN, legal)
 
 
 if __name__ == "__main__":

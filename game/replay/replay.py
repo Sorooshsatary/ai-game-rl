@@ -80,7 +80,7 @@ def generate_decision_explanation(
     act_fa = action.fa_name()
 
     if was_exploratory:
-        fa = f"عامل در حال کشف مسیرهای جدید بود و حرکت {act_fa} را به صورت تصادفی (Exploration) امتحان کرد."
+        fa = f"عامل در حال کاوش مسیرهای جدید بود و حرکت {act_fa} را به صورت تصادفی امتحان کرد."
         en = f"Agent was exploring and randomly tried moving {act_str}."
         return fa, en
 
@@ -94,15 +94,15 @@ def generate_decision_explanation(
     if prior_best_act != learned_best_act and learned_best_act == action:
         # Divergence! The core educational takeaway!
         fa = (
-            f"تجربه نظر استراتژی اولیه را تغییر داد! استراتژی اولیه حرکت {prior_best_act.name} را پیشنهاد می‌داد، "
-            f"اما هوش مصنوعی با یادگیری ارزش واقعی حرکت {act_fa} (امتیاز {learned_q[action]:.1f}) را برتر دانست."
+            f"تجربه نظر استراتژی اولیه را تغییر داد! استراتژی اولیه حرکت {prior_best_act.fa_name()} را پیشنهاد می‌داد، "
+            f"اما هوش مصنوعی با تجربه ارزش واقعی حرکت {act_fa} (امتیاز {learned_q[action]:.1f}) را برتر دانست."
         )
         en = (
             f"Experience overridden initial strategy! The strategy preferred {prior_best_act.name}, "
             f"but RL learned that {act_str} (Q={learned_q[action]:.1f}) is safer/more rewarding."
         )
     elif "ENEMY_HIT" in events or enemy_dist <= 2:
-        fa = f"به دلیل حضور دشمن در نزدیکی، عامل حرکت محافظه‌کارانه {act_fa} را برگزید تا جانش حفظ شود."
+        fa = f"به دلیل حضور هیولا در نزدیکی، عامل حرکت محافظه‌کارانه {act_fa} را برگزید تا جانش حفظ شود."
         en = f"Due to nearby enemy threat, agent chose defensive move {act_str}."
     elif diamonds_held > 0 and "CONVERT" in "".join(events):
         fa = f"عامل الماس‌ها را با موفقیت به مبدل رساند و آن‌ها را به سکه تبدیل کرد!"
@@ -111,7 +111,7 @@ def generate_decision_explanation(
         fa = f"عامل با موفقیت یک سکه با ارزش برداشت (+۱۰ پاداش)."
         en = f"Agent successfully collected a coin (+10 reward)."
     else:
-        fa = f"بر اساس ترکیب استراتژی اولیه و یادگیری (Q={learned_q[action]:.1f})، حرکت به سمت {act_fa} انتخاب شد."
+        fa = f"بر اساس ارزیابی ارزش‌ها (امتیاز {learned_q[action]:.1f})، حرکت به سمت {act_fa} انتخاب شد."
         en = f"Based on strategy prior and learning (Q={learned_q[action]:.1f}), move {act_str} was selected."
 
     return fa, en

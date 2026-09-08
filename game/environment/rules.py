@@ -109,6 +109,7 @@ class GameEnvironment:
             total_coins_remaining=len(self.grid_map.coins),
             grid_width=self.grid_map.width,
             grid_height=self.grid_map.height,
+            walls=set(self.grid_map.walls),
         )
 
     def step(self, action: Action) -> StepResult:

@@ -13,15 +13,18 @@ from game.strategy.strategy_to_prior import StrategyPriorEngine
 class QLearningAgent:
     def __init__(
         self,
-        strategy: ChildStrategy,
+        strategy: Optional[ChildStrategy] = None,
         config: GameConfig = DEFAULT_CONFIG,
         agent_id: str = "player",
         seed: Optional[int] = None,
+        mode: str = "pure",  # "pure" (starts Q=0) or "hybrid" (seeds Q from strategy prior)
     ):
-        self.strategy = strategy
+        from game.strategy.strategy_builder import StrategyBuilder
+        self.strategy = strategy or StrategyBuilder.get_presets()["balanced"]
         self.config = config
         self.agent_id = agent_id
-        self.prior_engine = StrategyPriorEngine(strategy)
+        self.mode = mode
+        self.prior_engine = StrategyPriorEngine(self.strategy)
         self.rng = random.Random(seed)
 
         # Q-table: discrete_state -> {Action: float}
@@ -45,26 +48,40 @@ class QLearningAgent:
         return self.prior_table[discrete]
 
     def get_q_values(self, state: State) -> Dict[Action, float]:
-        """Returns Q-values for all actions. Seeds with strategy prior on first encounter."""
+        """Returns Q-values for all actions.
+        In 'pure' mode, unseen states start with Q(s, a) = 0.0.
+        In 'hybrid' mode, unseen states are seeded with child strategy prior.
+        """
         discrete = state.to_discrete()
         if discrete not in self.q_table:
-            # Seed Q-table with child strategy prior!
-            priors = self.get_initial_prior(state)
-            self.q_table[discrete] = dict(priors)
+            if self.mode == "hybrid":
+                priors = self.get_initial_prior(state)
+                self.q_table[discrete] = dict(priors)
+            else:
+                self.q_table[discrete] = {act: 0.0 for act in Action}
         return self.q_table[discrete]
 
-    def select_action(self, state: State, epsilon: float = 0.0) -> Tuple[Action, bool, Dict[Action, float], Dict[Action, float]]:
-        """Selects action using epsilon-greedy (or greedy if locked).
+    def select_action(
+        self,
+        state: State,
+        epsilon: float = 0.0,
+        legal_actions: Optional[List[Action]] = None,
+    ) -> Tuple[Action, bool, Dict[Action, float], Dict[Action, float]]:
+        """Selects action using epsilon-greedy (or greedy if locked) among legal actions.
         Returns (action, was_exploratory, current_q_values, prior_q_values).
         """
         curr_q = self.get_q_values(state)
         prior_q = self.get_initial_prior(state)
+
+        if legal_actions is None:
+            legal_actions = state.get_legal_actions()
 
         effective_epsilon = 0.0 if self.locked else epsilon
         chosen_action, was_exploratory = Policy.select_action(
             q_values=curr_q,
             epsilon=effective_epsilon,
             rng=self.rng,
+            legal_actions=legal_actions,
         )
         return chosen_action, was_exploratory, dict(curr_q), dict(prior_q)
 
@@ -92,7 +109,8 @@ class QLearningAgent:
             target = reward
         else:
             next_q_values = self.get_q_values(next_state)
-            max_next_q = max(next_q_values.values())
+            next_legal = next_state.get_legal_actions()
+            max_next_q = max(next_q_values[a] for a in next_legal) if next_legal else max(next_q_values.values())
             target = reward + gamma * max_next_q
 
         td_error = target - current_q
@@ -120,6 +138,7 @@ class QLearningAgent:
 
     def get_stats(self) -> Dict[str, Any]:
         return {
+            "mode": self.mode,
             "num_states_learned": len(self.q_table),
             "total_updates": self.total_updates,
             "locked": self.locked,
