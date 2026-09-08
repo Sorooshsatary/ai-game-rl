@@ -153,7 +153,7 @@ const TrainingUI = {
 
     if (avgRewardEl) {
       const r = summary.avg_reward_last_5;
-      avgRewardEl.textContent = r > 0 ? `+${r}` : `${r}`;
+      avgRewardEl.innerHTML = `<span class="ltr-num">${r > 0 ? '+' : ''}${r}</span>`;
       avgRewardEl.style.color = r >= 0 ? '#10b981' : '#ef4444';
     }
 
@@ -231,6 +231,7 @@ const TrainingUI = {
     const getX = (idx) => padLeft + (values.length === 1 ? plotW / 2 : (idx / (values.length - 1)) * plotW);
 
     // 2. Draw subtle horizontal grid lines & Y labels
+    ctx.direction = 'ltr';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     ctx.font = '10px sans-serif';
@@ -375,9 +376,9 @@ const TrainingUI = {
 
     let trendStr = '';
     if (diff > 5) {
-      trendStr = `📈 رو به رشد (+${diff.toFixed(1)})`;
+      trendStr = `📈 رو به رشد (\u200E+${diff.toFixed(1)})`;
     } else if (diff < -5) {
-      trendStr = `📉 نیاز به تمرین بیشتر (${diff.toFixed(1)})`;
+      trendStr = `📉 نیاز به تمرین بیشتر (\u200E${diff.toFixed(1)})`;
     } else {
       trendStr = `⚖️ روند تثبیت‌شده`;
     }
@@ -387,7 +388,7 @@ const TrainingUI = {
     ctx.textAlign = 'right';
     ctx.font = '11px sans-serif';
     ctx.fillStyle = '#64748b';
-    ctx.fillText(`میانگین فعلی: ${endVal.toFixed(1)}`, cssWidth - padRight, 18);
+    ctx.fillText(`میانگین فعلی: \u200E${endVal.toFixed(1)}`, cssWidth - padRight, 18);
 
     ctx.restore();
   }

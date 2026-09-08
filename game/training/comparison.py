@@ -253,7 +253,7 @@ class AgentComparisonEngine:
             else:
                 action, _, curr_q, _ = agent.select_action(curr_state, epsilon=0.0)
                 best_action_q = curr_q.get(action, 0.0)
-                reason = f"تجربه هوش مصنوعی: بالاترین ارزش پاداش ({best_action_q:.1f})"
+                reason = f"تجربه هوش مصنوعی: بالاترین ارزش پاداش (\u200e{best_action_q:.1f})"
 
             step_result = env.step(action)
             total_reward += step_result.reward

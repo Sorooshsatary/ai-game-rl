@@ -95,7 +95,7 @@ def generate_decision_explanation(
         # Divergence! The core educational takeaway!
         fa = (
             f"تجربه نظر استراتژی اولیه را تغییر داد! استراتژی اولیه حرکت {prior_best_act.fa_name()} را پیشنهاد می‌داد، "
-            f"اما هوش مصنوعی با تجربه ارزش واقعی حرکت {act_fa} (امتیاز {learned_q[action]:.1f}) را برتر دانست."
+            f"اما هوش مصنوعی با تجربه ارزش واقعی حرکت {act_fa} (امتیاز \u200e{learned_q[action]:.1f}) را برتر دانست."
         )
         en = (
             f"Experience overridden initial strategy! The strategy preferred {prior_best_act.name}, "
@@ -111,7 +111,7 @@ def generate_decision_explanation(
         fa = f"عامل با موفقیت یک سکه با ارزش برداشت (+۱۰ پاداش)."
         en = f"Agent successfully collected a coin (+10 reward)."
     else:
-        fa = f"بر اساس ارزیابی ارزش‌ها (امتیاز {learned_q[action]:.1f})، حرکت به سمت {act_fa} انتخاب شد."
+        fa = f"بر اساس ارزیابی ارزش‌ها (امتیاز \u200e{learned_q[action]:.1f})، حرکت به سمت {act_fa} انتخاب شد."
         en = f"Based on strategy prior and learning (Q={learned_q[action]:.1f}), move {act_str} was selected."
 
     return fa, en

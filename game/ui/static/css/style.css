@@ -30,6 +30,32 @@ body {
   flex-direction: column;
 }
 
+/* Global RTL Number & Minus Sign Handling: Ensures all numbers and negative signs render in standard left-to-right order */
+input[type="number"],
+input[type="range"],
+.rule-dist-input,
+.metric-val,
+.hud-val,
+.ltr-num,
+.stat-value,
+.badge-mono,
+#inspector-step-reward,
+.action-badge strong {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+  display: inline-block;
+}
+
+input[type="number"] {
+  text-align: center;
+}
+
+code, kbd, pre {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+  display: inline-block;
+}
+
 /* Header */
 .app-header {
   background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
@@ -963,6 +989,8 @@ canvas {
   border-radius: 8px;
   border: 1px solid #cbd5e1;
   font-weight: 700;
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
 }
 
 /* ========================================================================= */

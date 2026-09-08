@@ -183,7 +183,7 @@
             <label for="train-episode-count" style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">
               🎯 تعداد اپیزودهای آموزش در این مرحله:
             </label>
-            <input type="number" id="train-episode-count" min="1" max="500" value="10" style="width: 85px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.95rem;">
+            <input type="number" id="train-episode-count" min="1" max="500" value="10" dir="ltr" style="width: 85px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.95rem; direction: ltr;">
             <div style="display: flex; gap: 6px;">
               <button type="button" class="btn btn-secondary btn-quick-ep" data-count="5" style="padding: 4px 10px; font-size: 0.8rem;">۵</button>
               <button type="button" class="btn btn-secondary btn-quick-ep" data-count="10" style="padding: 4px 10px; font-size: 0.8rem;">۱۰</button>
@@ -414,31 +414,31 @@
               <h4>🗺️ مشخصات محیط و شبکه</h4>
               <div class="config-row">
                 <label for="cfg-grid-width">عرض نقشه (ستون‌ها):</label>
-                <input type="number" id="cfg-grid-width" min="5" max="16" required>
+                <input type="number" id="cfg-grid-width" min="5" max="16" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-grid-height">طول نقشه (سطرها):</label>
-                <input type="number" id="cfg-grid-height" min="5" max="16" required>
+                <input type="number" id="cfg-grid-height" min="5" max="16" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-num-coins">تعداد سکه‌ها در نقشه:</label>
-                <input type="number" id="cfg-num-coins" min="1" max="20" required>
+                <input type="number" id="cfg-num-coins" min="1" max="20" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-num-diamonds">تعداد الماس‌ها در نقشه:</label>
-                <input type="number" id="cfg-num-diamonds" min="0" max="10" required>
+                <input type="number" id="cfg-num-diamonds" min="0" max="10" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-initial-lives">تعداد جان اولیه عامل:</label>
-                <input type="number" id="cfg-initial-lives" min="1" max="10" required>
+                <input type="number" id="cfg-initial-lives" min="1" max="10" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-max-steps">حداکثر گام مجاز مرحله:</label>
-                <input type="number" id="cfg-max-steps" min="20" max="500" required>
+                <input type="number" id="cfg-max-steps" min="20" max="500" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-diamond-multiplier">تعداد سکه معادل یک الماس در مبدل (ضریب تبدیل):</label>
-                <input type="number" id="cfg-diamond-multiplier" min="1" max="50" step="1" required>
+                <input type="number" id="cfg-diamond-multiplier" min="1" max="50" step="1" dir="ltr" required>
               </div>
             </div>
 
@@ -447,31 +447,31 @@
               <h4>⚖️ مقادیر سیستم پاداش و جریمه</h4>
               <div class="config-row">
                 <label for="cfg-rew-coin">امتیاز هر سکه (پاداش جمع‌آوری سکه):</label>
-                <input type="number" id="cfg-rew-coin" step="any" required>
+                <input type="number" id="cfg-rew-coin" step="any" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rew-convert">پاداش تبدیل هر الماس در مبدل:</label>
-                <input type="number" id="cfg-rew-convert" step="any" required>
+                <input type="number" id="cfg-rew-convert" step="any" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rew-diamond">پاداش برداشت الماس خام:</label>
-                <input type="number" id="cfg-rew-diamond" step="any" required>
+                <input type="number" id="cfg-rew-diamond" step="any" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rew-exit">پاداش خروج موفق از در:</label>
-                <input type="number" id="cfg-rew-exit" step="any" required>
+                <input type="number" id="cfg-rew-exit" step="any" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rew-lose-life">جریمه ضربه هیولا:</label>
-                <input type="number" id="cfg-rew-lose-life" step="any" required>
+                <input type="number" id="cfg-rew-lose-life" step="any" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rew-death">جریمه مرگ کامل عامل:</label>
-                <input type="number" id="cfg-rew-death" step="any" required>
+                <input type="number" id="cfg-rew-death" step="any" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rew-step">امتیاز منفی هر حرکت (جریمه هر گام عادی):</label>
-                <input type="number" id="cfg-rew-step" step="any" required>
+                <input type="number" id="cfg-rew-step" step="any" dir="ltr" required>
               </div>
             </div>
 
@@ -480,27 +480,27 @@
               <h4>🧠 هایپرپارامترهای یادگیری تقویتی</h4>
               <div class="config-row">
                 <label for="cfg-rl-alpha">نرخ یادگیری (آلفا - α):</label>
-                <input type="number" id="cfg-rl-alpha" min="0.001" max="1.0" step="any" required>
+                <input type="number" id="cfg-rl-alpha" min="0.001" max="1.0" step="any" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rl-gamma">ضریب تخفیف پاداش (گاما - γ):</label>
-                <input type="number" id="cfg-rl-gamma" min="0.01" max="0.999" step="any" required>
+                <input type="number" id="cfg-rl-gamma" min="0.01" max="0.999" step="any" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rl-epsilon-init">اپسیلون اولیه (کاوش در شروع):</label>
-                <input type="number" id="cfg-rl-epsilon-init" min="0.0" max="1.0" step="0.05" required>
+                <input type="number" id="cfg-rl-epsilon-init" min="0.0" max="1.0" step="0.05" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rl-epsilon-min">حداقل اپسیلون (کاوش پایانی):</label>
-                <input type="number" id="cfg-rl-epsilon-min" min="0.0" max="0.5" step="0.01" required>
+                <input type="number" id="cfg-rl-epsilon-min" min="0.0" max="0.5" step="0.01" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rl-epsilon-decay">نرخ کاهش اپسیلون در هر اپیزود (Decay):</label>
-                <input type="number" id="cfg-rl-epsilon-decay" min="0.5" max="0.999" step="0.01" required>
+                <input type="number" id="cfg-rl-epsilon-decay" min="0.5" max="0.999" step="0.01" dir="ltr" required>
               </div>
               <div class="config-row">
                 <label for="cfg-rl-episodes">تعداد پیش‌فرض اپیزودهای آموزش:</label>
-                <input type="number" id="cfg-rl-episodes" min="1" max="500" required>
+                <input type="number" id="cfg-rl-episodes" min="1" max="500" dir="ltr" required>
               </div>
             </div>
 

@@ -6,6 +6,9 @@ class GridCanvasRenderer {
   constructor(canvasElement) {
     this.canvas = canvasElement;
     this.ctx = canvasElement.getContext('2d');
+    if (this.ctx) {
+      this.ctx.direction = 'ltr';
+    }
   }
 
   clear() {
