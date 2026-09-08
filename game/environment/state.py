@@ -88,6 +88,37 @@ class State:
     def exit_dist(self) -> int:
         return self.agent_pos.manhattan_distance(self.exit_pos)
 
+    def is_enemy_in_line_of_sight(self) -> bool:
+        """Returns True if agent and enemy share the same row or col with no walls between."""
+        if self.agent_pos.x == self.enemy_pos.x:
+            min_y = min(self.agent_pos.y, self.enemy_pos.y)
+            max_y = max(self.agent_pos.y, self.enemy_pos.y)
+            for y in range(min_y + 1, max_y):
+                if Position(self.agent_pos.x, y) in self.walls:
+                    return False
+            return True
+        elif self.agent_pos.y == self.enemy_pos.y:
+            min_x = min(self.agent_pos.x, self.enemy_pos.x)
+            max_x = max(self.agent_pos.x, self.enemy_pos.x)
+            for x in range(min_x + 1, max_x):
+                if Position(x, self.agent_pos.y) in self.walls:
+                    return False
+            return True
+        return False
+
+    def is_enemy_blocked_by_wall(self) -> bool:
+        """Returns True if a wall directly separates the agent and enemy within radius 3."""
+        if self.enemy_dist > 3:
+            return False
+        min_x = min(self.agent_pos.x, self.enemy_pos.x)
+        max_x = max(self.agent_pos.x, self.enemy_pos.x)
+        min_y = min(self.agent_pos.y, self.enemy_pos.y)
+        max_y = max(self.agent_pos.y, self.enemy_pos.y)
+        for w in self.walls:
+            if min_x <= w.x <= max_x and min_y <= w.y <= max_y:
+                return True
+        return False
+
     def to_discrete(self) -> Tuple:
         """Returns a hashable compact discrete representation that generalizes across maps.
         
@@ -119,12 +150,14 @@ class State:
 
         # 5. Enemy threat
         dist = self.enemy_dist
-        if dist > 2:
+        if dist > 3:
             enemy_threat = "SAFE"
-        elif dist == 1:
+        elif dist <= 1:
             enemy_threat = f"ADJ_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
-        else:
+        elif dist == 2:
             enemy_threat = f"DANGER_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
+        else:  # dist == 3
+            enemy_threat = f"WARN_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
 
         # 6. Map coins
         coins_status = "ZERO_LEFT" if self.total_coins_remaining == 0 else "AVAILABLE"

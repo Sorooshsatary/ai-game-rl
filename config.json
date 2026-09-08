@@ -1,0 +1,27 @@
+{
+  "grid_width": 8,
+  "grid_height": 8,
+  "num_coins": 5,
+  "num_diamonds": 2,
+  "initial_lives": 3,
+  "max_steps": 100,
+  "diamond_multiplier": 2,
+  "rewards": {
+    "coin": 10.0,
+    "convert": 20.0,
+    "diamond": 0.5,
+    "lose_life": -10.0,
+    "death": -25.0,
+    "exit": 25.0,
+    "exit_coin_bonus": 5.0,
+    "step": -0.05
+  },
+  "rl": {
+    "alpha": 0.2,
+    "gamma": 0.9,
+    "initial_epsilon": 1.0,
+    "final_epsilon": 0.05,
+    "epsilon_decay": 0.96,
+    "episodes": 30
+  }
+}

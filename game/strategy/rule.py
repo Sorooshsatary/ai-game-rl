@@ -1,27 +1,86 @@
 """Child-friendly Strategy definition and If-Then preference rules."""
 
 from dataclasses import dataclass, field
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 
 @dataclass
-class IfThenRule:
-    """A condition-action rule: IF [condition] THEN [action]."""
-    condition: str  # "enemy_near", "has_diamond", "one_life", "coin_exists", "diamond_exists", "coins_cleared", "always"
-    action: str     # "flee_enemy", "go_converter", "go_exit", "go_nearest_coin", "go_nearest_diamond", "random_move"
+class ConditionItem:
+    """A single atomic condition, with an optional numeric value (e.g. distance threshold)."""
+    type: str = "always"
+    value: int = 2
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "type": self.type,
+            "value": self.value,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Any) -> "ConditionItem":
+        if isinstance(data, str):
+            # Backward compatibility with legacy string condition names
+            if data == "enemy_near":
+                return cls(type="enemy_dist_le", value=2)
+            elif data == "enemy_adjacent":
+                return cls(type="enemy_dist_le", value=1)
+            return cls(type=data, value=2)
+        if isinstance(data, dict):
+            return cls(
+                type=data.get("type", "always"),
+                value=int(data.get("value", 2)),
+            )
+        return cls(type="always", value=2)
+
+
+class IfThenRule:
+    """A condition-action rule: IF [condition(s)] THEN [action].
+    Multiple conditions are evaluated with logical AND (all must match).
+    """
+
+    def __init__(
+        self,
+        condition: Optional[str] = None,
+        action: str = "random_move",
+        conditions: Optional[List[ConditionItem]] = None,
+    ):
+        self.action = action
+        if conditions is not None and len(conditions) > 0:
+            self.conditions = conditions
+        elif condition is not None:
+            self.conditions = [ConditionItem.from_dict(condition)]
+        else:
+            self.conditions = [ConditionItem(type="always", value=2)]
+
+    @property
+    def condition(self) -> str:
+        return self.conditions[0].type if self.conditions else "always"
+
+    @condition.setter
+    def condition(self, val: str):
+        if self.conditions:
+            self.conditions[0].type = val
+        else:
+            self.conditions = [ConditionItem.from_dict(val)]
+
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "condition": self.condition,
+            "conditions": [c.to_dict() for c in self.conditions],
             "action": self.action,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, str]) -> "IfThenRule":
-        return cls(
-            condition=data.get("condition", "always"),
-            action=data.get("action", "random_move"),
-        )
+    def from_dict(cls, data: Dict[str, Any]) -> "IfThenRule":
+        action = data.get("action", "random_move")
+        raw_conds = data.get("conditions")
+        if raw_conds and isinstance(raw_conds, list):
+            conds = [ConditionItem.from_dict(c) for c in raw_conds]
+        elif "condition" in data:
+            conds = [ConditionItem.from_dict(data["condition"])]
+        else:
+            conds = [ConditionItem(type="always", value=2)]
+        return cls(action=action, conditions=conds)
 
 
 @dataclass
@@ -41,12 +100,12 @@ class ChildStrategy:
 
     # Block-based If-Then Rules (checked sequentially from top to bottom)
     if_then_rules: List[IfThenRule] = field(default_factory=lambda: [
-        IfThenRule(condition="enemy_near", action="flee_enemy"),
-        IfThenRule(condition="has_diamond", action="go_converter"),
-        IfThenRule(condition="one_life", action="go_exit"),
-        IfThenRule(condition="coin_exists", action="go_nearest_coin"),
-        IfThenRule(condition="diamond_exists", action="go_nearest_diamond"),
-        IfThenRule(condition="coins_cleared", action="go_exit"),
+        IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=2)], action="flee_enemy"),
+        IfThenRule(conditions=[ConditionItem(type="has_diamond")], action="go_converter"),
+        IfThenRule(conditions=[ConditionItem(type="one_life")], action="go_exit"),
+        IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
+        IfThenRule(conditions=[ConditionItem(type="diamond_exists")], action="go_nearest_diamond"),
+        IfThenRule(conditions=[ConditionItem(type="coins_cleared")], action="go_exit"),
     ])
 
     # Default fallback action if no condition matches
@@ -86,12 +145,12 @@ class ChildStrategy:
             parsed_rules = [IfThenRule.from_dict(r) for r in raw_rules]
         else:
             parsed_rules = [
-                IfThenRule(condition="enemy_near", action="flee_enemy"),
-                IfThenRule(condition="has_diamond", action="go_converter"),
-                IfThenRule(condition="one_life", action="go_exit"),
-                IfThenRule(condition="coin_exists", action="go_nearest_coin"),
-                IfThenRule(condition="diamond_exists", action="go_nearest_diamond"),
-                IfThenRule(condition="coins_cleared", action="go_exit"),
+                IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=2)], action="flee_enemy"),
+                IfThenRule(conditions=[ConditionItem(type="has_diamond")], action="go_converter"),
+                IfThenRule(conditions=[ConditionItem(type="one_life")], action="go_exit"),
+                IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
+                IfThenRule(conditions=[ConditionItem(type="diamond_exists")], action="go_nearest_diamond"),
+                IfThenRule(conditions=[ConditionItem(type="coins_cleared")], action="go_exit"),
             ]
 
         return cls(

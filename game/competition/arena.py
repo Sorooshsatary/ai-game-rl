@@ -241,7 +241,7 @@ class MultiAgentArena:
                     agent_positions=live_agents_pos,
                     grid_width=grid_map.width,
                     grid_height=grid_map.height,
-                    forbidden_positions=[grid_map.exit_pos],
+                    forbidden_positions=[grid_map.exit_pos] + list(grid_map.walls),
                 )
 
                 # Check collisions

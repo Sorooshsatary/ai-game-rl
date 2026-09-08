@@ -65,7 +65,7 @@ class Trainer:
         strategy: ChildStrategy,
         config: GameConfig = DEFAULT_CONFIG,
         agent: Optional[QLearningAgent] = None,
-        mode: str = "pure",
+        mode: str = "hybrid",
     ):
         self.config = config
         self.strategy = strategy
@@ -89,10 +89,12 @@ class Trainer:
         progress_callback: Optional[Callable[[int, int, TrainingMetrics], None]] = None,
     ) -> TrainingResult:
         """Trains the agent across randomized maps, continuing from previous learning."""
-        episodes_to_run = num_episodes or self.config.rl.training_episodes
+        episodes_to_run = int(num_episodes) if (num_episodes is not None and num_episodes > 0) else self.config.rl.training_episodes
         self.agent.unlock_for_training()
 
-        decay_rate = 0.96
+        decay_rate = getattr(self.config.rl, "epsilon_decay", 0.96)
+        initial_eps = getattr(self.config.rl, "initial_epsilon", 1.0)
+        final_eps = getattr(self.config.rl, "final_epsilon", 0.05)
 
         # Run episodes continuing from total_episodes_completed
         for i in range(1, episodes_to_run + 1):
@@ -101,8 +103,8 @@ class Trainer:
 
             # Epsilon decays progressively across cumulative episodes
             epsilon = max(
-                self.config.rl.final_epsilon,
-                self.config.rl.initial_epsilon * (decay_rate ** (ep_num - 1)),
+                final_eps,
+                initial_eps * (decay_rate ** (ep_num - 1)),
             )
 
             replay = run_episode(

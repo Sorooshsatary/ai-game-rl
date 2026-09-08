@@ -1,7 +1,7 @@
 """Strategy Builder with kid-friendly presets and configurations."""
 
 from typing import Dict, List, Any
-from game.strategy.rule import ChildStrategy, IfThenRule
+from game.strategy.rule import ChildStrategy, IfThenRule, ConditionItem
 
 
 class StrategyBuilder:
@@ -12,26 +12,26 @@ class StrategyBuilder:
             "balanced": ChildStrategy(
                 name="متوازن و هوشمند",
                 if_then_rules=[
-                    IfThenRule(condition="enemy_near", action="flee_enemy"),
-                    IfThenRule(condition="has_diamond", action="go_converter"),
-                    IfThenRule(condition="one_life", action="go_exit"),
-                    IfThenRule(condition="coin_exists", action="go_nearest_coin"),
-                    IfThenRule(condition="diamond_exists", action="go_nearest_diamond"),
-                    IfThenRule(condition="coins_cleared", action="go_exit"),
+                    IfThenRule(conditions=[ConditionItem(type="enemy_adjacent")], action="flee_dodge"),
+                    IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=2), ConditionItem(type="one_life")], action="flee_towards_exit"),
+                    IfThenRule(conditions=[ConditionItem(type="has_diamond")], action="go_converter"),
+                    IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
+                    IfThenRule(conditions=[ConditionItem(type="diamond_exists")], action="go_nearest_diamond"),
+                    IfThenRule(conditions=[ConditionItem(type="coins_cleared")], action="go_exit"),
                 ],
                 default_action="random_move",
                 coin_priority=7.0,
                 diamond_priority=6.0,
                 converter_urgency=8.0,
-                enemy_fear=8.0,
+                enemy_fear=6.0,
                 exit_eagerness=6.0,
             ),
             "coin_hunter": ChildStrategy(
                 name="شکارچی سکه",
                 if_then_rules=[
-                    IfThenRule(condition="enemy_adjacent", action="flee_enemy"),
-                    IfThenRule(condition="coin_exists", action="go_nearest_coin"),
-                    IfThenRule(condition="coins_cleared", action="go_exit"),
+                    IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=1)], action="flee_enemy"),
+                    IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
+                    IfThenRule(conditions=[ConditionItem(type="coins_cleared")], action="go_exit"),
                 ],
                 default_action="random_move",
                 coin_priority=9.5,
@@ -43,10 +43,10 @@ class StrategyBuilder:
             "diamond_rusher": ChildStrategy(
                 name="عاشق الماس",
                 if_then_rules=[
-                    IfThenRule(condition="has_diamond", action="go_converter"),
-                    IfThenRule(condition="diamond_exists", action="go_nearest_diamond"),
-                    IfThenRule(condition="coin_exists", action="go_nearest_coin"),
-                    IfThenRule(condition="coins_cleared", action="go_exit"),
+                    IfThenRule(conditions=[ConditionItem(type="has_diamond")], action="go_converter"),
+                    IfThenRule(conditions=[ConditionItem(type="diamond_exists")], action="go_nearest_diamond"),
+                    IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
+                    IfThenRule(conditions=[ConditionItem(type="coins_cleared")], action="go_exit"),
                 ],
                 default_action="random_move",
                 coin_priority=4.0,
@@ -58,10 +58,10 @@ class StrategyBuilder:
             "cautious": ChildStrategy(
                 name="محتاط و هوشیار",
                 if_then_rules=[
-                    IfThenRule(condition="enemy_near", action="flee_enemy"),
-                    IfThenRule(condition="one_life", action="go_exit"),
-                    IfThenRule(condition="coin_exists", action="go_nearest_coin"),
-                    IfThenRule(condition="coins_cleared", action="go_exit"),
+                    IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=3)], action="flee_towards_exit"),
+                    IfThenRule(conditions=[ConditionItem(type="one_life")], action="go_exit"),
+                    IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
+                    IfThenRule(conditions=[ConditionItem(type="coins_cleared")], action="go_exit"),
                 ],
                 default_action="random_move",
                 coin_priority=5.0,
@@ -73,9 +73,9 @@ class StrategyBuilder:
             "daredevil": ChildStrategy(
                 name="ماجراجوی نترس",
                 if_then_rules=[
-                    IfThenRule(condition="diamond_exists", action="go_nearest_diamond"),
-                    IfThenRule(condition="has_diamond", action="go_converter"),
-                    IfThenRule(condition="coin_exists", action="go_nearest_coin"),
+                    IfThenRule(conditions=[ConditionItem(type="diamond_exists")], action="go_nearest_diamond"),
+                    IfThenRule(conditions=[ConditionItem(type="has_diamond")], action="go_converter"),
+                    IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
                 ],
                 default_action="random_move",
                 coin_priority=8.0,

@@ -87,9 +87,9 @@ class UpdateRoleRequest(BaseModel):
 
 class TrainRequest(BaseModel):
     strategy: Dict[str, Any]
-    episodes: int = 30
+    episodes: Optional[int] = None
     from_scratch: bool = False
-    mode: str = "pure"  # "pure" or "hybrid"
+    mode: str = "hybrid"  # "pure" or "hybrid"
 
 
 class StrategyTestRequest(BaseModel):
@@ -253,9 +253,13 @@ async def admin_get_config(admin: Dict[str, Any] = Depends(require_admin)):
 async def admin_save_config(req: SystemConfigRequest, admin: Dict[str, Any] = Depends(require_admin)):
     new_cfg = GameConfig.from_dict(req.model_dump())
     saved = set_active_config(new_cfg)
+    if current_session.get("trainer"):
+        current_session["trainer"].config = saved
+        current_session["trainer"].env = GameEnvironment(config=saved)
+        current_session["trainer"].agent.config = saved
     return {
         "success": True,
-        "message": "تنظیمات بازی و یادگیری تقویتی با موفقیت ذخیره و اعمال شد.",
+        "message": "تنظیمات بازی و یادگیری تقویتی با موفقیت ذخیره و در فایل کانفیگ اعمال شد.",
         "config": saved.to_dict()
     }
 
@@ -263,9 +267,13 @@ async def admin_save_config(req: SystemConfigRequest, admin: Dict[str, Any] = De
 @app.post("/api/admin/config/reset")
 async def admin_reset_config(admin: Dict[str, Any] = Depends(require_admin)):
     cfg = reset_active_config()
+    if current_session.get("trainer"):
+        current_session["trainer"].config = cfg
+        current_session["trainer"].env = GameEnvironment(config=cfg)
+        current_session["trainer"].agent.config = cfg
     return {
         "success": True,
-        "message": "تنظیمات با موفقیت به مقادیر اولیه کارخانه بازگردانده شد.",
+        "message": "تنظیمات با موفقیت به مقادیر اولیه کارخانه بازگردانده و در فایل کانفیگ ذخیره شد.",
         "config": cfg.to_dict()
     }
 
@@ -298,7 +306,7 @@ async def dual_comparison_endpoint(req: DualComparisonRequest):
 
     # Ensure trained RL agent
     if current_session.get("player_agent") is None:
-        trainer = Trainer(strategy=strat, config=active_cfg, mode="pure")
+        trainer = Trainer(strategy=strat, config=active_cfg, mode="hybrid")
         trainer.train(num_episodes=25)
         current_session["trainer"] = trainer
         current_session["player_agent"] = trainer.agent
@@ -333,7 +341,8 @@ async def train_agent(req: TrainRequest):
         trainer.config = active_cfg
         trainer.strategy = strat
 
-    result = trainer.train(num_episodes=req.episodes)
+    episodes = req.episodes if (req.episodes is not None and req.episodes > 0) else active_cfg.rl.training_episodes
+    result = trainer.train(num_episodes=episodes)
     current_session["last_train_result"] = result
     current_session["player_agent"] = trainer.agent
 
@@ -368,10 +377,11 @@ async def retrain_agent(req: TrainRequest):
     strat = ChildStrategy.from_dict(req.strategy)
     current_session["strategy"] = strat
 
+    episodes = req.episodes if (req.episodes is not None and req.episodes > 0) else active_cfg.rl.retrain_episodes
     result = current_session["trainer"].retrain_with_new_strategy(
         new_strategy=strat,
         from_scratch=req.from_scratch,
-        num_episodes=req.episodes,
+        num_episodes=episodes,
     )
     current_session["last_train_result"] = result
     current_session["player_agent"] = current_session["trainer"].agent

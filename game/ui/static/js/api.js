@@ -40,11 +40,15 @@ const API = {
     return await res.json();
   },
 
-  async train(strategy, episodes = 30) {
+  async train(strategy, episodes = null, mode = 'hybrid', fromScratch = false) {
+    const payload = { strategy, mode, from_scratch: fromScratch };
+    if (episodes !== null && episodes !== undefined) {
+      payload.episodes = episodes;
+    }
     const res = await fetch('/api/train', {
       method: 'POST',
       headers: this.authHeaders(),
-      body: JSON.stringify({ strategy, episodes, from_scratch: true })
+      body: JSON.stringify(payload)
     });
     return await res.json();
   },

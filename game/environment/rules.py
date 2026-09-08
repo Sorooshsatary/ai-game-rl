@@ -165,13 +165,14 @@ class GameEnvironment:
         # Exit
         if self.agent.position == self.grid_map.exit_pos:
             self.agent.has_exited = True
-            reward += self.config.reward.successful_exit
+            coin_bonus = self.agent.coins * getattr(self.config.reward, "exit_coin_bonus", 5.0)
+            reward += self.config.reward.successful_exit + coin_bonus
             events.append("EXIT_SUCCESS")
             self.done = True
 
         # 3. Enemy Turn (if not exited)
         if not self.done:
-            forbidden = [self.grid_map.exit_pos]  # Enemy cannot block exit directly
+            forbidden = [self.grid_map.exit_pos] + list(self.grid_map.walls)  # Enemy cannot block exit or pass through walls
             self.enemy.position = self.enemy.choose_move(
                 agent_positions=[self.agent.position],
                 grid_width=self.grid_map.width,
@@ -194,6 +195,9 @@ class GameEnvironment:
                 reward += self.config.reward.death
                 events.append("DEATH")
                 self.done = True
+            else:
+                # Push enemy back to starting position to give the agent room to recover and escape
+                self.enemy.position = self.enemy_start
 
         # 5. Check Step Limit
         if not self.done and self.current_step >= self.config.env.max_steps_per_episode:

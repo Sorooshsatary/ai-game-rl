@@ -118,7 +118,10 @@ class TestAuthAndAdmin(unittest.TestCase):
             "rl": {
                 "alpha": 0.3,
                 "gamma": 0.95,
-                "episodes": 40,
+                "initial_epsilon": 0.9,
+                "final_epsilon": 0.08,
+                "epsilon_decay": 0.92,
+                "episodes": 10,
             }
         }
 
@@ -129,12 +132,47 @@ class TestAuthAndAdmin(unittest.TestCase):
         self.assertEqual(saved_cfg["grid_width"], 10)
         self.assertEqual(saved_cfg["diamond_multiplier"], 4)
         self.assertEqual(saved_cfg["rewards"]["coin"], 15.0)
+        self.assertEqual(saved_cfg["rl"]["initial_epsilon"], 0.9)
+        self.assertEqual(saved_cfg["rl"]["final_epsilon"], 0.08)
+        self.assertEqual(saved_cfg["rl"]["epsilon_decay"], 0.92)
+        self.assertEqual(saved_cfg["rl"]["episodes"], 10)
 
         # Verify active config in runtime is updated
         active = get_active_config()
         self.assertEqual(active.env.grid_width, 10)
         self.assertEqual(active.env.diamond_to_coin_multiplier, 4)
         self.assertEqual(active.reward.collect_coin, 15.0)
+        self.assertEqual(active.rl.initial_epsilon, 0.9)
+        self.assertEqual(active.rl.final_epsilon, 0.08)
+        self.assertEqual(active.rl.epsilon_decay, 0.92)
+        self.assertEqual(active.rl.training_episodes, 10)
+
+        # Verify config.json on disk exists and has the new values
+        import json, os
+        from game.config import CONFIG_FILE_PATH
+        self.assertTrue(os.path.exists(CONFIG_FILE_PATH))
+        with open(CONFIG_FILE_PATH, "r", encoding="utf-8") as f:
+            disk_cfg = json.load(f)
+        self.assertEqual(disk_cfg["rl"]["episodes"], 10)
+        self.assertEqual(disk_cfg["rl"]["epsilon_decay"], 0.92)
+
+        # Verify training without explicit episode count uses the config's 10 episodes
+        self.client.post("/api/train/reset")
+        train_res = self.client.post("/api/train", json={
+            "strategy": {
+                "name": "Balanced",
+                "rules": {
+                    "flee_adjacent_enemy": True,
+                    "deposit_before_coins": True,
+                    "diamond_only_if_safe": True,
+                    "exit_if_one_life": True,
+                    "exit_if_coins_cleared": True,
+                }
+            }
+        })
+        self.assertEqual(train_res.status_code, 200)
+        train_data = train_res.json()
+        self.assertEqual(train_data["summary"]["total_episodes"], 10)
 
         # Reset config
         res_reset = self.client.post("/api/admin/config/reset", headers=headers)

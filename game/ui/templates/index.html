@@ -117,28 +117,35 @@
             </button>
           </div>
 
-          <!-- Map Canvas -->
-          <div class="canvas-frame" style="max-width: 400px; margin: 0 auto;">
-            <canvas id="strategy-test-canvas" width="400" height="400"></canvas>
+          <!-- Map Canvas with Cyber Arena Frame -->
+          <div class="map-arena-wrapper">
+            <div class="map-arena-header">
+              <span class="arena-badge-live">🟢 میدان شبیه‌سازی زنده</span>
+              <span style="font-size: 0.78rem; color: #64748b; font-weight: 700;">میدان تاکتیکی ربات و هیولا</span>
+              <span class="arena-badge-coords">📍 شبکه‌بندی ۸×۸</span>
+            </div>
+            <div class="canvas-frame">
+              <canvas id="strategy-test-canvas" width="400" height="400"></canvas>
+            </div>
           </div>
 
-          <!-- Live Agent Status Banner -->
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; margin-top: 10px;">
-            <div style="background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
-              <div style="font-size: 0.72rem; color: var(--text-muted);">جان عامل</div>
-              <div id="part1-agent-lives" style="font-size: 1rem; font-weight: 800;">❤️❤️❤️</div>
+          <!-- Live Agent Status Banner (Modern HUD Widgets) -->
+          <div class="hud-stats-grid">
+            <div class="hud-stat-box">
+              <div class="hud-stat-label">❤️ جان ربات</div>
+              <div id="part1-agent-lives" class="hud-stat-val lives-val">❤️❤️❤️</div>
             </div>
-            <div style="background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
-              <div style="font-size: 0.72rem; color: var(--text-muted);">سکه‌ها</div>
-              <div id="part1-agent-coins" style="font-size: 1rem; font-weight: 800; color: #f59e0b;">۰ 🪙</div>
+            <div class="hud-stat-box">
+              <div class="hud-stat-label">🪙 سکه‌ها</div>
+              <div id="part1-agent-coins" class="hud-stat-val coins-val">۰ 🪙</div>
             </div>
-            <div style="background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
-              <div style="font-size: 0.72rem; color: var(--text-muted);">الماس‌ها</div>
-              <div id="part1-agent-diamonds" style="font-size: 1rem; font-weight: 800; color: #0284c7;">۰ 💎</div>
+            <div class="hud-stat-box">
+              <div class="hud-stat-label">💎 الماس‌ها</div>
+              <div id="part1-agent-diamonds" class="hud-stat-val gems-val">۰ 💎</div>
             </div>
-            <div style="background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
-              <div style="font-size: 0.72rem; color: var(--text-muted);">گام شبیه‌سازی</div>
-              <div id="part1-step-counter" style="font-size: 1rem; font-weight: 800; color: #4f46e5;">گام ۰</div>
+            <div class="hud-stat-box">
+              <div class="hud-stat-label">⏱️ گام حرکت</div>
+              <div id="part1-step-counter" class="hud-stat-val step-val">گام ۰</div>
             </div>
           </div>
 
@@ -169,6 +176,25 @@
         <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.25rem;">
           برخلاف استراتژی دستوری که قوانین صلب و خشک دارد، هوش مصنوعی بدون نیاز به کدنویسی شروط، خود را با محیط وفق می‌دهد. با دکمه زیر به هوش مصنوعی اجازه دهید تمرین کند:
         </p>
+
+        <!-- Training Configuration Bar -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <label for="train-episode-count" style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">
+              🎯 تعداد اپیزودهای آموزش در این مرحله:
+            </label>
+            <input type="number" id="train-episode-count" min="1" max="500" value="10" style="width: 85px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.95rem;">
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="btn btn-secondary btn-quick-ep" data-count="10" style="padding: 4px 10px; font-size: 0.8rem;">۱۰</button>
+              <button type="button" class="btn btn-secondary btn-quick-ep" data-count="30" style="padding: 4px 10px; font-size: 0.8rem;">۳۰</button>
+              <button type="button" class="btn btn-secondary btn-quick-ep" data-count="50" style="padding: 4px 10px; font-size: 0.8rem;">۵۰</button>
+              <button type="button" class="btn btn-secondary btn-quick-ep" data-count="100" style="padding: 4px 10px; font-size: 0.8rem;">۱۰۰</button>
+            </div>
+          </div>
+          <div id="train-active-hyperparams-badge" style="font-size: 0.8rem; color: #3730a3; background: #e0e7ff; padding: 6px 12px; border-radius: 8px; border: 1px solid #c7d2fe; font-weight: 600;">
+            در حال دریافت تنظیمات فعال...
+          </div>
+        </div>
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.25rem;">
           <button id="btn-start-training" class="btn btn-primary" style="font-weight: bold;">
@@ -206,12 +232,18 @@
         <!-- Learning Charts -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-top: 1.25rem;">
           <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px;">
-            <h5 style="margin-bottom: 8px; color: #4338ca; font-size: 0.9rem;">📈 نمودار رشد پاداش کل در طول تمرین</h5>
-            <canvas id="chart-reward" width="460" height="160" style="width: 100%; height: 160px;"></canvas>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <h5 style="margin: 0; color: #4338ca; font-size: 0.9rem;">📈 نمودار رشد پاداش کل در طول تمرین</h5>
+              <span style="font-size: 0.75rem; color: #64748b;">خط پررنگ: میانگین متحرک روند</span>
+            </div>
+            <canvas id="chart-reward" width="460" height="180" style="width: 100%; height: 180px;"></canvas>
           </div>
           <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px;">
-            <h5 style="margin-bottom: 8px; color: #047857; font-size: 0.9rem;">🪙 نمودار تعداد سکه‌های موفق خروجی</h5>
-            <canvas id="chart-coins" width="460" height="160" style="width: 100%; height: 160px;"></canvas>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <h5 style="margin: 0; color: #047857; font-size: 0.9rem;">🪙 نمودار سکه‌های موفق خروجی</h5>
+              <span style="font-size: 0.75rem; color: #64748b;">خط پررنگ: میانگین متحرک روند</span>
+            </div>
+            <canvas id="chart-coins" width="460" height="180" style="width: 100%; height: 180px;"></canvas>
           </div>
         </div>
       </div>
@@ -447,16 +479,28 @@
             <div class="config-card">
               <h4>🧠 هایپرپارامترهای یادگیری تقویتی</h4>
               <div class="config-row">
-                <label for="cfg-rl-alpha">نرخ یادگیری (آلفا):</label>
+                <label for="cfg-rl-alpha">نرخ یادگیری (آلفا - α):</label>
                 <input type="number" id="cfg-rl-alpha" min="0.001" max="1.0" step="any" required>
               </div>
               <div class="config-row">
-                <label for="cfg-rl-gamma">ضریب تخفیف پاداش (گاما):</label>
+                <label for="cfg-rl-gamma">ضریب تخفیف پاداش (گاما - γ):</label>
                 <input type="number" id="cfg-rl-gamma" min="0.01" max="0.999" step="any" required>
               </div>
               <div class="config-row">
-                <label for="cfg-rl-episodes">تعداد اپیزودهای آموزش:</label>
-                <input type="number" id="cfg-rl-episodes" min="5" max="200" required>
+                <label for="cfg-rl-epsilon-init">اپسیلون اولیه (کاوش در شروع):</label>
+                <input type="number" id="cfg-rl-epsilon-init" min="0.0" max="1.0" step="0.05" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rl-epsilon-min">حداقل اپسیلون (کاوش پایانی):</label>
+                <input type="number" id="cfg-rl-epsilon-min" min="0.0" max="0.5" step="0.01" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rl-epsilon-decay">نرخ کاهش اپسیلون در هر اپیزود (Decay):</label>
+                <input type="number" id="cfg-rl-epsilon-decay" min="0.5" max="0.999" step="0.01" required>
+              </div>
+              <div class="config-row">
+                <label for="cfg-rl-episodes">تعداد پیش‌فرض اپیزودهای آموزش:</label>
+                <input type="number" id="cfg-rl-episodes" min="1" max="500" required>
               </div>
             </div>
 

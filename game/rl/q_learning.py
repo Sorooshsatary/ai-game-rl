@@ -42,10 +42,10 @@ class QLearningAgent:
     def get_initial_prior(self, state: State) -> Dict[Action, float]:
         """Calculates child strategy prior for all actions in this state."""
         discrete = state.to_discrete()
-        if discrete not in self.prior_table:
-            priors = self.prior_engine.compute_all_priors(state)
-            self.prior_table[discrete] = {act: round(val, 2) for act, (val, _) in priors.items()}
-        return self.prior_table[discrete]
+        priors = self.prior_engine.compute_all_priors(state)
+        curr_priors = {act: round(val, 2) for act, (val, _) in priors.items()}
+        self.prior_table[discrete] = curr_priors
+        return curr_priors
 
     def get_q_values(self, state: State) -> Dict[Action, float]:
         """Returns Q-values for all actions.

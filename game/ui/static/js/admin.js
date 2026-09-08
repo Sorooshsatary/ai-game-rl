@@ -206,6 +206,9 @@ const AdminUI = {
     const rl = cfg.rl || {};
     setVal('cfg-rl-alpha', rl.alpha ?? 0.2);
     setVal('cfg-rl-gamma', rl.gamma ?? 0.9);
+    setVal('cfg-rl-epsilon-init', rl.initial_epsilon ?? 1.0);
+    setVal('cfg-rl-epsilon-min', rl.final_epsilon ?? 0.05);
+    setVal('cfg-rl-epsilon-decay', rl.epsilon_decay ?? 0.96);
     setVal('cfg-rl-episodes', rl.episodes ?? 30);
   },
 
@@ -235,7 +238,10 @@ const AdminUI = {
       rl: {
         alpha: getVal('cfg-rl-alpha'),
         gamma: getVal('cfg-rl-gamma'),
-        episodes: parseInt(document.getElementById('cfg-rl-episodes').value),
+        initial_epsilon: getVal('cfg-rl-epsilon-init'),
+        final_epsilon: getVal('cfg-rl-epsilon-min'),
+        epsilon_decay: getVal('cfg-rl-epsilon-decay'),
+        episodes: parseInt(document.getElementById('cfg-rl-episodes').value) || 30,
       }
     };
 
@@ -257,6 +263,9 @@ const AdminUI = {
       // Re-render initial maps with new config dimensions
       if (typeof ComparisonUI !== 'undefined' && ComparisonUI.renderInitialMaps) {
         ComparisonUI.renderInitialMaps();
+      }
+      if (typeof TrainingUI !== 'undefined' && TrainingUI.updateFromConfig) {
+        TrainingUI.updateFromConfig(res.config);
       }
     } catch (err) {
       if (statusBox) {
@@ -290,6 +299,9 @@ const AdminUI = {
       }
       if (typeof ComparisonUI !== 'undefined' && ComparisonUI.renderInitialMaps) {
         ComparisonUI.renderInitialMaps();
+      }
+      if (typeof TrainingUI !== 'undefined' && TrainingUI.updateFromConfig) {
+        TrainingUI.updateFromConfig(res.config);
       }
     } catch (err) {
       alert('خطا در بازنشانی: ' + err.message);

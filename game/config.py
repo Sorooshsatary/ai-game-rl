@@ -30,20 +30,25 @@ class RewardConfig:
     collect_coin: float = 10.0
     convert_diamond: float = 20.0  # per diamond converted at Converter
     collect_diamond_raw: float = 0.5  # slight discovery reward, not main score
-    lose_life: float = -15.0
-    death: float = -50.0
-    successful_exit: float = 5.0
-    normal_step: float = -0.1
+    lose_life: float = -10.0
+    death: float = -25.0
+    successful_exit: float = 25.0
+    exit_coin_bonus: float = 5.0  # Bonus per coin brought home through exit
+    normal_step: float = -0.05
     invalid_move: float = -1.0  # hitting a wall or edge
 
 
+import os
+import json
+
 @dataclass
 class RLConfig:
-    # Hyperparameters (preset, not directly tuned by child)
+    # Hyperparameters (configurable via Admin Panel and config.json)
     learning_rate: float = 0.2
     discount_factor: float = 0.90
     initial_epsilon: float = 1.0
     final_epsilon: float = 0.05
+    epsilon_decay: float = 0.96
     training_episodes: int = 30
     retrain_episodes: int = 10
 
@@ -73,11 +78,15 @@ class GameConfig:
                 "lose_life": self.reward.lose_life,
                 "death": self.reward.death,
                 "exit": self.reward.successful_exit,
+                "exit_coin_bonus": self.reward.exit_coin_bonus,
                 "step": self.reward.normal_step,
             },
             "rl": {
                 "alpha": self.rl.learning_rate,
                 "gamma": self.rl.discount_factor,
+                "initial_epsilon": self.rl.initial_epsilon,
+                "final_epsilon": self.rl.final_epsilon,
+                "epsilon_decay": self.rl.epsilon_decay,
                 "episodes": self.rl.training_episodes,
             },
         }
@@ -118,17 +127,25 @@ class GameConfig:
             cfg.reward.death = float(rewards["death"])
         if "exit" in rewards:
             cfg.reward.successful_exit = float(rewards["exit"])
+        if "exit_coin_bonus" in rewards:
+            cfg.reward.exit_coin_bonus = float(rewards["exit_coin_bonus"])
         if "step" in rewards:
             cfg.reward.normal_step = float(rewards["step"])
 
         # Reinforcement Learning
         rl = data.get("rl", {})
-        if "alpha" in rl:
-            cfg.rl.learning_rate = float(rl["alpha"])
-        if "gamma" in rl:
-            cfg.rl.discount_factor = float(rl["gamma"])
-        if "episodes" in rl:
-            cfg.rl.training_episodes = int(rl["episodes"])
+        if "alpha" in rl or "learning_rate" in rl:
+            cfg.rl.learning_rate = float(rl.get("alpha", rl.get("learning_rate")))
+        if "gamma" in rl or "discount_factor" in rl:
+            cfg.rl.discount_factor = float(rl.get("gamma", rl.get("discount_factor")))
+        if "initial_epsilon" in rl or "epsilon_init" in rl:
+            cfg.rl.initial_epsilon = float(rl.get("initial_epsilon", rl.get("epsilon_init")))
+        if "final_epsilon" in rl or "epsilon_min" in rl:
+            cfg.rl.final_epsilon = float(rl.get("final_epsilon", rl.get("epsilon_min")))
+        if "epsilon_decay" in rl or "decay_rate" in rl:
+            cfg.rl.epsilon_decay = float(rl.get("epsilon_decay", rl.get("decay_rate")))
+        if "episodes" in rl or "training_episodes" in rl:
+            cfg.rl.training_episodes = int(rl.get("episodes", rl.get("training_episodes")))
 
         return cfg
 
@@ -139,34 +156,67 @@ DEFAULT_CONFIG = GameConfig()
 # Dynamic active configuration
 _ACTIVE_CONFIG: Optional[GameConfig] = None
 
+CONFIG_FILE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
+
+
+def _save_to_file(cfg: GameConfig):
+    try:
+        with open(CONFIG_FILE_PATH, "w", encoding="utf-8") as f:
+            json.dump(cfg.to_dict(), f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
+
+
+def _load_from_file() -> Optional[GameConfig]:
+    if os.path.exists(CONFIG_FILE_PATH):
+        try:
+            with open(CONFIG_FILE_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return GameConfig.from_dict(data)
+        except Exception:
+            pass
+    return None
+
 
 def get_active_config() -> GameConfig:
     global _ACTIVE_CONFIG
     if _ACTIVE_CONFIG is None:
-        try:
-            from game.database.db import load_system_config, init_db
-            init_db()
-            saved = load_system_config("active_config")
-            if saved:
-                _ACTIVE_CONFIG = GameConfig.from_dict(saved)
-            else:
+        # 1. Try to load from config.json
+        file_cfg = _load_from_file()
+        if file_cfg:
+            _ACTIVE_CONFIG = file_cfg
+        else:
+            # 2. Try to load from DB
+            try:
+                from game.database.db import load_system_config, init_db
+                init_db()
+                saved = load_system_config("active_config")
+                if saved:
+                    _ACTIVE_CONFIG = GameConfig.from_dict(saved)
+                else:
+                    _ACTIVE_CONFIG = GameConfig()
+            except Exception:
                 _ACTIVE_CONFIG = GameConfig()
-        except Exception:
-            _ACTIVE_CONFIG = GameConfig()
+            # Write config.json for disk persistence
+            _save_to_file(_ACTIVE_CONFIG)
     return _ACTIVE_CONFIG
 
 
 def set_active_config(cfg: GameConfig) -> GameConfig:
     global _ACTIVE_CONFIG
     _ACTIVE_CONFIG = cfg
+    # Save to database
     try:
         from game.database.db import save_system_config, init_db
         init_db()
         save_system_config(cfg.to_dict(), "active_config")
     except Exception:
         pass
+    # Save to config.json file
+    _save_to_file(cfg)
     return _ACTIVE_CONFIG
 
 
 def reset_active_config() -> GameConfig:
     return set_active_config(GameConfig())
+
