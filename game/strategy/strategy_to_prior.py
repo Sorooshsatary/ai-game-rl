@@ -1,0 +1,130 @@
+"""Converts Child Strategy into initial Q-values (Priors)."""
+
+from typing import Dict, Tuple, List, Optional
+from game.environment.entities import Action, Position
+from game.environment.state import State
+from game.strategy.rule import ChildStrategy
+
+
+class StrategyPriorEngine:
+    """Evaluates state-action pairs using child strategy rules to generate Q_initial(s, a)."""
+
+    def __init__(self, strategy: ChildStrategy):
+        self.strategy = strategy
+
+    def compute_action_prior(self, state: State, action: Action) -> Tuple[float, List[str]]:
+        """Computes Q_initial for a specific action in a given state, plus explanation tags."""
+        reasons: List[str] = []
+        q_value = 0.0
+
+        # Hypothetical new position
+        new_pos = state.agent_pos.move(action)
+
+        # 1. Bounds check
+        if not (0 <= new_pos.x < state.grid_width and 0 <= new_pos.y < state.grid_height):
+            return -5.0, ["دیوار یا خارج از نقشه"]
+
+        # Manhattan delta calculations (positive = got closer, negative = moved farther)
+        def delta_dist(target: Optional[Position]) -> int:
+            if target is None:
+                return 0
+            curr_d = state.agent_pos.manhattan_distance(target)
+            new_d = new_pos.manhattan_distance(target)
+            return curr_d - new_d  # +1 if closer, -1 if farther, 0 if perpendicular/same
+
+        delta_coin = delta_dist(state.nearest_coin_pos)
+        delta_diamond = delta_dist(state.nearest_diamond_pos)
+        delta_converter = delta_dist(state.converter_pos)
+        delta_exit = delta_dist(state.exit_pos)
+        delta_enemy = delta_dist(state.enemy_pos)  # +1 means stepping closer to danger!
+
+        # 2. Coin Evaluation
+        if state.nearest_coin_pos is not None:
+            coin_weight = self.strategy.coin_priority * 0.6
+            if delta_coin > 0:
+                q_value += coin_weight
+                reasons.append(f"نزدیک شدن به سکه (+{coin_weight:.1f})")
+            elif delta_coin < 0:
+                q_value -= coin_weight * 0.3
+
+        # 3. Diamond Evaluation
+        if state.nearest_diamond_pos is not None:
+            diamond_weight = self.strategy.diamond_priority * 0.5
+            # Rule: diamond_only_if_safe
+            if self.strategy.rules.get("diamond_only_if_safe", False) and state.enemy_dist <= 2:
+                diamond_weight *= 0.2  # De-prioritize diamond when enemy lurks near!
+
+            if delta_diamond > 0:
+                q_value += diamond_weight
+                reasons.append(f"نزدیک شدن به الماس (+{diamond_weight:.1f})")
+            elif delta_diamond < 0:
+                q_value -= diamond_weight * 0.2
+
+        # 4. Converter Evaluation (when holding diamonds)
+        if state.diamonds_held > 0:
+            converter_weight = self.strategy.converter_urgency * 0.8
+            if self.strategy.rules.get("deposit_before_coins", False):
+                converter_weight *= 1.5  # Extra urgency
+
+            if delta_converter > 0:
+                q_value += converter_weight
+                reasons.append(f"حمل الماس به مبدل (+{converter_weight:.1f})")
+            elif delta_converter < 0:
+                q_value -= converter_weight * 0.4
+
+        # 5. Enemy Danger & Survival
+        enemy_weight = self.strategy.enemy_fear * 1.0
+        if state.enemy_dist <= 3:
+            # Danger zone
+            if new_pos == state.enemy_pos:
+                # Stepping directly into enemy!
+                penalty = enemy_weight * 3.0
+                q_value -= penalty
+                reasons.append(f"خطر برخورد مستقیم با دشمن (-{penalty:.1f})")
+            elif delta_enemy > 0:
+                # Moving closer to enemy
+                penalty = enemy_weight * 1.5
+                q_value -= penalty
+                reasons.append(f"نزدیک شدن خطرناک به دشمن (-{penalty:.1f})")
+            elif delta_enemy < 0:
+                # Moving away from enemy
+                bonus = enemy_weight * 1.0
+                q_value += bonus
+                reasons.append(f"فرار و دور شدن از دشمن (+{bonus:.1f})")
+
+            # Rule: flee_adjacent_enemy
+            if self.strategy.rules.get("flee_adjacent_enemy", False) and state.enemy_dist <= 1:
+                if delta_enemy <= 0:
+                    q_value += 3.0
+                    reasons.append("قانون فرار اضطراری از دشمن مجاور")
+
+        # 6. Exit Evaluation
+        exit_weight = self.strategy.exit_eagerness * 0.6
+        should_rush_exit = False
+
+        if self.strategy.rules.get("exit_if_coins_cleared", False) and state.total_coins_remaining == 0:
+            should_rush_exit = True
+            reasons.append("تمام شدن سکه‌ها - رفتن به سمت خروج")
+
+        if self.strategy.rules.get("exit_if_one_life", False) and state.lives <= 1 and state.coins_held > 0:
+            should_rush_exit = True
+            reasons.append("جان اندک - اولویت خروج و حفظ سکه‌ها")
+
+        if should_rush_exit:
+            exit_weight *= 2.5
+
+        if delta_exit > 0:
+            q_value += exit_weight
+            if should_rush_exit:
+                reasons.append(f"حرکت به سوی در خروج (+{exit_weight:.1f})")
+        elif delta_exit < 0 and should_rush_exit:
+            q_value -= exit_weight * 0.5
+
+        return round(q_value, 2), reasons
+
+    def compute_all_priors(self, state: State) -> Dict[Action, Tuple[float, List[str]]]:
+        """Computes Q_initial for all 4 cardinal actions."""
+        return {
+            act: self.compute_action_prior(state, act)
+            for act in [Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT]
+        }
