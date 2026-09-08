@@ -60,6 +60,35 @@ class TestAgentComparison(unittest.TestCase):
                 # The collected coin must NOT be present in coins_left at this step
                 self.assertNotIn(st.agent_pos, st.coins_left)
 
+    def test_score_based_winner_determination(self):
+        """Verify that winner is determined based on total_reward (score), not coins."""
+        result = self.engine.run_dual_comparison(
+            strategy_agent=self.strat_agent,
+            rl_agent=self.rl_agent,
+            seed=12345,
+            max_steps=30,
+            episodes_trained=40,
+        )
+        self.assertEqual(result.rl_run.episodes_trained, 40)
+        strat_score = result.strategy_run.total_reward
+        rl_score = result.rl_run.total_reward
+
+        if rl_score > strat_score:
+            self.assertEqual(result.winner, "rl")
+        elif strat_score > rl_score:
+            self.assertEqual(result.winner, "strategy")
+
+        # Check table has score as primary row
+        self.assertIn("معیار برنده: امتیاز کل کسب‌شده (Score)", result.comparison_table[0]["metric"])
+
+    def test_accumulated_score_in_steps(self):
+        """Verify that ComparisonStep includes accumulated_score."""
+        summary = self.engine.run_strategy_agent_only(self.strat, seed=12345, max_steps=10)
+        for st in summary.steps:
+            self.assertIsInstance(st.accumulated_score, float)
+            st_dict = st.to_dict()
+            self.assertIn("accumulated_score", st_dict)
+
 
 if __name__ == "__main__":
     unittest.main()

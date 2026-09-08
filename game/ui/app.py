@@ -308,11 +308,14 @@ async def dual_comparison_endpoint(req: DualComparisonRequest):
     strat = ChildStrategy.from_dict(req.strategy)
     current_session["strategy"] = strat
 
-    # Ensure trained RL agent
-    if current_session.get("player_agent") is None:
+    # Ensure trained RL agent (if not yet trained or 0 completed episodes, train baseline)
+    trainer = current_session.get("trainer")
+    if trainer is None or trainer.total_episodes_completed == 0:
         trainer = Trainer(strategy=strat, config=active_cfg, mode="hybrid")
-        trainer.train(num_episodes=25)
+        trainer.train(num_episodes=max(30, active_cfg.rl.training_episodes))
         current_session["trainer"] = trainer
+        current_session["player_agent"] = trainer.agent
+    else:
         current_session["player_agent"] = trainer.agent
 
     strat_agent = RuleBasedStrategyAgent(strategy=strat, config=active_cfg)
@@ -323,6 +326,7 @@ async def dual_comparison_endpoint(req: DualComparisonRequest):
         strategy_agent=strat_agent,
         rl_agent=rl_agent,
         seed=req.seed,
+        episodes_trained=trainer.total_episodes_completed,
     )
     return {
         "success": True,

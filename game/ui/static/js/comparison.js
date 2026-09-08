@@ -255,6 +255,18 @@ const ComparisonUI = {
   },
 
   displayDualComparison(result) {
+    // 0. Update trained episodes badge
+    const epBadge = document.getElementById('dual-rl-episodes-badge');
+    if (epBadge) {
+      const eps = (result.rl_run && result.rl_run.episodes_trained) || 0;
+      if (eps > 0) {
+        epBadge.textContent = `آموزش‌دیده در ${eps} مرحله`;
+        epBadge.style.display = 'inline-block';
+      } else {
+        epBadge.style.display = 'none';
+      }
+    }
+
     // 1. Fill comparison table
     const tableBody = document.getElementById('dual-comparison-table-body');
     if (tableBody && result.comparison_table) {
@@ -272,12 +284,15 @@ const ComparisonUI = {
     if (analysisBox) {
       analysisBox.style.display = 'block';
       let winnerBadge = '';
+      const stratScore = result.strategy_run.total_reward;
+      const rlScore = result.rl_run.total_reward;
+
       if (result.winner === 'rl') {
-        winnerBadge = '<span class="status-pill success" style="font-size: 0.85rem;">برنده: هوش مصنوعی یادگیرنده 🏆</span>';
+        winnerBadge = `<span class="status-pill success" style="font-size: 0.85rem;">🏆 برنده بر اساس امتیاز: هوش مصنوعی یادگیرنده (<span dir="ltr" class="ltr-num">${rlScore}</span> در برابر <span dir="ltr" class="ltr-num">${stratScore}</span>)</span>`;
       } else if (result.winner === 'strategy') {
-        winnerBadge = '<span class="status-pill success" style="background: #e0f2fe; color: #0369a1; font-size: 0.85rem;">برنده: استراتژی شرطی شما 👏</span>';
+        winnerBadge = `<span class="status-pill success" style="background: #e0f2fe; color: #0369a1; font-size: 0.85rem;">🏆 برنده بر اساس امتیاز: استراتژی شرطی شما (<span dir="ltr" class="ltr-num">${stratScore}</span> در برابر <span dir="ltr" class="ltr-num">${rlScore}</span>)</span>`;
       } else {
-        winnerBadge = '<span class="status-pill" style="background: #fef3c7; color: #92400e; font-size: 0.85rem;">نتیجه: مساوی 🤝</span>';
+        winnerBadge = `<span class="status-pill" style="background: #fef3c7; color: #92400e; font-size: 0.85rem;">🤝 نتیجه: مساوی بر اساس امتیاز (<span dir="ltr" class="ltr-num">${rlScore}</span>)</span>`;
       }
 
       analysisBox.innerHTML = `
@@ -329,16 +344,45 @@ const ComparisonUI = {
     const infoStrat = document.getElementById('info-compare-strat');
     const infoRL = document.getElementById('info-compare-rl');
     if (infoStrat) {
-      infoStrat.innerHTML = `<div><strong>موقعیت آغازین (گام ۰):</strong> آماده آغاز رقابت</div>`;
+      infoStrat.innerHTML = `<div><strong>موقعیت آغازین (گام ۰):</strong> امتیاز: ۰ | آماده آغاز رقابت</div>`;
     }
     if (infoRL) {
-      infoRL.innerHTML = `<div><strong>موقعیت آغازین (گام ۰):</strong> آماده آغاز رقابت</div>`;
+      infoRL.innerHTML = `<div><strong>موقعیت آغازین (گام ۰):</strong> امتیاز: ۰ | آماده آغاز رقابت</div>`;
     }
 
     let step = 0;
     const tick = () => {
       if (step >= maxSteps) {
         clearInterval(this.dualAnimId);
+        // Display final conclusive badges in info boxes
+        if (infoStrat) {
+          const stratScore = result.strategy_run.total_reward;
+          const stratWon = result.winner === 'strategy';
+          const isTie = result.winner === 'tie';
+          infoStrat.innerHTML = `
+            <div style="font-weight: bold; color: ${stratWon ? '#0369a1' : '#475569'};">
+              🏁 پایان بازی | امتیاز نهایی: <span dir="ltr" class="ltr-num">${stratScore}</span> ⭐
+            </div>
+            <div style="font-size: 0.8rem; margin-top: 3px; color: ${stratWon ? '#0284c7' : '#64748b'};">
+              ${stratWon ? '🏆 برنده مسابقه بر اساس بالاترین امتیاز!' : (isTie ? '🤝 مساوی بر اساس امتیاز' : '❌ کسب امتیاز کمتر در مسابقه')}
+              (${result.strategy_run.success ? 'خروج موفق ✅' : 'عدم خروج'})
+            </div>
+          `;
+        }
+        if (infoRL) {
+          const rlScore = result.rl_run.total_reward;
+          const rlWon = result.winner === 'rl';
+          const isTie = result.winner === 'tie';
+          infoRL.innerHTML = `
+            <div style="font-weight: bold; color: ${rlWon ? '#15803d' : '#475569'};">
+              🏁 پایان بازی | امتیاز نهایی: <span dir="ltr" class="ltr-num">${rlScore}</span> ⭐
+            </div>
+            <div style="font-size: 0.8rem; margin-top: 3px; color: ${rlWon ? '#16a34a' : '#64748b'};">
+              ${rlWon ? '🏆 برنده مسابقه بر اساس بالاترین امتیاز!' : (isTie ? '🤝 مساوی بر اساس امتیاز' : '❌ کسب امتیاز کمتر در مسابقه')}
+              (${result.rl_run.success ? 'خروج موفق ✅' : 'عدم خروج'})
+            </div>
+          `;
+        }
         return;
       }
 
@@ -368,17 +412,29 @@ const ComparisonUI = {
       }
 
       if (infoStrat && sStep) {
+        const sScore = sStep.accumulated_score != null ? sStep.accumulated_score : sStep.reward;
         infoStrat.innerHTML = `
           <div><strong>گام ${sStep.step_index}:</strong> حرکت به سمت <strong>${sStep.action_fa}</strong></div>
           <div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;">علت: ${sStep.rule_or_reason}</div>
-          <div style="margin-top: 4px; font-weight: bold; color: #0284c7;">جان: ${'❤️'.repeat(Math.max(0, sStep.lives))} | سکه: ${sStep.coins} 🪙 | الماس: ${sStep.diamonds} 💎</div>
+          <div style="margin-top: 4px; font-weight: bold; color: #0284c7; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <span style="background: #e0f2fe; padding: 1px 6px; border-radius: 4px;">امتیاز: <span dir="ltr" class="ltr-num">${sScore}</span> ⭐</span>
+            <span>جان: ${'❤️'.repeat(Math.max(0, sStep.lives))}</span>
+            <span>سکه: ${sStep.coins} 🪙</span>
+            <span>الماس: ${sStep.diamonds} 💎</span>
+          </div>
         `;
       }
       if (infoRL && rStep) {
+        const rScore = rStep.accumulated_score != null ? rStep.accumulated_score : rStep.reward;
         infoRL.innerHTML = `
           <div><strong>گام ${rStep.step_index}:</strong> حرکت به سمت <strong>${rStep.action_fa}</strong></div>
           <div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;">علت: ${rStep.rule_or_reason}</div>
-          <div style="margin-top: 4px; font-weight: bold; color: #16a34a;">جان: ${'❤️'.repeat(Math.max(0, rStep.lives))} | سکه: ${rStep.coins} 🪙 | الماس: ${rStep.diamonds} 💎</div>
+          <div style="margin-top: 4px; font-weight: bold; color: #16a34a; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <span style="background: #dcfce7; padding: 1px 6px; border-radius: 4px;">امتیاز: <span dir="ltr" class="ltr-num">${rScore}</span> ⭐</span>
+            <span>جان: ${'❤️'.repeat(Math.max(0, rStep.lives))}</span>
+            <span>سکه: ${rStep.coins} 🪙</span>
+            <span>الماس: ${rStep.diamonds} 💎</span>
+          </div>
         `;
       }
 

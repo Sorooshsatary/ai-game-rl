@@ -25,6 +25,7 @@ class ComparisonStep:
     coins: int
     diamonds: int
     events: List[str]
+    accumulated_score: float = 0.0
     coins_left: List[List[int]] = field(default_factory=list)
     diamonds_left: List[List[int]] = field(default_factory=list)
     enemy_stunned: bool = False
@@ -41,6 +42,7 @@ class ComparisonStep:
             "action_fa": self.action_fa,
             "rule_or_reason": self.rule_or_reason,
             "reward": round(self.reward, 1),
+            "accumulated_score": round(self.accumulated_score, 1),
             "lives": self.lives,
             "coins": self.coins,
             "diamonds": self.diamonds,
@@ -66,6 +68,7 @@ class AgentRunSummary:
     steps: List[ComparisonStep] = field(default_factory=list)
     agent_start: List[int] = field(default_factory=lambda: [0, 0])
     enemy_start: List[int] = field(default_factory=lambda: [0, 0])
+    episodes_trained: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -82,6 +85,7 @@ class AgentRunSummary:
             "termination_reason": self.termination_reason,
             "agent_start": self.agent_start,
             "enemy_start": self.enemy_start,
+            "episodes_trained": self.episodes_trained,
             "steps": [s.to_dict() for s in self.steps],
         }
 
@@ -141,6 +145,7 @@ class AgentComparisonEngine:
         rl_agent: QLearningAgent,
         seed: Optional[int] = None,
         max_steps: int = 100,
+        episodes_trained: int = 0,
     ) -> DualComparisonResult:
         """Runs both agents on identical map and starting seeds, generating direct comparison."""
         if seed is None:
@@ -170,31 +175,46 @@ class AgentComparisonEngine:
             agent_name="عامل هوش مصنوعی یادگیرنده",
             agent_type="rl",
             max_steps=max_steps,
+            episodes_trained=episodes_trained,
         )
 
-        # 3. Determine winner and generate educational analysis
-        winner = "tie"
-        if rl_run.coins_exited > strat_run.coins_exited:
+        # 3. Determine winner based primarily on total score (امتیاز کل / مجموع پاداش)
+        if rl_run.total_reward > strat_run.total_reward:
             winner = "rl"
-        elif strat_run.coins_exited > rl_run.coins_exited:
+        elif strat_run.total_reward > rl_run.total_reward:
             winner = "strategy"
         else:
+            # In case of tie in total score, check success then coins
             if rl_run.success and not strat_run.success:
                 winner = "rl"
             elif strat_run.success and not rl_run.success:
                 winner = "strategy"
-            elif rl_run.total_reward > strat_run.total_reward:
+            elif rl_run.coins_exited > strat_run.coins_exited:
                 winner = "rl"
+            elif strat_run.coins_exited > rl_run.coins_exited:
+                winner = "strategy"
+            else:
+                winner = "tie"
 
         # Generate child-friendly Persian explanation of the contrast
         analysis_fa = self._generate_analysis(strat_run, rl_run)
 
-        # Comparison metrics table
+        # Comparison metrics table (Score as the primary evaluation criterion)
         comp_table = [
+            {
+                "metric": "معیار برنده: امتیاز کل کسب‌شده (Score)",
+                "strategy": f"{strat_run.total_reward:.1f} امتیاز",
+                "rl": f"{rl_run.total_reward:.1f} امتیاز",
+            },
+            {
+                "metric": "وضعیت نتیجه نهایی",
+                "strategy": "🏆 برنده مسابقه" if winner == "strategy" else ("🤝 مساوی" if winner == "tie" else "بازنده"),
+                "rl": "🏆 برنده مسابقه" if winner == "rl" else ("🤝 مساوی" if winner == "tie" else "بازنده"),
+            },
             {
                 "metric": "پایه تصمیم‌گیری",
                 "strategy": "قوانین دستوری و شرطی شما",
-                "rl": "ارزش‌گذاری بر اساس تجربه و پاداش",
+                "rl": f"تجربه هوش مصنوعی ({episodes_trained} اپیزود آموزش‌دیده)" if episodes_trained > 0 else "ارزش‌گذاری بر اساس تجربه و پاداش",
             },
             {
                 "metric": "خروج موفق از نقشه",
@@ -241,6 +261,7 @@ class AgentComparisonEngine:
         agent_name: str,
         agent_type: str,
         max_steps: int,
+        episodes_trained: int = 0,
     ) -> AgentRunSummary:
         steps: List[ComparisonStep] = []
         total_reward = 0.0
@@ -270,6 +291,7 @@ class AgentComparisonEngine:
                 action_fa=action.fa_name(),
                 rule_or_reason=reason,
                 reward=step_result.reward,
+                accumulated_score=round(total_reward, 1),
                 lives=env.agent.lives,
                 coins=env.agent.coins,
                 diamonds=env.agent.diamonds,
@@ -306,36 +328,34 @@ class AgentComparisonEngine:
             steps=steps,
             agent_start=[env.agent_start.x, env.agent_start.y],
             enemy_start=[env.enemy_start.x, env.enemy_start.y],
+            episodes_trained=episodes_trained,
         )
 
     def _generate_analysis(self, strat: AgentRunSummary, rl: AgentRunSummary) -> str:
-        if rl.success and not strat.success:
-            if strat.termination_reason == "DEATH":
+        score_diff = round(abs(rl.total_reward - strat.total_reward), 1)
+        if rl.total_reward > strat.total_reward:
+            if not strat.success and rl.success:
                 return (
-                    "💡 درس کلیدی: عامل استراتژی قانون‌محور به دلیل پایبندی به دستورات از پیش‌تعیین‌شده "
-                    "(مثل طمع الماس یا عدم تخمین صحیح مسیر هیولا) جان خود را از دست داد و تمام امتیازها سوخت! "
-                    "اما عامل یادگیرنده هوش مصنوعی از روی تجارب گذشته یاد گرفته بود که چگونه فاصله ایمن را حفظ کند "
-                    "و زنده به خروجی برسد."
+                    f"🏆 عامل هوش مصنوعی با کسب {rl.total_reward:.1f} امتیاز در برابر {strat.total_reward:.1f} امتیاز برنده مسابقه شد! "
+                    "💡 درس کلیدی: عامل استراتژی قانون‌محور به دلیل پایبندی به دستورات از پیش‌تعیین‌شده نتوانست زنده بماند یا به موقع خارج شود، "
+                    "اما هوش مصنوعی آموزش‌دیده توانست با تکیه بر تجربیات بهینه‌شده به سلامت به خروجی رسیده و بالاترین امتیاز را ثبت کند."
                 )
             else:
                 return (
-                    "💡 درس کلیدی: عامل استراتژی قانون‌محور نتوانست مسیر بهینه را قبل از اتمام زمان پیدا کند، "
-                    "در حالی که هوش مصنوعی مسیرهای منتهی به خروج را کشف کرده و بازی را با موفقیت تمام کرد."
+                    f"🏆 عامل هوش مصنوعی با کسب {rl.total_reward:.1f} امتیاز در برابر {strat.total_reward:.1f} امتیاز برنده مسابقه شد ({score_diff} امتیاز بیشتر). "
+                    "💡 درس کلیدی: هوش مصنوعی آموزش‌دیده با ایجاد تعادل هوشمندانه میان جمع‌آوری منابع، حفظ جان و خروج بهینه، "
+                    "مجموع امتیاز بالاتری را نسبت به قوانین ثابت استراتژی به دست آورد."
                 )
-        elif rl.coins_exited > strat.coins_exited:
+        elif strat.total_reward > rl.total_reward:
             return (
-                f"💡 درس کلیدی: هر دو عامل زنده خارج شدند، اما هوش مصنوعی با بهینه‌سازی حرکات خود توانست "
-                f"{rl.coins_exited - strat.coins_exited} سکه بیشتر ذخیره کند و مسیرهای هوشمندانه‌تری بسازد."
-            )
-        elif strat.coins_exited > rl.coins_exited:
-            return (
-                "💡 تحلیل: استراتژی تنظیمی شما در این نقشه خاص عملکرد خیره‌کننده‌ای داشت و حتی هوش مصنوعی را شکست داد! "
-                "این نشان می‌دهد قوانین شما پایه‌های بسیار محکمی دارند."
+                f"👏 استراتژی شما با کسب {strat.total_reward:.1f} امتیاز در برابر {rl.total_reward:.1f} امتیاز برنده مسابقه شد! "
+                "💡 تحلیل: قوانین و شروط دستوری که طراحی کرده‌اید در این نقشه خاص عملکرد خیره‌کننده‌ای داشتند و امتیاز بالاتری ثبت کردند. "
+                "می‌توانید با ادامه آموزش هوش مصنوعی در بخش مرکز آموزش، تجربیات آن را تقویت کنید تا در دورهای بعد پیروز شود!"
             )
         else:
             return (
-                "💡 تحلیل: هر دو عامل عملکرد نزدیکی داشتند؛ این وضعیت زمینه مناسبی است تا با تغییر موقعیت هیولا یا منابع، "
-                "انعطاف‌پذیری هوش مصنوعی در برابر قوانین ثابت را مجدداً بیازمایید."
+                f"🤝 هر دو عامل با کسب امتیاز یکسان ({rl.total_reward:.1f} امتیاز) مساوی شدند! "
+                "این نقشه نشان می‌دهد هر دو رویکرد به بازدهی و امتیاز مشابهی دست یافته‌اند."
             )
 
     def _translate_term(self, term: str) -> str:
