@@ -50,6 +50,8 @@ class State:
     grid_width: int
     grid_height: int
     walls: Set[Position] = field(default_factory=set)
+    coins: List[Position] = field(default_factory=list)
+    diamonds: List[Position] = field(default_factory=list)
 
     def get_legal_actions(self) -> List[Action]:
         """Returns list of actions that stay within grid bounds and avoid walls."""
@@ -196,5 +198,7 @@ class State:
             "coins_held": self.coins_held,
             "diamonds_held": self.diamonds_held,
             "total_coins_remaining": self.total_coins_remaining,
+            "coins": [[p.x, p.y] for p in self.coins],
+            "diamonds": [[p.x, p.y] for p in self.diamonds],
             "discrete_state": list(self.to_discrete()),
         }

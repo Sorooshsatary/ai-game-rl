@@ -17,6 +17,8 @@ def run_episode(
     """Executes a full episode on a randomized map and records detailed replay logs."""
     state = env.reset(new_map=True, seed=seed)
     map_config = env.grid_map.to_dict()
+    map_config["agent_start"] = [env.agent_start.x, env.agent_start.y]
+    map_config["enemy_start"] = [env.enemy_start.x, env.enemy_start.y]
 
     steps = []
     total_reward = 0.0
@@ -27,7 +29,7 @@ def run_episode(
     while not env.done:
         step_idx += 1
         curr_state = env.get_state()
-        state_snapshot = curr_state.to_dict()
+        state_snapshot_before = curr_state.to_dict()
 
         # Agent chooses action
         action, was_exploratory, curr_q, prior_q = agent.select_action(curr_state, epsilon)
@@ -52,12 +54,12 @@ def run_episode(
             learned_q=agent.get_q_values(curr_state),
             was_exploratory=was_exploratory,
             events=step_result.events,
-            state_info=state_snapshot,
+            state_info=state_snapshot_before,
         )
 
         step_log = DecisionStepLog(
             step_index=step_idx,
-            state_snapshot=state_snapshot,
+            state_snapshot=step_result.next_state.to_dict(),
             prior_q_values={a.name: val for a, val in prior_q.items()},
             learned_q_values={a.name: val for a, val in agent.get_q_values(curr_state).items()},
             selected_action=action.name,

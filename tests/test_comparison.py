@@ -49,6 +49,16 @@ class TestAgentComparison(unittest.TestCase):
         self.assertIn("strategy_run", d)
         self.assertIn("rl_run", d)
         self.assertIn("comparison_table", d)
+        self.assertIn("agent_start", d["strategy_run"])
+        self.assertIn("enemy_start", d["strategy_run"])
+
+    def test_coin_collection_step_synchronization(self):
+        """Verify that agent_pos is updated to the coin tile at the same step the coin is collected."""
+        summary = self.engine.run_strategy_agent_only(self.strat, seed=12345, max_steps=50)
+        for st in summary.steps:
+            if "COLLECT_COIN" in st.events:
+                # The collected coin must NOT be present in coins_left at this step
+                self.assertNotIn(st.agent_pos, st.coins_left)
 
 
 if __name__ == "__main__":

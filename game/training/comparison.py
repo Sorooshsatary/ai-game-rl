@@ -60,6 +60,8 @@ class AgentRunSummary:
     success: bool
     termination_reason: str
     steps: List[ComparisonStep] = field(default_factory=list)
+    agent_start: List[int] = field(default_factory=lambda: [0, 0])
+    enemy_start: List[int] = field(default_factory=lambda: [0, 0])
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -74,6 +76,8 @@ class AgentRunSummary:
             "steps_taken": self.steps_taken,
             "success": self.success,
             "termination_reason": self.termination_reason,
+            "agent_start": self.agent_start,
+            "enemy_start": self.enemy_start,
             "steps": [s.to_dict() for s in self.steps],
         }
 
@@ -141,6 +145,8 @@ class AgentComparisonEngine:
         # 1. Run Rule-Based Strategy Agent
         env_strat = GameEnvironment(config=self.config, seed=seed)
         map_config = env_strat.grid_map.to_dict()
+        map_config["agent_start"] = [env_strat.agent_start.x, env_strat.agent_start.y]
+        map_config["enemy_start"] = [env_strat.enemy_start.x, env_strat.enemy_start.y]
         strat_run = self._execute_agent_run(
             env=env_strat,
             agent=strategy_agent,
@@ -254,8 +260,8 @@ class AgentComparisonEngine:
 
             step_data = ComparisonStep(
                 step_index=step_count,
-                agent_pos=[curr_state.agent_pos.x, curr_state.agent_pos.y],
-                enemy_pos=[curr_state.enemy_pos.x, curr_state.enemy_pos.y],
+                agent_pos=[env.agent.position.x, env.agent.position.y],
+                enemy_pos=[env.enemy.position.x, env.enemy.position.y],
                 action=action.name,
                 action_fa=action.fa_name(),
                 rule_or_reason=reason,
@@ -292,6 +298,8 @@ class AgentComparisonEngine:
             success=env.agent.has_exited,
             termination_reason=term_reason,
             steps=steps,
+            agent_start=[env.agent_start.x, env.agent_start.y],
+            enemy_start=[env.enemy_start.x, env.enemy_start.y],
         )
 
     def _generate_analysis(self, strat: AgentRunSummary, rl: AgentRunSummary) -> str:

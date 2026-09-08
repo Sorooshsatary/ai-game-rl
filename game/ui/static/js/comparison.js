@@ -51,12 +51,15 @@ const ComparisonUI = {
       if (res1.success && res1.map_config) {
         this.stratTestResult = res1;
         const canvas1 = document.getElementById('strategy-test-canvas');
+        const agentStart = res1.map_config.agent_start || (res1.summary && res1.summary.agent_start) || [0, 0];
+        const enemyStart = res1.map_config.enemy_start || (res1.summary && res1.summary.enemy_start) || [res1.map_config.width - 1, res1.map_config.height - 1];
         if (canvas1) {
           const renderer1 = new GridCanvasRenderer(canvas1);
-          const firstStep = (res1.summary.steps && res1.summary.steps[0]) ? res1.summary.steps[0] : {};
           renderer1.renderSingleAgentFrame(res1.map_config, {
-            agent_pos: firstStep.agent_pos || [0, 0],
-            enemy_pos: firstStep.enemy_pos || [7, 7]
+            agent_pos: agentStart,
+            enemy_pos: enemyStart,
+            coins: res1.map_config.coins || [],
+            diamonds: res1.map_config.diamonds || [],
           });
         }
 
@@ -67,12 +70,16 @@ const ComparisonUI = {
           const rendererS = new GridCanvasRenderer(canvasStrat);
           const rendererR = new GridCanvasRenderer(canvasRL);
           rendererS.renderSingleAgentFrame(res1.map_config, {
-            agent_pos: firstStep.agent_pos || [0, 0],
-            enemy_pos: firstStep.enemy_pos || [7, 7]
+            agent_pos: agentStart,
+            enemy_pos: enemyStart,
+            coins: res1.map_config.coins || [],
+            diamonds: res1.map_config.diamonds || [],
           });
           rendererR.renderSingleAgentFrame(res1.map_config, {
-            agent_pos: firstStep.agent_pos || [0, 0],
-            enemy_pos: firstStep.enemy_pos || [7, 7]
+            agent_pos: agentStart,
+            enemy_pos: enemyStart,
+            coins: res1.map_config.coins || [],
+            diamonds: res1.map_config.diamonds || [],
           });
         }
       }
@@ -125,6 +132,28 @@ const ComparisonUI = {
 
     let idx = 0;
     if (this.stratTestAnimId) clearInterval(this.stratTestAnimId);
+
+    const agentStart = (res.summary && res.summary.agent_start) || mapConfig.agent_start || [0, 0];
+    const enemyStart = (res.summary && res.summary.enemy_start) || mapConfig.enemy_start || [mapConfig.width - 1, mapConfig.height - 1];
+
+    renderer.renderSingleAgentFrame(mapConfig, {
+      agent_pos: agentStart,
+      enemy_pos: enemyStart,
+      coins: mapConfig.coins || [],
+      diamonds: mapConfig.diamonds || [],
+    });
+
+    if (livesEl) livesEl.textContent = '❤️❤️❤️';
+    if (coinsEl) coinsEl.textContent = '0 🪙';
+    if (diamondsEl) diamondsEl.textContent = '0 💎';
+    if (stepEl) stepEl.textContent = 'موقعیت آغازین (گام ۰)';
+    if (logBox) {
+      logBox.innerHTML = `
+        <div style="font-size: 0.88rem; color: #475569;">
+          عامل در خانه شروع [${agentStart.join(', ')}] مستقر شد و آماده حرکت است...
+        </div>
+      `;
+    }
 
     const drawStep = () => {
       if (idx >= steps.length) {
@@ -189,7 +218,6 @@ const ComparisonUI = {
       idx++;
     };
 
-    drawStep();
     this.stratTestAnimId = setInterval(drawStep, speed);
   },
 
@@ -278,8 +306,34 @@ const ComparisonUI = {
     const speed = speedSelect ? parseInt(speedSelect.value) || 450 : 450;
 
     if (this.dualAnimId) clearInterval(this.dualAnimId);
-    let step = 0;
 
+    const agentStart = (result.strategy_run && result.strategy_run.agent_start) || result.map_config.agent_start || [0, 0];
+    const enemyStart = (result.strategy_run && result.strategy_run.enemy_start) || result.map_config.enemy_start || [result.map_config.width - 1, result.map_config.height - 1];
+
+    rendererStrat.renderSingleAgentFrame(result.map_config, {
+      agent_pos: agentStart,
+      enemy_pos: enemyStart,
+      coins: result.map_config.coins || [],
+      diamonds: result.map_config.diamonds || [],
+    });
+
+    rendererRL.renderSingleAgentFrame(result.map_config, {
+      agent_pos: agentStart,
+      enemy_pos: enemyStart,
+      coins: result.map_config.coins || [],
+      diamonds: result.map_config.diamonds || [],
+    });
+
+    const infoStrat = document.getElementById('info-compare-strat');
+    const infoRL = document.getElementById('info-compare-rl');
+    if (infoStrat) {
+      infoStrat.innerHTML = `<div><strong>موقعیت آغازین (گام ۰):</strong> آماده آغاز رقابت</div>`;
+    }
+    if (infoRL) {
+      infoRL.innerHTML = `<div><strong>موقعیت آغازین (گام ۰):</strong> آماده آغاز رقابت</div>`;
+    }
+
+    let step = 0;
     const tick = () => {
       if (step >= maxSteps) {
         clearInterval(this.dualAnimId);
@@ -289,22 +343,23 @@ const ComparisonUI = {
       const sStep = stratSteps[Math.min(step, stratSteps.length - 1)];
       const rStep = rlSteps[Math.min(step, rlSteps.length - 1)];
 
-      rendererStrat.renderSingleAgentFrame(result.map_config, {
-        agent_pos: sStep.agent_pos,
-        enemy_pos: sStep.enemy_pos,
-        coins: sStep.coins_left,
-        diamonds: sStep.diamonds_left,
-      });
+      if (sStep) {
+        rendererStrat.renderSingleAgentFrame(result.map_config, {
+          agent_pos: sStep.agent_pos,
+          enemy_pos: sStep.enemy_pos,
+          coins: sStep.coins_left,
+          diamonds: sStep.diamonds_left,
+        });
+      }
 
-      rendererRL.renderSingleAgentFrame(result.map_config, {
-        agent_pos: rStep.agent_pos,
-        enemy_pos: rStep.enemy_pos,
-        coins: rStep.coins_left,
-        diamonds: rStep.diamonds_left,
-      });
-
-      const infoStrat = document.getElementById('info-compare-strat');
-      const infoRL = document.getElementById('info-compare-rl');
+      if (rStep) {
+        rendererRL.renderSingleAgentFrame(result.map_config, {
+          agent_pos: rStep.agent_pos,
+          enemy_pos: rStep.enemy_pos,
+          coins: rStep.coins_left,
+          diamonds: rStep.diamonds_left,
+        });
+      }
 
       if (infoStrat && sStep) {
         infoStrat.innerHTML = `
@@ -324,7 +379,6 @@ const ComparisonUI = {
       step++;
     };
 
-    tick();
     this.dualAnimId = setInterval(tick, speed);
   }
 };

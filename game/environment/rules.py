@@ -110,6 +110,8 @@ class GameEnvironment:
             grid_width=self.grid_map.width,
             grid_height=self.grid_map.height,
             walls=set(self.grid_map.walls),
+            coins=list(self.grid_map.coins),
+            diamonds=list(self.grid_map.diamonds),
         )
 
     def step(self, action: Action) -> StepResult:

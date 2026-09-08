@@ -290,10 +290,13 @@ async def test_strategy_endpoint(req: StrategyTestRequest):
     seed = req.seed or 12345
     env_map = GameEnvironment(config=active_cfg, seed=seed)
     run_summary = engine.run_strategy_agent_only(strat, seed=seed)
+    map_dict = env_map.grid_map.to_dict()
+    map_dict["agent_start"] = [env_map.agent_start.x, env_map.agent_start.y]
+    map_dict["enemy_start"] = [env_map.enemy_start.x, env_map.enemy_start.y]
     return {
         "success": True,
         "seed": seed,
-        "map_config": env_map.grid_map.to_dict(),
+        "map_config": map_dict,
         "summary": run_summary.to_dict(),
     }
 
