@@ -1,0 +1,12 @@
+services:
+  ai-game-rl:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-game-rl-server
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+    restart: unless-stopped
