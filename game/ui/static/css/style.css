@@ -25,6 +25,7 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main);
   direction: rtl;
+  text-align: right;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
