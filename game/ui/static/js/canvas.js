@@ -371,7 +371,7 @@ class GridCanvasRenderer {
     this.ctx.restore();
   }
 
-  drawRobot(x, y, cellSize, theme = 'default') {
+  drawRobot(x, y, cellSize, theme = 'default', heading = 'RIGHT') {
     const cx = x * cellSize + cellSize / 2;
     const cy = y * cellSize + cellSize / 2;
     const s = cellSize * 0.42;
@@ -496,31 +496,49 @@ class GridCanvasRenderer {
     this.ctx.arc(cx - s * 0.15, cy - s * 0.40, s * 0.22, -Math.PI / 4, Math.PI / 4);
     this.ctx.stroke();
 
-    // 7. Cute Glowing Expressive Eyes
+    // Heading offsets for directional eyes
+    let lookDx = 0;
+    let lookDy = 0;
+    if (heading === 'LEFT') lookDx = -s * 0.07;
+    else if (heading === 'RIGHT') lookDx = s * 0.07;
+    else if (heading === 'UP') lookDy = -s * 0.07;
+    else if (heading === 'DOWN') lookDy = s * 0.07;
+
+    // 7. Cute Glowing Expressive Eyes shifted in heading direction
     this.ctx.fillStyle = accent;
     this.ctx.shadowColor = accent;
     this.ctx.shadowBlur = 8;
     const eyeR = s * 0.085;
-    const eyeY = cy - s * 0.30;
+    const eyeY = cy - s * 0.30 + lookDy;
     this.ctx.beginPath();
-    this.ctx.arc(cx - s * 0.18, eyeY, eyeR, 0, Math.PI * 2);
+    this.ctx.arc(cx - s * 0.18 + lookDx, eyeY, eyeR, 0, Math.PI * 2);
     this.ctx.fill();
 
     this.ctx.beginPath();
-    this.ctx.arc(cx + s * 0.18, eyeY, eyeR, 0, Math.PI * 2);
+    this.ctx.arc(cx + s * 0.18 + lookDx, eyeY, eyeR, 0, Math.PI * 2);
     this.ctx.fill();
 
     // Eye catchlights
     this.ctx.fillStyle = '#ffffff';
     this.ctx.beginPath();
-    this.ctx.arc(cx - s * 0.20, eyeY - s * 0.025, eyeR * 0.4, 0, Math.PI * 2);
-    this.ctx.arc(cx + s * 0.16, eyeY - s * 0.025, eyeR * 0.4, 0, Math.PI * 2);
+    this.ctx.arc(cx - s * 0.20 + lookDx, eyeY - s * 0.025, eyeR * 0.4, 0, Math.PI * 2);
+    this.ctx.arc(cx + s * 0.16 + lookDx, eyeY - s * 0.025, eyeR * 0.4, 0, Math.PI * 2);
     this.ctx.fill();
+
+    // 8. Directional Visor Arrow Indicator
+    this.ctx.fillStyle = accent;
+    this.ctx.shadowColor = accent;
+    this.ctx.shadowBlur = 4;
+    this.ctx.font = `bold ${Math.floor(s * 0.26)}px sans-serif`;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    const arrowMap = { UP: '▲', DOWN: '▼', LEFT: '◀', RIGHT: '▶' };
+    this.ctx.fillText(arrowMap[heading] || '▶', cx, cy - s * 0.46);
 
     this.ctx.restore();
   }
 
-  drawEnemy(x, y, cellSize, isStunned = false) {
+  drawEnemy(x, y, cellSize, isStunned = false, heading = 'RIGHT') {
     const cx = x * cellSize + cellSize / 2;
     const cy = y * cellSize + cellSize / 2;
     const s = cellSize * 0.42;
@@ -629,6 +647,14 @@ class GridCanvasRenderer {
       this.ctx.textBaseline = 'middle';
       this.ctx.fillText('💫', cx, cy - s * 0.92);
     } else {
+      // Direction offsets for monster eyes
+      let eLookDx = 0;
+      let eLookDy = 0;
+      if (heading === 'LEFT') eLookDx = -s * 0.06;
+      else if (heading === 'RIGHT') eLookDx = s * 0.06;
+      else if (heading === 'UP') eLookDy = -s * 0.06;
+      else if (heading === 'DOWN') eLookDy = s * 0.06;
+
       // Glowing Yellow Eyes
       this.ctx.fillStyle = '#fef08a';
       this.ctx.shadowColor = '#fbbf24';
@@ -643,12 +669,20 @@ class GridCanvasRenderer {
       this.ctx.fill();
       this.ctx.shadowBlur = 0;
 
-      // Dark pupils
+      // Dark pupils shifted towards movement heading
       this.ctx.fillStyle = '#7f1d1d';
       this.ctx.beginPath();
-      this.ctx.ellipse(cx - s * 0.24, cy - s * 0.08, eyeW * 0.4, eyeH * 0.65, 0, 0, Math.PI * 2);
-      this.ctx.ellipse(cx + s * 0.24, cy - s * 0.08, eyeW * 0.4, eyeH * 0.65, 0, 0, Math.PI * 2);
+      this.ctx.ellipse(cx - s * 0.24 + eLookDx, cy - s * 0.08 + eLookDy, eyeW * 0.4, eyeH * 0.65, 0, 0, Math.PI * 2);
+      this.ctx.ellipse(cx + s * 0.24 + eLookDx, cy - s * 0.08 + eLookDy, eyeW * 0.4, eyeH * 0.65, 0, 0, Math.PI * 2);
       this.ctx.fill();
+
+      // Threat patrol direction indicator
+      this.ctx.fillStyle = '#fef08a';
+      this.ctx.font = `bold ${Math.floor(s * 0.24)}px sans-serif`;
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      const arrowMap = { UP: '▲', DOWN: '▼', LEFT: '◀', RIGHT: '▶' };
+      this.ctx.fillText(arrowMap[heading] || '▶', cx, cy - s * 0.32);
     }
 
     // 5. Grinning mouth & sharp teeth
@@ -727,13 +761,15 @@ class GridCanvasRenderer {
     if (stateSnapshot.enemy_pos) {
       const [ex, ey] = stateSnapshot.enemy_pos;
       const isStunned = !!(stateSnapshot.enemy_stunned || (stateSnapshot.stun_timer && stateSnapshot.stun_timer > 0));
-      this.drawEnemy(ex, ey, cellSize, isStunned);
+      const enemyHeading = stateSnapshot.enemy_heading || (mapConfig.enemy && mapConfig.enemy.patrol_direction) || 'RIGHT';
+      this.drawEnemy(ex, ey, cellSize, isStunned, enemyHeading);
     }
 
     // 7. Agent Robot
     if (stateSnapshot.agent_pos) {
       const [ax, ay] = stateSnapshot.agent_pos;
-      this.drawRobot(ax, ay, cellSize, agentTheme);
+      const agentHeading = stateSnapshot.agent_heading || stateSnapshot.action || 'RIGHT';
+      this.drawRobot(ax, ay, cellSize, agentTheme, agentHeading);
     }
   }
 
@@ -781,7 +817,8 @@ class GridCanvasRenderer {
     // Enemy
     if (frame.enemy) {
       const isStunned = !!(frame.enemy.is_stunned || (frame.enemy.stun_timer && frame.enemy.stun_timer > 0));
-      this.drawEnemy(frame.enemy.x, frame.enemy.y, cellSize, isStunned);
+      const enemyHeading = frame.enemy.patrol_direction || 'RIGHT';
+      this.drawEnemy(frame.enemy.x, frame.enemy.y, cellSize, isStunned, enemyHeading);
     }
 
     // Agents
@@ -802,8 +839,7 @@ class GridCanvasRenderer {
         }
         if (ag.has_exited) return;
 
-        const theme = themes[idx % themes.length];
-        this.drawRobot(ag.x, ag.y, cellSize, theme);
+        this.drawRobot(ag.x, ag.y, cellSize, themes[idx % themes.length], ag.heading || 'RIGHT');
       });
     }
   }

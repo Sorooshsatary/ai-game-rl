@@ -88,6 +88,7 @@ class AgentStatus:
     has_exited: bool = False
     total_reward: float = 0.0
     steps_taken: int = 0
+    heading: Action = Action.RIGHT
 
     def copy(self) -> "AgentStatus":
         return AgentStatus(
@@ -100,6 +101,7 @@ class AgentStatus:
             has_exited=self.has_exited,
             total_reward=self.total_reward,
             steps_taken=self.steps_taken,
+            heading=self.heading,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -107,6 +109,7 @@ class AgentStatus:
             "agent_id": self.agent_id,
             "x": self.position.x,
             "y": self.position.y,
+            "heading": self.heading.name,
             "lives": self.lives,
             "coins": self.coins,
             "diamonds": self.diamonds,

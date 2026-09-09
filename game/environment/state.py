@@ -54,6 +54,8 @@ class State:
     diamonds: List[Position] = field(default_factory=list)
     enemy_stunned: bool = False
     stun_timer: int = 0
+    agent_heading: Action = Action.RIGHT
+    enemy_heading: Action = Action.RIGHT
 
     def get_legal_actions(self) -> List[Action]:
         """Returns list of actions that stay within grid bounds and avoid walls."""
@@ -152,25 +154,30 @@ class State:
         # 4. Exit direction
         exit_dir = get_relative_direction(self.agent_pos, self.exit_pos)
 
-        # 5. Enemy threat
+        # 5. Enemy threat (includes relative direction and enemy's heading)
         if self.enemy_stunned:
             enemy_threat = "STUNNED"
         else:
             dist = self.enemy_dist
+            rel_dir = get_relative_direction(self.agent_pos, self.enemy_pos)
+            enemy_hd = self.enemy_heading.name
             if dist > 3:
                 enemy_threat = "SAFE"
             elif dist <= 1:
-                enemy_threat = f"ADJ_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
+                enemy_threat = f"ADJ_{rel_dir}_{enemy_hd}"
             elif dist == 2:
-                enemy_threat = f"DANGER_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
+                enemy_threat = f"DANGER_{rel_dir}_{enemy_hd}"
             else:  # dist == 3
-                enemy_threat = f"WARN_{get_relative_direction(self.agent_pos, self.enemy_pos)}"
+                enemy_threat = f"WARN_{rel_dir}_{enemy_hd}"
 
         # 6. Map coins
         coins_status = "ZERO_LEFT" if self.total_coins_remaining == 0 else "AVAILABLE"
 
         # 7. Low lives
         low_lives = self.lives <= 1
+
+        # 8. Agent heading (facing direction)
+        agent_dir = self.agent_heading.name
 
         return (
             coin_dir,
@@ -181,13 +188,16 @@ class State:
             has_diamond,
             coins_status,
             low_lives,
+            agent_dir,
         )
 
     def to_dict(self) -> Dict[str, Any]:
         """Human-readable dictionary for logging and UI inspection."""
         return {
             "agent_pos": [self.agent_pos.x, self.agent_pos.y],
+            "agent_heading": self.agent_heading.name,
             "enemy_pos": [self.enemy_pos.x, self.enemy_pos.y],
+            "enemy_heading": self.enemy_heading.name,
             "enemy_stunned": self.enemy_stunned,
             "stun_timer": self.stun_timer,
             "nearest_coin_pos": [self.nearest_coin_pos.x, self.nearest_coin_pos.y] if self.nearest_coin_pos else None,

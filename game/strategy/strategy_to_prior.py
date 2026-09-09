@@ -92,6 +92,14 @@ class StrategyPriorEngine:
                 q_value += bonus
                 reasons.append(f"فرار و دور شدن از دشمن (+{bonus:.1f})")
 
+            # Check intercept with enemy's heading trajectory
+            if not state.enemy_stunned:
+                enemy_next_step = state.enemy_pos.move(state.enemy_heading)
+                if new_pos == enemy_next_step:
+                    traj_penalty = enemy_weight * 2.0
+                    q_value -= traj_penalty
+                    reasons.append(f"مسیر در جهت حرکت دشمن است (-{traj_penalty:.1f})")
+
             # Rule: flee_adjacent_enemy
             if self.strategy.rules.get("flee_adjacent_enemy", False) and state.enemy_dist <= 1:
                 if delta_enemy <= 0:
@@ -119,6 +127,10 @@ class StrategyPriorEngine:
                 reasons.append(f"حرکت به سوی در خروج (+{exit_weight:.1f})")
         elif delta_exit < 0 and should_rush_exit:
             q_value -= exit_weight * 0.5
+
+        # 7. Direction Continuity (heading momentum)
+        if action == state.agent_heading:
+            q_value += 0.15
 
         return round(q_value, 2), reasons
 

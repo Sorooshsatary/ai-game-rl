@@ -234,6 +234,87 @@ class TestRL(unittest.TestCase):
         self.assertIn(Action.UP, legal)
         self.assertIn(Action.DOWN, legal)
 
+    def test_state_includes_direction_and_heading(self):
+        """Verify that agent_heading and enemy_heading are present in to_discrete and to_dict."""
+        state = State(
+            agent_pos=Position(2, 2),
+            enemy_pos=Position(7, 7),
+            nearest_coin_pos=None,
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=0,
+            grid_width=8,
+            grid_height=8,
+            agent_heading=Action.UP,
+            enemy_heading=Action.LEFT,
+        )
+        discrete = state.to_discrete()
+        self.assertEqual(len(discrete), 9)
+        self.assertEqual(discrete[8], "UP")  # agent_dir
+        st_dict = state.to_dict()
+        self.assertEqual(st_dict["agent_heading"], "UP")
+        self.assertEqual(st_dict["enemy_heading"], "LEFT")
+
+    def test_enemy_heading_threat_distinction(self):
+        """Verify that enemy moving towards agent produces different discrete state than enemy moving away."""
+        state_approaching = State(
+            agent_pos=Position(2, 2),
+            enemy_pos=Position(4, 2),  # dist 2, RIGHT
+            nearest_coin_pos=None,
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=0,
+            grid_width=8,
+            grid_height=8,
+            agent_heading=Action.RIGHT,
+            enemy_heading=Action.LEFT,  # Enemy is moving LEFT, towards agent!
+        )
+
+        state_receding = State(
+            agent_pos=Position(2, 2),
+            enemy_pos=Position(4, 2),  # dist 2, RIGHT
+            nearest_coin_pos=None,
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=0,
+            grid_width=8,
+            grid_height=8,
+            agent_heading=Action.RIGHT,
+            enemy_heading=Action.RIGHT,  # Enemy is moving RIGHT, away from agent!
+        )
+
+        disc_app = state_approaching.to_discrete()
+        disc_rec = state_receding.to_discrete()
+
+        # Threat at index 4 must distinguish between heading LEFT vs heading RIGHT
+        self.assertIn("DANGER_RIGHT_LEFT", disc_app[4])
+        self.assertIn("DANGER_RIGHT_RIGHT", disc_rec[4])
+        self.assertNotEqual(disc_app, disc_rec)
+
+    def test_heading_updates_on_environment_step(self):
+        """Verify that GameEnvironment updates agent.heading and state heading upon taking action."""
+        from game.environment.rules import GameEnvironment
+        env = GameEnvironment(seed=123)
+        res1 = env.step(Action.UP)
+        self.assertEqual(env.agent.heading, Action.UP)
+        self.assertEqual(res1.next_state.agent_heading, Action.UP)
+
+        res2 = env.step(Action.LEFT)
+        self.assertEqual(env.agent.heading, Action.LEFT)
+        self.assertEqual(res2.next_state.agent_heading, Action.LEFT)
+
 
 if __name__ == "__main__":
     unittest.main()

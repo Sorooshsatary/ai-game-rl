@@ -196,12 +196,15 @@ class MultiAgentArena:
                     grid_width=grid_map.width,
                     grid_height=grid_map.height,
                     walls=set(grid_map.walls),
+                    agent_heading=w.status.heading,
+                    enemy_heading=enemy.patrol_direction,
                 )
 
                 # Select action (locked greedy)
                 action, _, _, _ = w.agent.select_action(agent_state, epsilon=0.0)
 
                 # Move
+                w.status.heading = action
                 new_pos = w.status.position.move(action)
                 if grid_map.is_valid_position(new_pos):
                     w.status.position = new_pos

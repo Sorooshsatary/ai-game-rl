@@ -114,6 +114,8 @@ class GameEnvironment:
             diamonds=list(self.grid_map.diamonds),
             enemy_stunned=self.enemy.stun_timer > 0,
             stun_timer=self.enemy.stun_timer,
+            agent_heading=self.agent.heading,
+            enemy_heading=self.enemy.patrol_direction,
         )
 
     def step(self, action: Action) -> StepResult:
@@ -122,6 +124,7 @@ class GameEnvironment:
 
         self.current_step += 1
         self.agent.steps_taken += 1
+        self.agent.heading = action
         reward = 0.0
         events: List[str] = []
 

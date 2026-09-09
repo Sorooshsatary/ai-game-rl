@@ -26,6 +26,8 @@ class ComparisonStep:
     diamonds: int
     events: List[str]
     accumulated_score: float = 0.0
+    agent_heading: str = "RIGHT"
+    enemy_heading: str = "RIGHT"
     coins_left: List[List[int]] = field(default_factory=list)
     diamonds_left: List[List[int]] = field(default_factory=list)
     enemy_stunned: bool = False
@@ -35,7 +37,9 @@ class ComparisonStep:
         return {
             "step_index": self.step_index,
             "agent_pos": self.agent_pos,
+            "agent_heading": self.agent_heading,
             "enemy_pos": self.enemy_pos,
+            "enemy_heading": self.enemy_heading,
             "enemy_stunned": self.enemy_stunned,
             "stun_timer": self.stun_timer,
             "action": self.action,
@@ -286,7 +290,9 @@ class AgentComparisonEngine:
             step_data = ComparisonStep(
                 step_index=step_count,
                 agent_pos=[env.agent.position.x, env.agent.position.y],
+                agent_heading=env.agent.heading.name,
                 enemy_pos=[env.enemy.position.x, env.enemy.position.y],
+                enemy_heading=env.enemy.patrol_direction.name,
                 action=action.name,
                 action_fa=action.fa_name(),
                 rule_or_reason=reason,
