@@ -164,7 +164,7 @@ class AgentComparisonEngine:
             env=env_strat,
             agent=strategy_agent,
             agent_id="strategy_agent",
-            agent_name=f"عامل استراتژی کودک ({strategy_agent.strategy.name})",
+            agent_name=f"شاه‌دزد استراتژی شما ({strategy_agent.strategy.name})",
             agent_type="rule_based",
             max_steps=max_steps,
         )
@@ -176,7 +176,7 @@ class AgentComparisonEngine:
             env=env_rl,
             agent=rl_agent,
             agent_id="rl_agent",
-            agent_name="عامل هوش مصنوعی یادگیرنده",
+            agent_name="شاه‌دزد هوش مصنوعی یادگیرنده",
             agent_type="rl",
             max_steps=max_steps,
             episodes_trained=episodes_trained,

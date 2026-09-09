@@ -10,9 +10,9 @@ const StrategyUI = {
     { id: "enemy_dist_gt", name: "فاصله تا پلیس بیشتر از (محیط امن)", hasDistance: true, defaultDist: 2 },
     { id: "enemy_adjacent", name: "⚠️ پلیس در خانه مجاور است (خطر فوری دستگیری)", hasDistance: false },
     { id: "enemy_in_los", name: "👁️ پلیس در دید مستقیم است (بدون مانع)", hasDistance: false },
-    { id: "enemy_blocked", name: "🧱 بین سارق و پلیس دیوار قرار دارد (امنیت نسبی)", hasDistance: false },
-    { id: "lives_le", name: "جان باقی‌مانده سارق کمتر یا مساوی", hasDistance: true, defaultDist: 1 },
-    { id: "lives_gt", name: "جان باقی‌مانده سارق بیشتر از", hasDistance: true, defaultDist: 1 },
+    { id: "enemy_blocked", name: "🧱 بین شاه‌دزد و پلیس دیوار قرار دارد (امنیت نسبی)", hasDistance: false },
+    { id: "lives_le", name: "جان باقی‌مانده شاه‌دزد کمتر یا مساوی", hasDistance: true, defaultDist: 1 },
+    { id: "lives_gt", name: "جان باقی‌مانده شاه‌دزد بیشتر از", hasDistance: true, defaultDist: 1 },
     { id: "coin_dist_le", name: "فاصله تا نزدیک‌ترین سکه کمتر یا مساوی", hasDistance: true, defaultDist: 3 },
     { id: "diamond_dist_le", name: "فاصله تا نزدیک‌ترین کلید گنج کمتر یا مساوی", hasDistance: true, defaultDist: 3 },
     { id: "converter_dist_le", name: "فاصله تا صندوق گنج کمتر یا مساوی", hasDistance: true, defaultDist: 3 },
@@ -25,27 +25,24 @@ const StrategyUI = {
     { id: "always", name: "در هر شرایطی (همیشه)", hasDistance: false }
   ],
   actions: [
-    { id: "flee_dodge", name: "🔀 جاخالی دادن تاکتیکی سارق از پلیس" },
+    { id: "flee_dodge", name: "🔀 جاخالی دادن تاکتیکی شاه‌دزد از پلیس" },
     { id: "flee_collect", name: "🪙 فرار فرصت‌طلبانه (سرقت سکه حین فرار از پلیس)" },
-    { id: "flee_enemy", name: "🛡️ فرار هوشمند سارق از دست پلیس" },
+    { id: "flee_enemy", name: "🛡️ فرار هوشمند شاه‌دزد از دست پلیس" },
     { id: "flee_towards_exit", name: "🚪 فرار از دست پلیس به سمت مسیر خروج" },
     { id: "flee_towards_converter", name: "🏆 فرار از دست پلیس به سمت صندوق گنج" },
-    { id: "patrol_safe", name: "🧭 گشت‌زنی امن در نقشه دور از پلیس" },
+    { id: "patrol_safe", name: "🧭 گشت‌زنی امن شاه‌دزد در نقشه دور از پلیس" },
     { id: "go_nearest_coin", name: "🪙 حرکت به سمت نزدیک‌ترین سکه غنیمت" },
     { id: "go_nearest_diamond", name: "🗝️ حرکت به سمت نزدیک‌ترین کلید گنج" },
     { id: "go_converter", name: "🏆 حرکت به سمت صندوق گنج برای باز کردن با کلید" },
-    { id: "go_exit", name: "🏁 حرکت به سمت مسیر فرار و خروج سارق" },
+    { id: "go_exit", name: "🏁 حرکت به سمت مسیر فرار و خروج شاه‌دزد" },
     { id: "random_move", name: "🎲 حرکت تصادفی" }
   ],
   currentStrategy: {
-    name: "استراتژی من",
+    name: "استراتژی شاه‌دزد من",
     if_then_rules: [
       { conditions: [{ type: "enemy_adjacent", value: 1 }], action: "flee_dodge" },
-      { conditions: [{ type: "enemy_dist_le", value: 2 }, { type: "one_life", value: 1 }], action: "flee_towards_exit" },
       { conditions: [{ type: "has_diamond", value: 2 }], action: "go_converter" },
-      { conditions: [{ type: "coin_exists", value: 2 }], action: "go_nearest_coin" },
-      { conditions: [{ type: "diamond_exists", value: 2 }], action: "go_nearest_diamond" },
-      { conditions: [{ type: "coins_cleared", value: 2 }], action: "go_exit" }
+      { conditions: [{ type: "coin_exists", value: 2 }], action: "go_nearest_coin" }
     ],
     default_action: "random_move"
   },

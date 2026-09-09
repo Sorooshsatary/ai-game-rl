@@ -102,14 +102,14 @@ def generate_decision_explanation(
             f"but RL learned that {act_str} (Q={learned_q[action]:.1f}) is safer/more rewarding."
         )
     elif "ENEMY_HIT" in events or enemy_dist <= 2:
-        fa = f"به دلیل حضور و گشت پلیس در نزدیکی، سارق حرکت محافظه‌کارانه {act_fa} را برگزید تا به دام نیفتد."
-        en = f"Due to nearby police patrol, thief chose defensive move {act_str}."
+        fa = f"به دلیل حضور و گشت پلیس در نزدیکی، شاه‌دزد حرکت محافظه‌کارانه {act_fa} را برگزید تا به دام نیفتد."
+        en = f"Due to nearby police patrol, master thief chose defensive move {act_str}."
     elif diamonds_held > 0 and "CONVERT" in "".join(events):
-        fa = f"سارق کلیدها را با موفقیت به صندوق گنج رساند و با باز کردن صندوق، غنایم طلایی را تصاحب کرد!"
-        en = f"Thief brought keys to Treasure Chest and unlocked massive golden loot!"
+        fa = f"شاه‌دزد کلیدها را با موفقیت به صندوق گنج رساند و با باز کردن صندوق، غنایم طلایی را تصاحب کرد!"
+        en = f"Master thief brought keys to Treasure Chest and unlocked massive golden loot!"
     elif "COLLECT_COIN" in events:
-        fa = f"سارق با موفقیت یک سکه غنیمت برداشت (+۱۰ پاداش)."
-        en = f"Thief successfully collected a coin (+10 reward)."
+        fa = f"شاه‌دزد با موفقیت یک سکه غنیمت برداشت (+۱۰ پاداش)."
+        en = f"Master thief successfully collected a coin (+10 reward)."
     else:
         fa = f"بر اساس ارزیابی ارزش‌ها (امتیاز \u200e{learned_q[action]:.1f})، حرکت به سمت {act_fa} انتخاب شد."
         en = f"Based on strategy prior and learning (Q={learned_q[action]:.1f}), move {act_str} was selected."

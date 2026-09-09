@@ -10,14 +10,11 @@ class StrategyBuilder:
         """Returns standard presets suitable for kids and AI competitors in the arena."""
         return {
             "balanced": ChildStrategy(
-                name="متوازن و هوشمند",
+                name="شاه‌دزد متوازن و هوشمند",
                 if_then_rules=[
                     IfThenRule(conditions=[ConditionItem(type="enemy_adjacent")], action="flee_dodge"),
-                    IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=2), ConditionItem(type="one_life")], action="flee_towards_exit"),
                     IfThenRule(conditions=[ConditionItem(type="has_diamond")], action="go_converter"),
                     IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
-                    IfThenRule(conditions=[ConditionItem(type="diamond_exists")], action="go_nearest_diamond"),
-                    IfThenRule(conditions=[ConditionItem(type="coins_cleared")], action="go_exit"),
                 ],
                 default_action="random_move",
                 coin_priority=7.0,
@@ -27,11 +24,10 @@ class StrategyBuilder:
                 exit_eagerness=6.0,
             ),
             "coin_hunter": ChildStrategy(
-                name="شکارچی سکه",
+                name="شاه‌دزد سکه‌ربا",
                 if_then_rules=[
-                    IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=1)], action="flee_enemy"),
+                    IfThenRule(conditions=[ConditionItem(type="enemy_adjacent")], action="flee_dodge"),
                     IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
-                    IfThenRule(conditions=[ConditionItem(type="coins_cleared")], action="go_exit"),
                 ],
                 default_action="random_move",
                 coin_priority=9.5,
@@ -41,12 +37,10 @@ class StrategyBuilder:
                 exit_eagerness=7.0,
             ),
             "diamond_rusher": ChildStrategy(
-                name="عاشق الماس",
+                name="شاه‌دزد شکارچی گنج",
                 if_then_rules=[
                     IfThenRule(conditions=[ConditionItem(type="has_diamond")], action="go_converter"),
                     IfThenRule(conditions=[ConditionItem(type="diamond_exists")], action="go_nearest_diamond"),
-                    IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
-                    IfThenRule(conditions=[ConditionItem(type="coins_cleared")], action="go_exit"),
                 ],
                 default_action="random_move",
                 coin_priority=4.0,
@@ -56,12 +50,10 @@ class StrategyBuilder:
                 exit_eagerness=4.0,
             ),
             "cautious": ChildStrategy(
-                name="محتاط و هوشیار",
+                name="شاه‌دزد محتاط و فراری",
                 if_then_rules=[
-                    IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=3)], action="flee_towards_exit"),
-                    IfThenRule(conditions=[ConditionItem(type="one_life")], action="go_exit"),
+                    IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=2)], action="flee_towards_exit"),
                     IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
-                    IfThenRule(conditions=[ConditionItem(type="coins_cleared")], action="go_exit"),
                 ],
                 default_action="random_move",
                 coin_priority=5.0,
@@ -71,9 +63,8 @@ class StrategyBuilder:
                 exit_eagerness=9.0,
             ),
             "daredevil": ChildStrategy(
-                name="ماجراجوی نترس",
+                name="شاه‌دزد نترس و جسور",
                 if_then_rules=[
-                    IfThenRule(conditions=[ConditionItem(type="diamond_exists")], action="go_nearest_diamond"),
                     IfThenRule(conditions=[ConditionItem(type="has_diamond")], action="go_converter"),
                     IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
                 ],
