@@ -1098,8 +1098,8 @@ canvas {
 
 .hud-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
   text-align: center;
   margin-top: 10px;
 }
@@ -1358,20 +1358,20 @@ html, body {
   }
 
   .hud-stats-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
   }
 
   .hud-stat-box {
-    padding: 6px 3px;
+    padding: 6px 2px;
   }
 
   .hud-stat-label {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
   }
 
   .hud-stat-val {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
   }
 
   .modal-dialog {
@@ -1395,7 +1395,7 @@ html, body {
   }
 
   .hud-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 6px;
   }
 

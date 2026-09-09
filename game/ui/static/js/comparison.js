@@ -120,6 +120,7 @@ const ComparisonUI = {
     const livesEl = document.getElementById('part1-agent-lives');
     const coinsEl = document.getElementById('part1-agent-coins');
     const diamondsEl = document.getElementById('part1-agent-diamonds');
+    const scoreEl = document.getElementById('part1-agent-score');
     const stepEl = document.getElementById('part1-step-counter');
     const speedSelect = document.getElementById('part1-speed');
 
@@ -146,6 +147,10 @@ const ComparisonUI = {
     if (livesEl) livesEl.textContent = '❤️❤️❤️';
     if (coinsEl) coinsEl.textContent = '0 🪙';
     if (diamondsEl) diamondsEl.textContent = '0 🗝️';
+    if (scoreEl) {
+      scoreEl.textContent = '0.0';
+      scoreEl.style.color = '#4f46e5';
+    }
     if (stepEl) stepEl.textContent = 'موقعیت آغازین (گام ۰)';
     if (logBox) {
       logBox.innerHTML = `
@@ -158,31 +163,37 @@ const ComparisonUI = {
     const drawStep = () => {
       if (idx >= steps.length) {
         clearInterval(this.stratTestAnimId);
+        if (scoreEl && res.summary && typeof res.summary.total_reward === 'number') {
+          const finalScore = res.summary.total_reward;
+          scoreEl.textContent = (finalScore > 0 ? '+' : '') + finalScore.toFixed(1);
+          scoreEl.style.color = finalScore >= 0 ? '#10b981' : '#ef4444';
+        }
         // Show educational critique
         let critiqueHtml = '';
         if (res.summary.termination_reason === 'DEATH') {
           critiqueHtml = `
             <div style="background: #fef2f2; border-right: 4px solid #ef4444; padding: 12px; border-radius: 8px; margin-top: 10px;">
-              <strong style="color: #b91c1c;">⚠️ نتیجه: عامل قانون‌محور شکست خورد و توسط هیولا شکار شد!</strong>
+              <strong style="color: #b91c1c;">⚠️ نتیجه: شاه‌دزد قانون‌محور شکست خورد و توسط پلیس دستگیر شد!</strong>
               <p style="font-size: 0.88rem; color: #7f1d1d; margin-top: 6px; line-height: 1.6;">
-                استراتژی شما به عامل گفت دنبال اهدافش برود، اما چون دستورات و شروط از پیش‌تعیین‌شده بودند، نتوانست مسیر حرکت هیولا را پیش‌بینی کند و گیر افتاد.
-                <strong>این دقیقاً دلیلی است که به هوش مصنوعی و یادگیری تقویتی نیاز داریم تا مسیرها را با تجربه کشف کند!</strong>
+                استراتژی شما به عامل گفت دنبال اهدافش برود، اما چون دستورات و شروط از پیش‌تعیین‌شده بودند، نتوانست مسیر حرکت پلیس را پیش‌بینی کند و گیر افتاد.
+                <strong>امتیاز نهایی کسب‌شده: ${res.summary.total_reward.toFixed(1)}</strong>
               </p>
             </div>
           `;
         } else if (res.summary.termination_reason === 'TIMEOUT') {
           critiqueHtml = `
             <div style="background: #fffbeb; border-right: 4px solid #f59e0b; padding: 12px; border-radius: 8px; margin-top: 10px;">
-              <strong style="color: #b45309;">⏳ نتیجه: زمان تمام شد و ربات سرگردان ماند!</strong>
+              <strong style="color: #b45309;">⏳ نتیجه: فرصت تمام شد و شاه‌دزد به خروج نرسید!</strong>
               <p style="font-size: 0.88rem; color: #92400e; margin-top: 6px; line-height: 1.6;">
-                ربات نتوانست قبل از پایان فرصت، مسیر رسیدن به درب خروج را پیدا کند. هوش مصنوعی یادگیرنده مسیر بهینه را با تجربه پیدا می‌کند.
+                شاه‌دزد نتوانست قبل از پایان فرصت، به درب خروج برسد. هوش مصنوعی یادگیرنده مسیر بهینه را با تجربه پیدا می‌کند.
+                <strong>امتیاز نهایی کسب‌شده: ${res.summary.total_reward.toFixed(1)}</strong>
               </p>
             </div>
           `;
         } else {
           critiqueHtml = `
             <div style="background: #ecfdf5; border-right: 4px solid #10b981; padding: 12px; border-radius: 8px; margin-top: 10px;">
-              <strong style="color: #047857;">🎉 آفرین! استراتژی در این نقشه موفق شد و سالم خارج شد.</strong>
+              <strong style="color: #047857;">🎉 آفرین! شاه‌دزد در این نقشه موفق شد و با کسب امتیاز ${res.summary.total_reward.toFixed(1)} خارج شد.</strong>
               <p style="font-size: 0.88rem; color: #065f46; margin-top: 6px; line-height: 1.6;">
                 حالا در بخش ۲ بروید و ببینید آیا این استراتژی در برابر هوش مصنوعی یادگیرنده هم می‌تواند برنده شود یا خیر!
               </p>
@@ -207,6 +218,11 @@ const ComparisonUI = {
       if (livesEl) livesEl.textContent = '❤️'.repeat(Math.max(0, st.lives));
       if (coinsEl) coinsEl.textContent = `${st.coins} 🪙`;
       if (diamondsEl) diamondsEl.textContent = `${st.diamonds} 🗝️`;
+      if (scoreEl) {
+        const sc = typeof st.accumulated_score === 'number' ? st.accumulated_score : 0.0;
+        scoreEl.textContent = (sc > 0 ? '+' : '') + sc.toFixed(1);
+        scoreEl.style.color = sc >= 0 ? '#10b981' : '#ef4444';
+      }
       if (stepEl) stepEl.textContent = `گام ${st.step_index}`;
 
       if (logBox) {
