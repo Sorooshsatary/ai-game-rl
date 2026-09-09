@@ -1029,32 +1029,51 @@ canvas {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 6px 10px 6px;
+  gap: 8px;
+  padding: 6px 10px 10px 10px;
   border-bottom: 1px solid #e2e8f0;
   margin-bottom: 10px;
+  flex-wrap: nowrap;
 }
 
 .arena-badge-live {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #059669;
   background: #ecfdf5;
   border: 1px solid #a7f3d0;
-  padding: 2px 8px;
-  border-radius: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.arena-title-sub {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  flex: 1;
 }
 
 .arena-badge-coords {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #4f46e5;
   background: #eef2ff;
   border: 1px solid #c7d2fe;
-  padding: 2px 8px;
-  border-radius: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
 }
 
 .canvas-frame {
@@ -1100,10 +1119,13 @@ canvas {
 }
 
 .hud-stat-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   font-weight: 700;
   margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hud-stat-val {
@@ -1400,6 +1422,10 @@ html, body {
   .config-row input {
     width: 100%;
     text-align: right;
+  }
+
+  .arena-title-sub {
+    display: none;
   }
 }
 

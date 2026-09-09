@@ -420,7 +420,7 @@ const ComparisonUI = {
             <span style="background: #e0f2fe; padding: 1px 6px; border-radius: 4px;">امتیاز: <span dir="ltr" class="ltr-num">${sScore}</span> ⭐</span>
             <span>جان: ${'❤️'.repeat(Math.max(0, sStep.lives))}</span>
             <span>سکه: ${sStep.coins} 🪙</span>
-            <span>کلید گنج: ${sStep.diamonds} 🗝️</span>
+            <span>کلید: ${sStep.diamonds} 🗝️</span>
           </div>
         `;
       }
@@ -433,7 +433,7 @@ const ComparisonUI = {
             <span style="background: #dcfce7; padding: 1px 6px; border-radius: 4px;">امتیاز: <span dir="ltr" class="ltr-num">${rScore}</span> ⭐</span>
             <span>جان: ${'❤️'.repeat(Math.max(0, rStep.lives))}</span>
             <span>سکه: ${rStep.coins} 🪙</span>
-            <span>کلید گنج: ${rStep.diamonds} 🗝️</span>
+            <span>کلید: ${rStep.diamonds} 🗝️</span>
           </div>
         `;
       }
