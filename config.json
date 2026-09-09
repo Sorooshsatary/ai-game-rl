@@ -7,6 +7,7 @@
   "max_steps": 100,
   "diamond_multiplier": 2,
   "show_presets": false,
+  "show_reward_tuning": false,
   "rewards": {
     "coin": 10.0,
     "convert": 20.0,

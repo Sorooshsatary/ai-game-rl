@@ -3,6 +3,15 @@
  */
 const TrainingUI = {
   lastSummary: null,
+  cachedConfig: null,
+
+  rewardPresets: {
+    balanced: { exit: 50, coin: 10, convert: 20, police: -30, step: -0.05 },
+    rush_exit: { exit: 160, coin: 2, convert: 0, police: -40, step: -0.4 },
+    greedy_loot: { exit: 15, coin: 40, convert: 20, police: -25, step: -0.05 },
+    vault_buster: { exit: 20, coin: 5, convert: 85, police: -30, step: -0.1 },
+    police_phobia: { exit: 40, coin: 10, convert: 15, police: -100, step: -0.25 }
+  },
 
   init() {
     const btnTrain = document.getElementById('btn-start-training');
@@ -24,15 +33,152 @@ const TrainingUI = {
       });
     });
 
+    this.initRewardTuning();
     this.loadInitialConfig();
+  },
+
+  initRewardTuning() {
+    // Sliders setup
+    const sliders = [
+      { id: 'slider-rew-exit', valId: 'val-rew-exit', fmt: (v) => `+${parseFloat(v).toFixed(1)}` },
+      { id: 'slider-rew-coin', valId: 'val-rew-coin', fmt: (v) => `+${parseFloat(v).toFixed(1)}` },
+      { id: 'slider-rew-convert', valId: 'val-rew-convert', fmt: (v) => `+${parseFloat(v).toFixed(1)}` },
+      { id: 'slider-rew-police', valId: 'val-rew-police', fmt: (v) => `${parseFloat(v).toFixed(1)}` },
+      { id: 'slider-rew-step', valId: 'val-rew-step', fmt: (v) => `${parseFloat(v).toFixed(2)}` }
+    ];
+
+    sliders.forEach(s => {
+      const el = document.getElementById(s.id);
+      const valEl = document.getElementById(s.valId);
+      if (el && valEl) {
+        el.addEventListener('input', () => {
+          valEl.textContent = s.fmt(el.value);
+          // Unselect preset chips if customized manually
+          document.querySelectorAll('.reward-preset-btn').forEach(b => b.classList.remove('active'));
+        });
+      }
+    });
+
+    // Preset buttons setup
+    document.querySelectorAll('.reward-preset-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const pKey = e.currentTarget.getAttribute('data-preset');
+        if (pKey && this.rewardPresets[pKey]) {
+          this.applyPreset(pKey);
+        }
+      });
+    });
+
+    // Reset button setup
+    const btnResetRewards = document.getElementById('btn-reset-reward-tuning');
+    if (btnResetRewards) {
+      btnResetRewards.addEventListener('click', () => {
+        this.applyPreset('balanced');
+      });
+    }
+
+    // Train & Observe button setup
+    const btnObserve = document.getElementById('btn-train-and-observe');
+    if (btnObserve) {
+      btnObserve.addEventListener('click', () => this.trainAndObserve());
+    }
+  },
+
+  applyPreset(presetKey) {
+    const p = this.rewardPresets[presetKey];
+    if (!p) return;
+
+    const setSlider = (id, valId, val, fmt) => {
+      const el = document.getElementById(id);
+      const valEl = document.getElementById(valId);
+      if (el) el.value = val;
+      if (valEl) valEl.textContent = fmt(val);
+    };
+
+    setSlider('slider-rew-exit', 'val-rew-exit', p.exit, v => `+${parseFloat(v).toFixed(1)}`);
+    setSlider('slider-rew-coin', 'val-rew-coin', p.coin, v => `+${parseFloat(v).toFixed(1)}`);
+    setSlider('slider-rew-convert', 'val-rew-convert', p.convert, v => `+${parseFloat(v).toFixed(1)}`);
+    setSlider('slider-rew-police', 'val-rew-police', p.police, v => `${parseFloat(v).toFixed(1)}`);
+    setSlider('slider-rew-step', 'val-rew-step', p.step, v => `${parseFloat(v).toFixed(2)}`);
+
+    document.querySelectorAll('.reward-preset-btn').forEach(btn => {
+      if (btn.getAttribute('data-preset') === presetKey) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  },
+
+  getCustomRewards() {
+    const wrapper = document.getElementById('reward-tuning-wrapper');
+    if (!wrapper || wrapper.style.display === 'none') {
+      return null;
+    }
+
+    const exit = parseFloat(document.getElementById('slider-rew-exit')?.value ?? 50);
+    const coin = parseFloat(document.getElementById('slider-rew-coin')?.value ?? 10);
+    const convert = parseFloat(document.getElementById('slider-rew-convert')?.value ?? 20);
+    const police = parseFloat(document.getElementById('slider-rew-police')?.value ?? -30);
+    const step = parseFloat(document.getElementById('slider-rew-step')?.value ?? -0.05);
+
+    return {
+      exit: isNaN(exit) ? 50 : exit,
+      coin: isNaN(coin) ? 10 : coin,
+      convert: isNaN(convert) ? 20 : convert,
+      lose_life: isNaN(police) ? -30 : police,
+      step: isNaN(step) ? -0.05 : step
+    };
+  },
+
+  async updateRewardTuningVisibility() {
+    const wrapper = document.getElementById('reward-tuning-wrapper');
+    const badge = document.getElementById('reward-tuning-admin-badge');
+    if (!wrapper) return;
+
+    try {
+      if (!this.cachedConfig) {
+        this.cachedConfig = await API.getConfig();
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    const isFlagEnabled = !!(this.cachedConfig && this.cachedConfig.show_reward_tuning);
+    const user = (typeof AuthUI !== 'undefined' && AuthUI.currentUser) ? AuthUI.currentUser : null;
+    const isAdmin = user && user.role === 'admin';
+
+    if (isAdmin) {
+      wrapper.style.display = 'block';
+      if (badge) {
+        badge.style.display = 'inline-block';
+        if (isFlagEnabled) {
+          badge.textContent = '👑 فلگ ادمین: روشن برای کاربران عادی';
+          badge.style.background = '#dcfce7';
+          badge.style.color = '#15803d';
+        } else {
+          badge.textContent = '👑 پیش‌نمایش مدیر (برای کاربر عادی خاموش است)';
+          badge.style.background = '#fef3c7';
+          badge.style.color = '#92400e';
+        }
+      }
+    } else if (isFlagEnabled) {
+      wrapper.style.display = 'block';
+      if (badge) badge.style.display = 'none';
+    } else {
+      wrapper.style.display = 'none';
+    }
   },
 
   async loadInitialConfig() {
     try {
       const cfg = await API.getConfig();
+      this.cachedConfig = cfg;
       this.updateFromConfig(cfg);
+      await this.updateRewardTuningVisibility();
     } catch (e) {
       console.error("خطا در دریافت تنظیمات آموزش:", e);
+      await this.updateRewardTuningVisibility();
     }
   },
 
@@ -105,10 +251,11 @@ const TrainingUI = {
     const strategy = StrategyUI.getStrategy();
     const epInput = document.getElementById('train-episode-count');
     const epCount = epInput ? (parseInt(epInput.value, 10) || 10) : 10;
+    const customRewards = this.getCustomRewards();
 
     try {
-      // Train continuing with hybrid strategy seeding
-      const resp = await API.train(strategy, epCount, 'hybrid', false);
+      // Train continuing with hybrid strategy seeding and optional custom rewards
+      const resp = await API.train(strategy, epCount, 'hybrid', false, customRewards);
 
       if (resp.success) {
         this.lastSummary = resp.summary;
@@ -131,6 +278,50 @@ const TrainingUI = {
       }
     } catch (err) {
       alert("خطا در آموزش: " + err.message);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+  },
+
+  async trainAndObserve() {
+    const btn = document.getElementById('btn-train-and-observe');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '⏳ در حال آموزش با پاداش‌های جدید...';
+    }
+
+    const banner = document.getElementById('train-success-banner');
+    const strategy = (typeof StrategyUI !== 'undefined' && StrategyUI.getStrategy) ? StrategyUI.getStrategy() : [];
+    const epInput = document.getElementById('train-episode-count');
+    const epCount = epInput ? (parseInt(epInput.value, 10) || 15) : 15;
+    const customRewards = this.getCustomRewards();
+
+    try {
+      const resp = await API.train(strategy, epCount, 'hybrid', false, customRewards);
+
+      if (resp.success) {
+        this.lastSummary = resp.summary;
+        this.renderMetrics(resp.summary);
+        this.renderCharts(resp.summary.metrics);
+
+        if (banner) {
+          banner.style.display = 'block';
+          banner.style.background = '#ecfdf5';
+          banner.style.borderRightColor = '#10b981';
+          banner.innerHTML = `⚡ آموزش با پاداش‌های مشخص‌شده انجام شد! اکنون مسابقه روی نقشه یکسان در حال آغاز است تا تغییر رفتار هوش مصنوعی را ببینید...`;
+        }
+
+        // Run side-by-side comparison on identical map
+        if (typeof ComparisonUI !== 'undefined' && ComparisonUI.runDualComparison) {
+          await ComparisonUI.runDualComparison(ComparisonUI.currentPart2Seed);
+        }
+      }
+    } catch (err) {
+      alert("خطا در آموزش و شبیه‌سازی: " + err.message);
     } finally {
       if (btn) {
         btn.disabled = false;

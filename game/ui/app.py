@@ -90,6 +90,7 @@ class TrainRequest(BaseModel):
     episodes: Optional[int] = None
     from_scratch: bool = False
     mode: str = "hybrid"  # "pure" or "hybrid"
+    custom_rewards: Optional[Dict[str, float]] = None
 
 
 class StrategyTestRequest(BaseModel):
@@ -100,6 +101,7 @@ class StrategyTestRequest(BaseModel):
 class DualComparisonRequest(BaseModel):
     strategy: Dict[str, Any]
     seed: Optional[int] = None
+    custom_rewards: Optional[Dict[str, float]] = None
 
 
 class SystemConfigRequest(BaseModel):
@@ -111,8 +113,29 @@ class SystemConfigRequest(BaseModel):
     max_steps: int = Field(100, ge=20, le=500)
     diamond_multiplier: int = Field(2, ge=1, le=50)
     show_presets: bool = False
+    show_reward_tuning: bool = False
     rewards: Dict[str, float]
     rl: Dict[str, Any]
+
+
+def make_cfg_with_rewards(base_cfg: GameConfig, custom_rewards: Optional[Dict[str, float]]) -> GameConfig:
+    if not custom_rewards:
+        return base_cfg
+    import copy
+    cfg = copy.deepcopy(base_cfg)
+    if "coin" in custom_rewards:
+        cfg.reward.collect_coin = float(custom_rewards["coin"])
+    if "convert" in custom_rewards:
+        cfg.reward.convert_diamond = float(custom_rewards["convert"])
+    if "exit" in custom_rewards:
+        cfg.reward.successful_exit = float(custom_rewards["exit"])
+    if "lose_life" in custom_rewards:
+        cfg.reward.lose_life = float(custom_rewards["lose_life"])
+    if "step" in custom_rewards:
+        cfg.reward.normal_step = float(custom_rewards["step"])
+    if "diamond" in custom_rewards:
+        cfg.reward.collect_diamond_raw = float(custom_rewards["diamond"])
+    return cfg
 
 
 # =========================================================================
@@ -305,23 +328,25 @@ async def test_strategy_endpoint(req: StrategyTestRequest):
 @app.post("/api/comparison/dual")
 async def dual_comparison_endpoint(req: DualComparisonRequest):
     active_cfg = get_active_config()
+    rewards_to_use = req.custom_rewards or current_session.get("custom_rewards")
+    dual_cfg = make_cfg_with_rewards(active_cfg, rewards_to_use)
     strat = ChildStrategy.from_dict(req.strategy)
     current_session["strategy"] = strat
 
     # Ensure trained RL agent (if not yet trained or 0 completed episodes, train baseline)
     trainer = current_session.get("trainer")
     if trainer is None or trainer.total_episodes_completed == 0:
-        trainer = Trainer(strategy=strat, config=active_cfg, mode="hybrid")
-        trainer.train(num_episodes=max(30, active_cfg.rl.training_episodes))
+        trainer = Trainer(strategy=strat, config=dual_cfg, mode="hybrid")
+        trainer.train(num_episodes=max(30, dual_cfg.rl.training_episodes))
         current_session["trainer"] = trainer
         current_session["player_agent"] = trainer.agent
     else:
         current_session["player_agent"] = trainer.agent
 
-    strat_agent = RuleBasedStrategyAgent(strategy=strat, config=active_cfg)
+    strat_agent = RuleBasedStrategyAgent(strategy=strat, config=dual_cfg)
     rl_agent = current_session["player_agent"]
 
-    engine = AgentComparisonEngine(config=active_cfg)
+    engine = AgentComparisonEngine(config=dual_cfg)
     comparison_res = engine.run_dual_comparison(
         strategy_agent=strat_agent,
         rl_agent=rl_agent,
@@ -337,16 +362,20 @@ async def dual_comparison_endpoint(req: DualComparisonRequest):
 @app.post("/api/train")
 async def train_agent(req: TrainRequest):
     active_cfg = get_active_config()
+    train_cfg = make_cfg_with_rewards(active_cfg, req.custom_rewards)
     strat = ChildStrategy.from_dict(req.strategy)
     current_session["strategy"] = strat
+    if req.custom_rewards:
+        current_session["custom_rewards"] = req.custom_rewards
 
     trainer = current_session.get("trainer")
-    # If no trainer exists, or mode changed, or explicitly requested from_scratch
+    # If no trainer exists, or mode changed, or explicitly requested from_scratch, or custom rewards provided
     if trainer is None or trainer.mode != req.mode or req.from_scratch:
-        trainer = Trainer(strategy=strat, config=active_cfg, mode=req.mode)
+        trainer = Trainer(strategy=strat, config=train_cfg, mode=req.mode)
         current_session["trainer"] = trainer
     else:
-        trainer.config = active_cfg
+        trainer.config = train_cfg
+        trainer.env = GameEnvironment(config=train_cfg)
         trainer.strategy = strat
 
     episodes = req.episodes if (req.episodes is not None and req.episodes > 0) else active_cfg.rl.training_episodes

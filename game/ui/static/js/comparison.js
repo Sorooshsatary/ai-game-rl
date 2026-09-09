@@ -236,7 +236,8 @@ const ComparisonUI = {
     }
 
     try {
-      const res = await API.runDualComparison(StrategyUI.getStrategy(), seed);
+      const customRewards = (typeof TrainingUI !== 'undefined' && TrainingUI.getCustomRewards) ? TrainingUI.getCustomRewards() : null;
+      const res = await API.runDualComparison(StrategyUI.getStrategy(), seed, customRewards);
       if (!res.success) throw new Error('خطا در دریافت نتایج مقایسه');
 
       this.dualResult = res.result;

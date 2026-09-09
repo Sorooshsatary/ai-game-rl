@@ -62,6 +62,7 @@ class GameConfig:
     reward: RewardConfig = field(default_factory=RewardConfig)
     rl: RLConfig = field(default_factory=RLConfig)
     show_presets: bool = False  # Admin flag: display ready-made strategy presets for normal users
+    show_reward_tuning: bool = False  # Admin flag: display reward tuning lab in RL section for normal users
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -73,6 +74,7 @@ class GameConfig:
             "max_steps": self.env.max_steps_per_episode,
             "diamond_multiplier": self.env.diamond_to_coin_multiplier,
             "show_presets": self.show_presets,
+            "show_reward_tuning": self.show_reward_tuning,
             "rewards": {
                 "coin": self.reward.collect_coin,
                 "convert": self.reward.convert_diamond,
@@ -116,6 +118,8 @@ class GameConfig:
             cfg.env.diamond_to_coin_multiplier = int(data["diamond_multiplier"])
         if "show_presets" in data:
             cfg.show_presets = bool(data["show_presets"])
+        if "show_reward_tuning" in data:
+            cfg.show_reward_tuning = bool(data["show_reward_tuning"])
 
         # Rewards
         rewards = data.get("rewards", {})

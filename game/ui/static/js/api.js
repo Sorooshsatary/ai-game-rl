@@ -40,10 +40,13 @@ const API = {
     return await res.json();
   },
 
-  async train(strategy, episodes = null, mode = 'hybrid', fromScratch = false) {
+  async train(strategy, episodes = null, mode = 'hybrid', fromScratch = false, customRewards = null) {
     const payload = { strategy, mode, from_scratch: fromScratch };
     if (episodes !== null && episodes !== undefined) {
       payload.episodes = episodes;
+    }
+    if (customRewards) {
+      payload.custom_rewards = customRewards;
     }
     const res = await fetch('/api/train', {
       method: 'POST',
@@ -79,11 +82,14 @@ const API = {
     return await res.json();
   },
 
-  async runDualComparison(strategy, seed = null) {
+  async runDualComparison(strategy, seed = null, customRewards = null) {
+    const payload = { strategy };
+    if (seed !== null && seed !== undefined) payload.seed = seed;
+    if (customRewards) payload.custom_rewards = customRewards;
     const res = await fetch('/api/comparison/dual', {
       method: 'POST',
       headers: this.authHeaders(),
-      body: JSON.stringify({ strategy, seed })
+      body: JSON.stringify(payload)
     });
     return await res.json();
   },

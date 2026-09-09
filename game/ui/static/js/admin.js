@@ -216,6 +216,10 @@ const AdminUI = {
     if (chkPresets) {
       chkPresets.checked = !!cfg.show_presets;
     }
+    const chkRewardTuning = document.getElementById('cfg-show-reward-tuning');
+    if (chkRewardTuning) {
+      chkRewardTuning.checked = !!cfg.show_reward_tuning;
+    }
   },
 
   async submitSaveConfig() {
@@ -233,6 +237,7 @@ const AdminUI = {
       max_steps: parseInt(document.getElementById('cfg-max-steps').value),
       diamond_multiplier: parseInt(document.getElementById('cfg-diamond-multiplier').value) || 2,
       show_presets: document.getElementById('cfg-show-presets') ? document.getElementById('cfg-show-presets').checked : false,
+      show_reward_tuning: document.getElementById('cfg-show-reward-tuning') ? document.getElementById('cfg-show-reward-tuning').checked : false,
       rewards: {
         coin: getVal('cfg-rew-coin'),
         convert: getVal('cfg-rew-convert'),
@@ -278,6 +283,10 @@ const AdminUI = {
         StrategyUI.cachedConfig = res.config;
         StrategyUI.updatePresetVisibility();
       }
+      if (typeof TrainingUI !== 'undefined' && TrainingUI.updateRewardTuningVisibility) {
+        TrainingUI.cachedConfig = res.config;
+        TrainingUI.updateRewardTuningVisibility();
+      }
     } catch (err) {
       if (statusBox) {
         statusBox.style.display = 'block';
@@ -317,6 +326,10 @@ const AdminUI = {
       if (typeof StrategyUI !== 'undefined' && StrategyUI.updatePresetVisibility) {
         StrategyUI.cachedConfig = res.config;
         StrategyUI.updatePresetVisibility();
+      }
+      if (typeof TrainingUI !== 'undefined' && TrainingUI.updateRewardTuningVisibility) {
+        TrainingUI.cachedConfig = res.config;
+        TrainingUI.updateRewardTuningVisibility();
       }
     } catch (err) {
       alert('خطا در بازنشانی: ' + err.message);

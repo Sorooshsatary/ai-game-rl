@@ -94,9 +94,12 @@ const AuthUI = {
       if (tabAdminBtn) tabAdminBtn.style.display = 'none';
     }
 
-    // Refresh preset visibility based on current user role and admin flag
+    // Refresh preset and reward tuning visibility based on current user role and admin flag
     if (typeof StrategyUI !== 'undefined' && StrategyUI.updatePresetVisibility) {
       StrategyUI.updatePresetVisibility();
+    }
+    if (typeof TrainingUI !== 'undefined' && TrainingUI.updateRewardTuningVisibility) {
+      TrainingUI.updateRewardTuningVisibility();
     }
   },
 

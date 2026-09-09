@@ -1429,6 +1429,121 @@ html, body {
   }
 }
 
+/* ========================================================================= */
+/* REWARD SHAPING LAB                                                        */
+/* ========================================================================= */
+.reward-tuning-box {
+  background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
+  border: 1.5px solid #c7d2fe;
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.05);
+}
+
+.reward-presets-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reward-preset-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.reward-preset-btn:hover {
+  border-color: #6366f1;
+  color: #4f46e5;
+  background: #f5f3ff;
+}
+
+.reward-preset-btn.active {
+  background: #4f46e5;
+  color: #ffffff;
+  border-color: #4338ca;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+}
+
+.reward-sliders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.reward-slider-card {
+  background: #ffffff;
+  border: 1px solid #e0e7ff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.reward-slider-card:hover {
+  border-color: #a5b4fc;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+}
+
+.reward-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reward-slider-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.reward-slider-val {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #4f46e5;
+  background: #eef2ff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  direction: ltr;
+  display: inline-block;
+}
+
+.reward-range {
+  width: 100%;
+  accent-color: #4f46e5;
+  cursor: pointer;
+  height: 6px;
+}
+
+.reward-slider-hint {
+  font-size: 0.74rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.reward-tuning-action-bar {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #c7d2fe;
+}
+
 
 
 
