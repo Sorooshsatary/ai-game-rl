@@ -145,7 +145,7 @@ const ComparisonUI = {
 
     if (livesEl) livesEl.textContent = '❤️❤️❤️';
     if (coinsEl) coinsEl.textContent = '0 🪙';
-    if (diamondsEl) diamondsEl.textContent = '0 💎';
+    if (diamondsEl) diamondsEl.textContent = '0 🗝️';
     if (stepEl) stepEl.textContent = 'موقعیت آغازین (گام ۰)';
     if (logBox) {
       logBox.innerHTML = `
@@ -206,7 +206,7 @@ const ComparisonUI = {
       // Update live indicators
       if (livesEl) livesEl.textContent = '❤️'.repeat(Math.max(0, st.lives));
       if (coinsEl) coinsEl.textContent = `${st.coins} 🪙`;
-      if (diamondsEl) diamondsEl.textContent = `${st.diamonds} 💎`;
+      if (diamondsEl) diamondsEl.textContent = `${st.diamonds} 🗝️`;
       if (stepEl) stepEl.textContent = `گام ${st.step_index}`;
 
       if (logBox) {
@@ -420,7 +420,7 @@ const ComparisonUI = {
             <span style="background: #e0f2fe; padding: 1px 6px; border-radius: 4px;">امتیاز: <span dir="ltr" class="ltr-num">${sScore}</span> ⭐</span>
             <span>جان: ${'❤️'.repeat(Math.max(0, sStep.lives))}</span>
             <span>سکه: ${sStep.coins} 🪙</span>
-            <span>الماس: ${sStep.diamonds} 💎</span>
+            <span>کلید گنج: ${sStep.diamonds} 🗝️</span>
           </div>
         `;
       }
@@ -433,7 +433,7 @@ const ComparisonUI = {
             <span style="background: #dcfce7; padding: 1px 6px; border-radius: 4px;">امتیاز: <span dir="ltr" class="ltr-num">${rScore}</span> ⭐</span>
             <span>جان: ${'❤️'.repeat(Math.max(0, rStep.lives))}</span>
             <span>سکه: ${rStep.coins} 🪙</span>
-            <span>الماس: ${rStep.diamonds} 💎</span>
+            <span>کلید گنج: ${rStep.diamonds} 🗝️</span>
           </div>
         `;
       }

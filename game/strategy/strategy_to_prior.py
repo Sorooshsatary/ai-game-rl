@@ -56,7 +56,7 @@ class StrategyPriorEngine:
 
             if delta_diamond > 0:
                 q_value += diamond_weight
-                reasons.append(f"نزدیک شدن به الماس (+{diamond_weight:.1f})")
+                reasons.append(f"نزدیک شدن به کلید گنج (+{diamond_weight:.1f})")
             elif delta_diamond < 0:
                 q_value -= diamond_weight * 0.2
 
@@ -68,7 +68,7 @@ class StrategyPriorEngine:
 
             if delta_converter > 0:
                 q_value += converter_weight
-                reasons.append(f"حمل الماس به مبدل (+{converter_weight:.1f})")
+                reasons.append(f"حمل کلید و باز کردن صندوق گنج (+{converter_weight:.1f})")
             elif delta_converter < 0:
                 q_value -= converter_weight * 0.4
 
@@ -80,17 +80,17 @@ class StrategyPriorEngine:
                 # Stepping directly into enemy!
                 penalty = enemy_weight * 3.0
                 q_value -= penalty
-                reasons.append(f"خطر برخورد مستقیم با دشمن (-{penalty:.1f})")
+                reasons.append(f"خطر دستگیری توسط پلیس (-{penalty:.1f})")
             elif delta_enemy > 0:
                 # Moving closer to enemy
                 penalty = enemy_weight * 1.5
                 q_value -= penalty
-                reasons.append(f"نزدیک شدن خطرناک به دشمن (-{penalty:.1f})")
+                reasons.append(f"نزدیک شدن خطرناک به پلیس (-{penalty:.1f})")
             elif delta_enemy < 0:
                 # Moving away from enemy
                 bonus = enemy_weight * 1.0
                 q_value += bonus
-                reasons.append(f"فرار و دور شدن از دشمن (+{bonus:.1f})")
+                reasons.append(f"فرار و دور شدن از پلیس (+{bonus:.1f})")
 
             # Check intercept with enemy's heading trajectory
             if not state.enemy_stunned:
@@ -98,13 +98,13 @@ class StrategyPriorEngine:
                 if new_pos == enemy_next_step:
                     traj_penalty = enemy_weight * 2.0
                     q_value -= traj_penalty
-                    reasons.append(f"مسیر در جهت حرکت دشمن است (-{traj_penalty:.1f})")
+                    reasons.append(f"مسیر در جهت حرکت گشت پلیس است (-{traj_penalty:.1f})")
 
             # Rule: flee_adjacent_enemy
             if self.strategy.rules.get("flee_adjacent_enemy", False) and state.enemy_dist <= 1:
                 if delta_enemy <= 0:
                     q_value += 3.0
-                    reasons.append("قانون فرار اضطراری از دشمن مجاور")
+                    reasons.append("قانون فرار اضطراری از پلیس مجاور")
 
         # 6. Exit Evaluation
         exit_weight = self.strategy.exit_eagerness * 0.6
@@ -112,11 +112,11 @@ class StrategyPriorEngine:
 
         if self.strategy.rules.get("exit_if_coins_cleared", False) and state.total_coins_remaining == 0:
             should_rush_exit = True
-            reasons.append("تمام شدن سکه‌ها - رفتن به سمت خروج")
+            reasons.append("تمام شدن سکه‌ها - رفتن به سمت مسیر فرار و خروج")
 
         if self.strategy.rules.get("exit_if_one_life", False) and state.lives <= 1 and state.coins_held > 0:
             should_rush_exit = True
-            reasons.append("جان اندک - اولویت خروج و حفظ سکه‌ها")
+            reasons.append("جان اندک - اولویت فرار و حفظ غنایم")
 
         if should_rush_exit:
             exit_weight *= 2.5

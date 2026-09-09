@@ -149,44 +149,44 @@ class GridCanvasRenderer {
     const r = cellSize * 0.42;
 
     this.ctx.save();
-    // Portal floor energy glow
-    const glowGrad = this.ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * 1.2);
-    glowGrad.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+    // Escape trapdoor floor glow
+    const glowGrad = this.ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * 1.25);
+    glowGrad.addColorStop(0, 'rgba(16, 185, 129, 0.45)');
     glowGrad.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
     this.ctx.fillStyle = glowGrad;
     this.ctx.beginPath();
-    this.ctx.arc(cx, cy, r * 1.2, 0, Math.PI * 2);
+    this.ctx.arc(cx, cy, r * 1.25, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // Base frame
-    this.ctx.fillStyle = '#065f46';
+    // Steel escape hatch frame
+    this.ctx.fillStyle = '#064e3b';
     this.ctx.beginPath();
     this.ctx.roundRect(cx - r, cy - r, r * 2, r * 2, 8);
     this.ctx.fill();
     this.ctx.strokeStyle = '#34d399';
-    this.ctx.lineWidth = 2;
+    this.ctx.lineWidth = 2.2;
     this.ctx.stroke();
 
-    // Inner glowing vortex core
-    const portalGrad = this.ctx.createRadialGradient(cx, cy, 2, cx, cy, r * 0.75);
-    portalGrad.addColorStop(0, '#ecfdf5');
-    portalGrad.addColorStop(0.5, '#10b981');
-    portalGrad.addColorStop(1, '#047857');
-    this.ctx.fillStyle = portalGrad;
+    // Escape hatch doorway
+    const doorGrad = this.ctx.createRadialGradient(cx, cy, 2, cx, cy, r * 0.75);
+    doorGrad.addColorStop(0, '#ecfdf5');
+    doorGrad.addColorStop(0.5, '#10b981');
+    doorGrad.addColorStop(1, '#047857');
+    this.ctx.fillStyle = doorGrad;
     this.ctx.beginPath();
     this.ctx.arc(cx, cy, r * 0.72, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // Exit text label & icon
+    // Escape icon and text
     this.ctx.fillStyle = '#ffffff';
-    this.ctx.font = `bold ${Math.floor(cellSize * 0.28)}px sans-serif`;
+    this.ctx.font = `bold ${Math.floor(cellSize * 0.24)}px sans-serif`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-    this.ctx.fillText('EXIT', cx, cy - 3);
+    this.ctx.fillText('فرار 🏃', cx, cy - 3);
 
     this.ctx.fillStyle = '#a7f3d0';
-    this.ctx.font = `bold ${Math.floor(cellSize * 0.22)}px sans-serif`;
-    this.ctx.fillText('🏁', cx, cy + 9);
+    this.ctx.font = `bold ${Math.floor(cellSize * 0.20)}px sans-serif`;
+    this.ctx.fillText('EXIT', cx, cy + 10);
 
     this.ctx.restore();
   }
@@ -197,37 +197,86 @@ class GridCanvasRenderer {
     const r = cellSize * 0.42;
 
     this.ctx.save();
-    // Violet glow
-    const glowGrad = this.ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * 1.2);
-    glowGrad.addColorStop(0, 'rgba(168, 85, 247, 0.45)');
-    glowGrad.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
+    // Warm golden treasure aura
+    const glowGrad = this.ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * 1.25);
+    glowGrad.addColorStop(0, 'rgba(245, 158, 11, 0.50)');
+    glowGrad.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
     this.ctx.fillStyle = glowGrad;
     this.ctx.beginPath();
-    this.ctx.arc(cx, cy, r * 1.2, 0, Math.PI * 2);
+    this.ctx.arc(cx, cy, r * 1.25, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // Base pedestal
-    this.ctx.fillStyle = '#4c1d95';
+    // Drop shadow
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
     this.ctx.beginPath();
-    this.ctx.roundRect(cx - r, cy - r, r * 2, r * 2, 8);
+    this.ctx.ellipse(cx, cy + r * 0.9, r * 0.95, r * 0.3, 0, 0, Math.PI * 2);
     this.ctx.fill();
-    this.ctx.strokeStyle = '#c084fc';
-    this.ctx.lineWidth = 2;
-    this.ctx.stroke();
 
-    // Rotating energy ring
-    this.ctx.strokeStyle = 'rgba(216, 180, 254, 0.7)';
-    this.ctx.lineWidth = 1.8;
+    // Treasure Chest Body (Dark Mahagony Wood)
+    const chestW = r * 1.7;
+    const chestH = r * 1.3;
+    const chestX = cx - chestW / 2;
+    const chestY = cy - chestH / 2 + 2;
+
+    const woodGrad = this.ctx.createLinearGradient(chestX, chestY, chestX, chestY + chestH);
+    woodGrad.addColorStop(0, '#92400e');
+    woodGrad.addColorStop(0.5, '#78350f');
+    woodGrad.addColorStop(1, '#451a03');
+    this.ctx.fillStyle = woodGrad;
     this.ctx.beginPath();
-    this.ctx.arc(cx, cy, r * 0.68, 0, Math.PI * 2);
+    this.ctx.roundRect(chestX, chestY, chestW, chestH, 6);
+    this.ctx.fill();
+    this.ctx.strokeStyle = '#292524';
+    this.ctx.lineWidth = 1.5;
     this.ctx.stroke();
 
-    // High-tech Converter symbol
-    this.ctx.fillStyle = '#f5d0fe';
-    this.ctx.font = `bold ${Math.floor(cellSize * 0.26)}px sans-serif`;
+    // Gold Brass Banding Straps (Left & Right)
+    const strapGrad = this.ctx.createLinearGradient(chestX, chestY, chestX, chestY + chestH);
+    strapGrad.addColorStop(0, '#fef08a');
+    strapGrad.addColorStop(0.5, '#f59e0b');
+    strapGrad.addColorStop(1, '#b45309');
+    this.ctx.fillStyle = strapGrad;
+    // Left band
+    this.ctx.fillRect(chestX + chestW * 0.15, chestY, chestW * 0.16, chestH);
+    // Right band
+    this.ctx.fillRect(chestX + chestW * 0.69, chestY, chestW * 0.16, chestH);
+
+    // Chest Lid Rim
+    this.ctx.fillStyle = '#d97706';
+    this.ctx.fillRect(chestX, chestY + chestH * 0.35, chestW, chestH * 0.12);
+
+    // Center Gold Lock Plate with Keyhole
+    const lockW = chestW * 0.32;
+    const lockH = chestH * 0.38;
+    const lockX = cx - lockW / 2;
+    const lockY = chestY + chestH * 0.32;
+    this.ctx.fillStyle = '#fde047';
+    this.ctx.beginPath();
+    this.ctx.roundRect(lockX, lockY, lockW, lockH, 4);
+    this.ctx.fill();
+    this.ctx.strokeStyle = '#78350f';
+    this.ctx.lineWidth = 1.2;
+    this.ctx.stroke();
+
+    // Keyhole
+    this.ctx.fillStyle = '#1c1917';
+    this.ctx.beginPath();
+    this.ctx.arc(cx, lockY + lockH * 0.38, lockW * 0.16, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.beginPath();
+    this.ctx.moveTo(cx - lockW * 0.09, lockY + lockH * 0.40);
+    this.ctx.lineTo(cx + lockW * 0.09, lockY + lockH * 0.40);
+    this.ctx.lineTo(cx + lockW * 0.12, lockY + lockH * 0.78);
+    this.ctx.lineTo(cx - lockW * 0.12, lockY + lockH * 0.78);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    // Top text tag: 🗝️➔💰
+    this.ctx.fillStyle = '#ffffff';
+    this.ctx.font = `bold ${Math.floor(cellSize * 0.22)}px sans-serif`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-    this.ctx.fillText('💎➔🪙', cx, cy);
+    this.ctx.fillText('🗝️➔💰', cx, cy - r * 0.82);
 
     this.ctx.restore();
   }
@@ -290,82 +339,79 @@ class GridCanvasRenderer {
   drawDiamond(x, y, cellSize) {
     const cx = x * cellSize + cellSize / 2;
     const cy = y * cellSize + cellSize / 2;
-    const s = cellSize * 0.32;
+    const s = cellSize * 0.36;
 
     this.ctx.save();
-    // Cyan glow
-    this.ctx.shadowColor = '#38bdf8';
-    this.ctx.shadowBlur = 8;
+    // Warm golden sparkle glow
+    this.ctx.shadowColor = '#f59e0b';
+    this.ctx.shadowBlur = 10;
 
     // Drop shadow
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.14)';
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
     this.ctx.beginPath();
-    this.ctx.ellipse(cx, cy + s * 1.1, s * 0.85, s * 0.26, 0, 0, Math.PI * 2);
+    this.ctx.ellipse(cx, cy + s * 1.05, s * 0.8, s * 0.24, 0, 0, Math.PI * 2);
     this.ctx.fill();
 
-    const topY = cy - s * 0.8;
-    const midY = cy - s * 0.2;
-    const botY = cy + s * 0.9;
-    const leftX = cx - s * 0.9;
-    const rightX = cx + s * 0.9;
-    const tableLeftX = cx - s * 0.5;
-    const tableRightX = cx + s * 0.5;
+    // Slanted angle for sleek aesthetic key
+    this.ctx.translate(cx, cy);
+    this.ctx.rotate(-Math.PI / 4);
 
-    // Lower pavilion
-    const pavGrad = this.ctx.createLinearGradient(cx, midY, cx, botY);
-    pavGrad.addColorStop(0, '#0284c7');
-    pavGrad.addColorStop(1, '#0369a1');
-    this.ctx.fillStyle = pavGrad;
+    // 1. Key Bow (Handle Ring with ornate head)
+    const bowR = s * 0.42;
+    const bowY = -s * 0.50;
+
+    const goldGrad = this.ctx.createLinearGradient(-bowR, -bowR, bowR, bowR);
+    goldGrad.addColorStop(0, '#fef08a');
+    goldGrad.addColorStop(0.4, '#f59e0b');
+    goldGrad.addColorStop(0.8, '#d97706');
+    goldGrad.addColorStop(1, '#b45309');
+
+    // Outer bow ring
+    this.ctx.fillStyle = goldGrad;
     this.ctx.beginPath();
-    this.ctx.moveTo(leftX, midY);
-    this.ctx.lineTo(rightX, midY);
-    this.ctx.lineTo(cx, botY);
-    this.ctx.closePath();
+    this.ctx.arc(0, bowY, bowR, 0, Math.PI * 2);
     this.ctx.fill();
-
-    // Upper crown
-    const crownGrad = this.ctx.createLinearGradient(cx, topY, cx, midY);
-    crownGrad.addColorStop(0, '#bae6fd');
-    crownGrad.addColorStop(0.5, '#38bdf8');
-    crownGrad.addColorStop(1, '#0284c7');
-    this.ctx.fillStyle = crownGrad;
-    this.ctx.beginPath();
-    this.ctx.moveTo(tableLeftX, topY);
-    this.ctx.lineTo(tableRightX, topY);
-    this.ctx.lineTo(rightX, midY);
-    this.ctx.lineTo(leftX, midY);
-    this.ctx.closePath();
-    this.ctx.fill();
-
-    // Facet lines
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+    this.ctx.strokeStyle = '#78350f';
     this.ctx.lineWidth = 1.2;
-    this.ctx.beginPath();
-    this.ctx.moveTo(tableLeftX, topY);
-    this.ctx.lineTo(tableRightX, topY);
-    this.ctx.moveTo(tableLeftX, topY);
-    this.ctx.lineTo(cx - s * 0.2, midY);
-    this.ctx.lineTo(tableRightX, topY);
-    this.ctx.moveTo(cx - s * 0.2, midY);
-    this.ctx.lineTo(cx, botY);
     this.ctx.stroke();
 
-    // Border
-    this.ctx.strokeStyle = '#0284c7';
-    this.ctx.lineWidth = 1.5;
+    // Inner hollow of bow
+    this.ctx.fillStyle = '#1e293b';
     this.ctx.beginPath();
-    this.ctx.moveTo(tableLeftX, topY);
-    this.ctx.lineTo(tableRightX, topY);
-    this.ctx.lineTo(rightX, midY);
-    this.ctx.lineTo(cx, botY);
-    this.ctx.lineTo(leftX, midY);
-    this.ctx.closePath();
+    this.ctx.arc(0, bowY, bowR * 0.48, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // Decorative gemstone in ring center
+    this.ctx.fillStyle = '#38bdf8';
+    this.ctx.beginPath();
+    this.ctx.arc(0, bowY, bowR * 0.28, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // 2. Key Stem (Shaft)
+    const stemW = s * 0.18;
+    const stemH = s * 1.10;
+    this.ctx.fillStyle = goldGrad;
+    this.ctx.beginPath();
+    this.ctx.roundRect(-stemW / 2, bowY + bowR * 0.8, stemW, stemH, 3);
+    this.ctx.fill();
+    this.ctx.strokeStyle = '#78350f';
+    this.ctx.lineWidth = 1.0;
     this.ctx.stroke();
 
-    // Specular glint
+    // 3. Key Bit (Lock teeth at bottom)
+    const bitY = bowY + bowR * 0.8 + stemH * 0.65;
+    const bitW = s * 0.32;
+    const bitH = s * 0.16;
+
+    // Tooth 1
+    this.ctx.fillRect(stemW / 2 - 1, bitY, bitW, bitH);
+    // Tooth 2 (lower)
+    this.ctx.fillRect(stemW / 2 - 1, bitY + bitH * 1.3, bitW * 0.75, bitH);
+
+    // Specular glint on bow
     this.ctx.fillStyle = '#ffffff';
     this.ctx.beginPath();
-    this.ctx.arc(cx + s * 0.3, topY + s * 0.22, 2.5, 0, Math.PI * 2);
+    this.ctx.arc(-bowR * 0.35, bowY - bowR * 0.35, 2.2, 0, Math.PI * 2);
     this.ctx.fill();
 
     this.ctx.restore();
@@ -376,164 +422,140 @@ class GridCanvasRenderer {
     const cy = y * cellSize + cellSize / 2;
     const s = cellSize * 0.42;
 
-    let primary = '#4f46e5';   // Indigo
-    let secondary = '#6366f1';
-    let accent = '#38bdf8';    // Glowing cyan eyes
+    // Thief theme accents:
+    // Default: Sleek dark burglar with indigo stealth trim
+    // RL: Master burglar with emerald stealth trim
+    let trimColor = '#6366f1';
+    let eyeColor = '#38bdf8';
+    let sackGlow = '#f59e0b';
 
     if (theme === 'rl' || theme === 'green') {
-      primary = '#059669';     // Emerald
-      secondary = '#10b981';
-      accent = '#34d399';
+      trimColor = '#10b981';
+      eyeColor = '#34d399';
+      sackGlow = '#10b981';
     } else if (theme === 'gold') {
-      primary = '#d97706';
-      secondary = '#f59e0b';
-      accent = '#fef08a';
+      trimColor = '#f59e0b';
+      eyeColor = '#fef08a';
+      sackGlow = '#f59e0b';
     } else if (theme === 'red') {
-      primary = '#dc2626';
-      secondary = '#ef4444';
-      accent = '#fca5a5';
+      trimColor = '#ef4444';
+      eyeColor = '#fca5a5';
+      sackGlow = '#ef4444';
     }
 
     this.ctx.save();
 
     // 1. Soft Floor Shadow
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
     this.ctx.beginPath();
-    this.ctx.ellipse(cx, cy + s * 0.95, s * 0.75, s * 0.25, 0, 0, Math.PI * 2);
+    this.ctx.ellipse(cx, cy + s * 0.95, s * 0.76, s * 0.25, 0, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // 2. Hover thruster base
-    this.ctx.fillStyle = '#334155';
+    // 2. Swag / Loot Bag on back (bulging with coins & loot)
+    const bagX = cx - s * 0.42;
+    const bagY = cy + s * 0.20;
+    const bagR = s * 0.34;
+    const bagGrad = this.ctx.createRadialGradient(bagX, bagY, 2, bagX, bagY, bagR);
+    bagGrad.addColorStop(0, '#d97706');
+    bagGrad.addColorStop(0.7, '#92400e');
+    bagGrad.addColorStop(1, '#451a03');
+    this.ctx.fillStyle = bagGrad;
     this.ctx.beginPath();
-    this.ctx.roundRect(cx - s * 0.42, cy + s * 0.65, s * 0.84, s * 0.24, 4);
+    this.ctx.arc(bagX, bagY, bagR, 0, Math.PI * 2);
     this.ctx.fill();
-
-    // Thruster cyan glow
-    const thrusterGrad = this.ctx.createRadialGradient(cx, cy + s * 0.78, 1, cx, cy + s * 0.78, s * 0.38);
-    thrusterGrad.addColorStop(0, accent);
-    thrusterGrad.addColorStop(1, 'rgba(0,0,0,0)');
-    this.ctx.fillStyle = thrusterGrad;
-    this.ctx.beginPath();
-    this.ctx.arc(cx, cy + s * 0.78, s * 0.35, 0, Math.PI * 2);
-    this.ctx.fill();
-
-    // 3. Robot Torso
-    const bodyGrad = this.ctx.createLinearGradient(cx - s * 0.5, cy + s * 0.08, cx + s * 0.5, cy + s * 0.68);
-    bodyGrad.addColorStop(0, '#ffffff');
-    bodyGrad.addColorStop(0.3, primary);
-    bodyGrad.addColorStop(1, secondary);
-    this.ctx.fillStyle = bodyGrad;
-    this.ctx.beginPath();
-    this.ctx.roundRect(cx - s * 0.48, cy + s * 0.1, s * 0.96, s * 0.58, 6);
-    this.ctx.fill();
-    this.ctx.strokeStyle = '#1e1b4b';
+    this.ctx.strokeStyle = '#292524';
     this.ctx.lineWidth = 1.2;
     this.ctx.stroke();
 
-    // Chest Glowing Energy Core
-    this.ctx.fillStyle = accent;
-    this.ctx.shadowColor = accent;
-    this.ctx.shadowBlur = 6;
-    this.ctx.beginPath();
-    this.ctx.arc(cx, cy + s * 0.38, s * 0.15, 0, Math.PI * 2);
-    this.ctx.fill();
-    this.ctx.shadowBlur = 0;
+    // Dollar/Loot symbol on sack
+    this.ctx.fillStyle = '#fde047';
+    this.ctx.font = `bold ${Math.floor(s * 0.28)}px sans-serif`;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.fillText('$', bagX, bagY);
 
-    // Robot arms
-    this.ctx.fillStyle = '#64748b';
+    // 3. Thief Torso / Stealth Outfit
+    const torsoGrad = this.ctx.createLinearGradient(cx - s * 0.4, cy, cx + s * 0.4, cy + s * 0.65);
+    torsoGrad.addColorStop(0, '#334155');
+    torsoGrad.addColorStop(0.5, '#1e293b');
+    torsoGrad.addColorStop(1, '#0f172a');
+    this.ctx.fillStyle = torsoGrad;
     this.ctx.beginPath();
-    this.ctx.roundRect(cx - s * 0.64, cy + s * 0.22, s * 0.14, s * 0.36, 3);
-    this.ctx.roundRect(cx + s * 0.50, cy + s * 0.22, s * 0.14, s * 0.36, 3);
+    this.ctx.roundRect(cx - s * 0.42, cy + s * 0.12, s * 0.84, s * 0.58, 6);
     this.ctx.fill();
-
-    // 4. Antenna
-    this.ctx.strokeStyle = '#64748b';
-    this.ctx.lineWidth = 2;
-    this.ctx.beginPath();
-    this.ctx.moveTo(cx, cy - s * 0.6);
-    this.ctx.lineTo(cx, cy - s * 0.85);
+    this.ctx.strokeStyle = trimColor;
+    this.ctx.lineWidth = 1.5;
     this.ctx.stroke();
 
-    // Golden antenna orb
+    // Stealth belt with gold buckle
+    this.ctx.fillStyle = '#020617';
+    this.ctx.fillRect(cx - s * 0.42, cy + s * 0.52, s * 0.84, s * 0.12);
     this.ctx.fillStyle = '#f59e0b';
-    this.ctx.shadowColor = '#fbbf24';
-    this.ctx.shadowBlur = 8;
-    this.ctx.beginPath();
-    this.ctx.arc(cx, cy - s * 0.88, s * 0.11, 0, Math.PI * 2);
-    this.ctx.fill();
-    this.ctx.shadowBlur = 0;
+    this.ctx.fillRect(cx - s * 0.12, cy + s * 0.50, s * 0.24, s * 0.16);
 
-    // 5. Head
-    const headGrad = this.ctx.createLinearGradient(cx - s * 0.55, cy - s * 0.62, cx + s * 0.55, cy + s * 0.05);
-    headGrad.addColorStop(0, '#f8fafc');
-    headGrad.addColorStop(0.5, '#e2e8f0');
-    headGrad.addColorStop(1, '#cbd5e1');
+    // 4. Thief Head & Knit Beanie (کلاه مشکی سارق)
+    const headGrad = this.ctx.createRadialGradient(cx, cy - s * 0.35, 2, cx, cy - s * 0.35, s * 0.55);
+    headGrad.addColorStop(0, '#475569');
+    headGrad.addColorStop(0.6, '#1e293b');
+    headGrad.addColorStop(1, '#0f172a');
     this.ctx.fillStyle = headGrad;
     this.ctx.beginPath();
-    this.ctx.roundRect(cx - s * 0.56, cy - s * 0.62, s * 1.12, s * 0.66, 8);
+    this.ctx.arc(cx, cy - s * 0.35, s * 0.52, 0, Math.PI * 2);
     this.ctx.fill();
-    this.ctx.strokeStyle = '#475569';
+    this.ctx.strokeStyle = '#020617';
     this.ctx.lineWidth = 1.2;
     this.ctx.stroke();
 
-    // Side ear pads
-    this.ctx.fillStyle = primary;
+    // Beanie cuff trim
+    this.ctx.fillStyle = trimColor;
     this.ctx.beginPath();
-    this.ctx.roundRect(cx - s * 0.66, cy - s * 0.44, s * 0.11, s * 0.32, 2);
-    this.ctx.roundRect(cx + s * 0.55, cy - s * 0.44, s * 0.11, s * 0.32, 2);
+    this.ctx.roundRect(cx - s * 0.46, cy - s * 0.56, s * 0.92, s * 0.16, 4);
     this.ctx.fill();
 
-    // 6. Glossy Visor Screen
-    this.ctx.fillStyle = '#0f172a';
+    // 5. Black Domino Eye Mask (نقاب سیاه دزدی دور چشم)
+    this.ctx.fillStyle = '#020617';
     this.ctx.beginPath();
-    this.ctx.roundRect(cx - s * 0.42, cy - s * 0.52, s * 0.84, s * 0.44, 6);
+    this.ctx.roundRect(cx - s * 0.44, cy - s * 0.38, s * 0.88, s * 0.24, 6);
     this.ctx.fill();
-
-    // Visor reflection shine
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-    this.ctx.lineWidth = 1;
-    this.ctx.beginPath();
-    this.ctx.arc(cx - s * 0.15, cy - s * 0.40, s * 0.22, -Math.PI / 4, Math.PI / 4);
+    this.ctx.strokeStyle = '#000000';
+    this.ctx.lineWidth = 1.5;
     this.ctx.stroke();
 
-    // Heading offsets for directional eyes
+    // Heading shift for thief eyes
     let lookDx = 0;
     let lookDy = 0;
-    if (heading === 'LEFT') lookDx = -s * 0.07;
-    else if (heading === 'RIGHT') lookDx = s * 0.07;
-    else if (heading === 'UP') lookDy = -s * 0.07;
-    else if (heading === 'DOWN') lookDy = s * 0.07;
+    if (heading === 'LEFT') lookDx = -s * 0.08;
+    else if (heading === 'RIGHT') lookDx = s * 0.08;
+    else if (heading === 'UP') lookDy = -s * 0.06;
+    else if (heading === 'DOWN') lookDy = s * 0.06;
 
-    // 7. Cute Glowing Expressive Eyes shifted in heading direction
-    this.ctx.fillStyle = accent;
-    this.ctx.shadowColor = accent;
-    this.ctx.shadowBlur = 8;
-    const eyeR = s * 0.085;
-    const eyeY = cy - s * 0.30 + lookDy;
-    this.ctx.beginPath();
-    this.ctx.arc(cx - s * 0.18 + lookDx, eyeY, eyeR, 0, Math.PI * 2);
-    this.ctx.fill();
+    // 6. Expressive, Sharp Cunning Eyes (چشم‌های تیزبین و درخشان سارق)
+    const eyeR = s * 0.08;
+    const eyeY = cy - s * 0.26 + lookDy;
 
-    this.ctx.beginPath();
-    this.ctx.arc(cx + s * 0.18 + lookDx, eyeY, eyeR, 0, Math.PI * 2);
-    this.ctx.fill();
-
-    // Eye catchlights
     this.ctx.fillStyle = '#ffffff';
     this.ctx.beginPath();
-    this.ctx.arc(cx - s * 0.20 + lookDx, eyeY - s * 0.025, eyeR * 0.4, 0, Math.PI * 2);
-    this.ctx.arc(cx + s * 0.16 + lookDx, eyeY - s * 0.025, eyeR * 0.4, 0, Math.PI * 2);
+    this.ctx.arc(cx - s * 0.18 + lookDx, eyeY, eyeR * 1.1, 0, Math.PI * 2);
+    this.ctx.arc(cx + s * 0.18 + lookDx, eyeY, eyeR * 1.1, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // 8. Directional Visor Arrow Indicator
-    this.ctx.fillStyle = accent;
-    this.ctx.shadowColor = accent;
-    this.ctx.shadowBlur = 4;
-    this.ctx.font = `bold ${Math.floor(s * 0.26)}px sans-serif`;
+    // Glowing Pupils looking towards heading
+    this.ctx.fillStyle = eyeColor;
+    this.ctx.shadowColor = eyeColor;
+    this.ctx.shadowBlur = 6;
+    this.ctx.beginPath();
+    this.ctx.arc(cx - s * 0.18 + lookDx * 1.2, eyeY, eyeR * 0.65, 0, Math.PI * 2);
+    this.ctx.arc(cx + s * 0.18 + lookDx * 1.2, eyeY, eyeR * 0.65, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.shadowBlur = 0;
+
+    // 7. Directional Chevron on Beanie
+    this.ctx.fillStyle = '#fde047';
+    this.ctx.font = `bold ${Math.floor(s * 0.24)}px sans-serif`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     const arrowMap = { UP: '▲', DOWN: '▼', LEFT: '◀', RIGHT: '▶' };
-    this.ctx.fillText(arrowMap[heading] || '▶', cx, cy - s * 0.46);
+    this.ctx.fillText(arrowMap[heading] || '▶', cx, cy - s * 0.70);
 
     this.ctx.restore();
   }
@@ -545,22 +567,22 @@ class GridCanvasRenderer {
 
     this.ctx.save();
 
-    // 0. Threat Perception Radar Zone (Only if active and not stunned)
+    // 0. Police Inspection / Siren Radar Zone (Only if active and not stunned)
     if (!isStunned) {
       const auraR = cellSize * 2.8;
       const auraGrad = this.ctx.createRadialGradient(cx, cy, s * 0.4, cx, cy, auraR);
-      auraGrad.addColorStop(0, 'rgba(239, 68, 68, 0.12)');
-      auraGrad.addColorStop(0.7, 'rgba(239, 68, 68, 0.04)');
-      auraGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+      auraGrad.addColorStop(0, 'rgba(59, 130, 246, 0.15)');
+      auraGrad.addColorStop(0.5, 'rgba(239, 68, 68, 0.08)');
+      auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       this.ctx.fillStyle = auraGrad;
       this.ctx.beginPath();
       this.ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
       this.ctx.fill();
 
-      // Dotted detection circle line
-      this.ctx.strokeStyle = 'rgba(239, 68, 68, 0.22)';
-      this.ctx.lineWidth = 1;
-      this.ctx.setLineDash([4, 4]);
+      // Flashing Police inspection perimeter line
+      this.ctx.strokeStyle = 'rgba(59, 130, 246, 0.35)';
+      this.ctx.lineWidth = 1.2;
+      this.ctx.setLineDash([5, 5]);
       this.ctx.beginPath();
       this.ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
       this.ctx.stroke();
@@ -569,7 +591,7 @@ class GridCanvasRenderer {
       // Gentle yellow dizzy aura
       const auraR = cellSize * 1.5;
       const auraGrad = this.ctx.createRadialGradient(cx, cy, s * 0.4, cx, cy, auraR);
-      auraGrad.addColorStop(0, 'rgba(250, 204, 21, 0.25)');
+      auraGrad.addColorStop(0, 'rgba(250, 204, 21, 0.28)');
       auraGrad.addColorStop(1, 'rgba(250, 204, 21, 0)');
       this.ctx.fillStyle = auraGrad;
       this.ctx.beginPath();
@@ -577,143 +599,202 @@ class GridCanvasRenderer {
       this.ctx.fill();
     }
 
-    // 1. Spooky Floor Shadow
-    this.ctx.fillStyle = isStunned ? 'rgba(120, 53, 15, 0.25)' : 'rgba(153, 27, 27, 0.25)';
+    // 1. Floor Shadow
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
     this.ctx.beginPath();
     this.ctx.ellipse(cx, cy + s * 0.95, s * 0.78, s * 0.25, 0, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // 2. Horns
-    this.ctx.fillStyle = isStunned ? '#78350f' : '#7f1d1d';
-    // Left horn
+    // 2. Police Uniform Torso (Deep Navy Blue Officer Suit)
+    const suitGrad = this.ctx.createLinearGradient(cx - s * 0.5, cy, cx + s * 0.5, cy + s * 0.75);
+    suitGrad.addColorStop(0, '#1e3a8a');
+    suitGrad.addColorStop(0.5, '#1e40af');
+    suitGrad.addColorStop(1, '#172554');
+    this.ctx.fillStyle = suitGrad;
     this.ctx.beginPath();
-    this.ctx.moveTo(cx - s * 0.42, cy - s * 0.2);
-    this.ctx.quadraticCurveTo(cx - s * 0.72, cy - s * 0.7, cx - s * 0.38, cy - s * 0.78);
-    this.ctx.quadraticCurveTo(cx - s * 0.28, cy - s * 0.5, cx - s * 0.18, cy - s * 0.38);
-    this.ctx.closePath();
+    this.ctx.roundRect(cx - s * 0.52, cy + s * 0.08, s * 1.04, s * 0.65, 8);
     this.ctx.fill();
-    // Right horn
+    this.ctx.strokeStyle = '#0f172a';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.stroke();
+
+    // White shirt collar & gold tie
+    this.ctx.fillStyle = '#ffffff';
     this.ctx.beginPath();
-    this.ctx.moveTo(cx + s * 0.42, cy - s * 0.2);
-    this.ctx.quadraticCurveTo(cx + s * 0.72, cy - s * 0.7, cx + s * 0.38, cy - s * 0.78);
-    this.ctx.quadraticCurveTo(cx + s * 0.28, cy - s * 0.5, cx + s * 0.18, cy - s * 0.38);
+    this.ctx.moveTo(cx - s * 0.18, cy + s * 0.08);
+    this.ctx.lineTo(cx, cy + s * 0.28);
+    this.ctx.lineTo(cx + s * 0.18, cy + s * 0.08);
+    this.ctx.fill();
+    // Gold tie
+    this.ctx.fillStyle = '#f59e0b';
+    this.ctx.beginPath();
+    this.ctx.moveTo(cx - s * 0.06, cy + s * 0.20);
+    this.ctx.lineTo(cx + s * 0.06, cy + s * 0.20);
+    this.ctx.lineTo(cx + s * 0.08, cy + s * 0.48);
+    this.ctx.lineTo(cx, cy + s * 0.55);
+    this.ctx.lineTo(cx - s * 0.08, cy + s * 0.48);
     this.ctx.closePath();
     this.ctx.fill();
 
-    // 3. Menacing Body
-    const bodyGrad = this.ctx.createRadialGradient(cx, cy - s * 0.1, s * 0.1, cx, cy, s * 0.8);
-    if (isStunned) {
-      bodyGrad.addColorStop(0, '#f87171');
-      bodyGrad.addColorStop(0.6, '#b91c1c');
-      bodyGrad.addColorStop(1, '#7f1d1d');
-    } else {
-      bodyGrad.addColorStop(0, '#ef4444');
-      bodyGrad.addColorStop(0.6, '#dc2626');
-      bodyGrad.addColorStop(1, '#991b1b');
-    }
-    this.ctx.fillStyle = bodyGrad;
-    this.ctx.shadowColor = isStunned ? '#eab308' : '#ef4444';
-    this.ctx.shadowBlur = isStunned ? 6 : 10;
+    // Shiny Golden Police Badge / Shield on chest
+    this.ctx.fillStyle = '#fbbf24';
+    this.ctx.shadowColor = '#f59e0b';
+    this.ctx.shadowBlur = 4;
     this.ctx.beginPath();
-    this.ctx.roundRect(cx - s * 0.62, cy - s * 0.44, s * 1.24, s * 1.12, [18, 18, 22, 22]);
+    const badgeX = cx - s * 0.32;
+    const badgeY = cy + s * 0.22;
+    const badgeS = s * 0.14;
+    this.ctx.arc(badgeX, badgeY, badgeS, 0, Math.PI * 2);
     this.ctx.fill();
     this.ctx.shadowBlur = 0;
+    this.ctx.fillStyle = '#78350f';
+    this.ctx.font = `bold ${Math.floor(s * 0.18)}px sans-serif`;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.fillText('★', badgeX, badgeY + 0.5);
 
-    // 4. Eyes (Menacing or Dizzy X X)
+    // 3. Police Head & Peaked Visor Cap (کلاه فرم پلیس با نشان نظامی)
+    const headGrad = this.ctx.createRadialGradient(cx, cy - s * 0.30, 2, cx, cy - s * 0.30, s * 0.48);
+    headGrad.addColorStop(0, '#fde047');
+    headGrad.addColorStop(0.5, '#facc15');
+    headGrad.addColorStop(1, '#ca8a04');
+    // Officer face
+    this.ctx.fillStyle = '#fed7aa';
+    this.ctx.beginPath();
+    this.ctx.arc(cx, cy - s * 0.28, s * 0.42, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // Peaked Cap Crown (کلاه سرمه‌ای)
+    const capGrad = this.ctx.createLinearGradient(cx - s * 0.55, cy - s * 0.70, cx + s * 0.55, cy - s * 0.35);
+    capGrad.addColorStop(0, '#1d4ed8');
+    capGrad.addColorStop(0.7, '#1e3a8a');
+    capGrad.addColorStop(1, '#0f172a');
+    this.ctx.fillStyle = capGrad;
+    this.ctx.beginPath();
+    this.ctx.roundRect(cx - s * 0.56, cy - s * 0.72, s * 1.12, s * 0.40, [14, 14, 2, 2]);
+    this.ctx.fill();
+
+    // Black Glossy Cap Visor (لبه براق کلاه)
+    this.ctx.fillStyle = '#020617';
+    this.ctx.beginPath();
+    this.ctx.roundRect(cx - s * 0.60, cy - s * 0.42, s * 1.20, s * 0.14, 4);
+    this.ctx.fill();
+
+    // Gold Eagle / Star Crest on Cap
+    this.ctx.fillStyle = '#fbbf24';
+    this.ctx.beginPath();
+    this.ctx.arc(cx, cy - s * 0.52, s * 0.11, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // 4. Emergency Police Siren on Top of Hat (چراغ گردان آژیر پلیس قرمز و آبی 🚨)
+    if (!isStunned) {
+      // Siren mount
+      this.ctx.fillStyle = '#334155';
+      this.ctx.fillRect(cx - s * 0.18, cy - s * 0.82, s * 0.36, s * 0.10);
+
+      // Flashing Blue Beacon (Left)
+      const blueGrad = this.ctx.createRadialGradient(cx - s * 0.10, cy - s * 0.90, 1, cx - s * 0.10, cy - s * 0.90, s * 0.24);
+      blueGrad.addColorStop(0, '#60a5fa');
+      blueGrad.addColorStop(0.5, '#2563eb');
+      blueGrad.addColorStop(1, '#1d4ed8');
+      this.ctx.fillStyle = blueGrad;
+      this.ctx.shadowColor = '#3b82f6';
+      this.ctx.shadowBlur = 10;
+      this.ctx.beginPath();
+      this.ctx.roundRect(cx - s * 0.20, cy - s * 0.98, s * 0.18, s * 0.18, 4);
+      this.ctx.fill();
+
+      // Flashing Red Beacon (Right)
+      const redGrad = this.ctx.createRadialGradient(cx + s * 0.10, cy - s * 0.90, 1, cx + s * 0.10, cy - s * 0.90, s * 0.24);
+      redGrad.addColorStop(0, '#f87171');
+      redGrad.addColorStop(0.5, '#dc2626');
+      redGrad.addColorStop(1, '#991b1b');
+      this.ctx.fillStyle = redGrad;
+      this.ctx.shadowColor = '#ef4444';
+      this.ctx.shadowBlur = 10;
+      this.ctx.beginPath();
+      this.ctx.roundRect(cx + s * 0.02, cy - s * 0.98, s * 0.18, s * 0.18, 4);
+      this.ctx.fill();
+      this.ctx.shadowBlur = 0;
+    } else {
+      // Dimmed siren when stunned
+      this.ctx.fillStyle = '#475569';
+      this.ctx.fillRect(cx - s * 0.18, cy - s * 0.88, s * 0.36, s * 0.16);
+    }
+
+    // 5. Eyes / Glasses (Serious Cop Aviators or Dizzy X X)
     if (isStunned) {
       // Dizzy 'X X' yellow eyes
-      this.ctx.strokeStyle = '#fef08a';
+      this.ctx.strokeStyle = '#eab308';
       this.ctx.lineWidth = 2.5;
-      const eyeOffset = s * 0.26;
-      const eyeY = cy - s * 0.08;
-      const d = s * 0.11;
+      const eyeOffset = s * 0.22;
+      const eyeY = cy - s * 0.24;
+      const d = s * 0.09;
 
-      // Left eye X
       this.ctx.beginPath();
       this.ctx.moveTo(cx - eyeOffset - d, eyeY - d);
       this.ctx.lineTo(cx - eyeOffset + d, eyeY + d);
       this.ctx.moveTo(cx - eyeOffset + d, eyeY - d);
       this.ctx.lineTo(cx - eyeOffset - d, eyeY + d);
-      // Right eye X
       this.ctx.moveTo(cx + eyeOffset - d, eyeY - d);
       this.ctx.lineTo(cx + eyeOffset + d, eyeY + d);
       this.ctx.moveTo(cx + eyeOffset + d, eyeY - d);
       this.ctx.lineTo(cx + eyeOffset - d, eyeY + d);
       this.ctx.stroke();
 
-      // Dizzy spinning stars floating above horns
+      // Dizzy spinning stars
       this.ctx.font = `${Math.floor(cellSize * 0.40)}px sans-serif`;
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
-      this.ctx.fillText('💫', cx, cy - s * 0.92);
+      this.ctx.fillText('💫', cx, cy - s * 1.05);
     } else {
-      // Direction offsets for monster eyes
+      // Direction offsets for cop eyes
       let eLookDx = 0;
       let eLookDy = 0;
-      if (heading === 'LEFT') eLookDx = -s * 0.06;
-      else if (heading === 'RIGHT') eLookDx = s * 0.06;
+      if (heading === 'LEFT') eLookDx = -s * 0.07;
+      else if (heading === 'RIGHT') eLookDx = s * 0.07;
       else if (heading === 'UP') eLookDy = -s * 0.06;
       else if (heading === 'DOWN') eLookDy = s * 0.06;
 
-      // Glowing Yellow Eyes
-      this.ctx.fillStyle = '#fef08a';
-      this.ctx.shadowColor = '#fbbf24';
-      this.ctx.shadowBlur = 8;
-      const eyeW = s * 0.20;
-      const eyeH = s * 0.24;
+      // Dark Aviator sunglasses / stern eyes
+      this.ctx.fillStyle = '#0f172a';
       this.ctx.beginPath();
-      this.ctx.ellipse(cx - s * 0.26, cy - s * 0.08, eyeW, eyeH, -0.15, 0, Math.PI * 2);
+      this.ctx.roundRect(cx - s * 0.36, cy - s * 0.34, s * 0.32, s * 0.20, 5);
+      this.ctx.roundRect(cx + s * 0.04, cy - s * 0.34, s * 0.32, s * 0.20, 5);
       this.ctx.fill();
-      this.ctx.beginPath();
-      this.ctx.ellipse(cx + s * 0.26, cy - s * 0.08, eyeW, eyeH, 0.15, 0, Math.PI * 2);
-      this.ctx.fill();
-      this.ctx.shadowBlur = 0;
+      this.ctx.strokeStyle = '#f59e0b';
+      this.ctx.lineWidth = 1;
+      this.ctx.stroke();
 
-      // Dark pupils shifted towards movement heading
-      this.ctx.fillStyle = '#7f1d1d';
+      // Aviator glasses bridge
       this.ctx.beginPath();
-      this.ctx.ellipse(cx - s * 0.24 + eLookDx, cy - s * 0.08 + eLookDy, eyeW * 0.4, eyeH * 0.65, 0, 0, Math.PI * 2);
-      this.ctx.ellipse(cx + s * 0.24 + eLookDx, cy - s * 0.08 + eLookDy, eyeW * 0.4, eyeH * 0.65, 0, 0, Math.PI * 2);
+      this.ctx.moveTo(cx - s * 0.04, cy - s * 0.28);
+      this.ctx.lineTo(cx + s * 0.04, cy - s * 0.28);
+      this.ctx.stroke();
+
+      // White reflection glint in glasses shifted towards heading
+      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      this.ctx.beginPath();
+      this.ctx.arc(cx - s * 0.20 + eLookDx, cy - s * 0.26 + eLookDy, 2.4, 0, Math.PI * 2);
+      this.ctx.arc(cx + s * 0.20 + eLookDx, cy - s * 0.26 + eLookDy, 2.4, 0, Math.PI * 2);
       this.ctx.fill();
 
-      // Threat patrol direction indicator
-      this.ctx.fillStyle = '#fef08a';
+      // Direction indicator arrow on cap
+      this.ctx.fillStyle = '#fbbf24';
       this.ctx.font = `bold ${Math.floor(s * 0.24)}px sans-serif`;
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
       const arrowMap = { UP: '▲', DOWN: '▼', LEFT: '◀', RIGHT: '▶' };
-      this.ctx.fillText(arrowMap[heading] || '▶', cx, cy - s * 0.32);
+      this.ctx.fillText(arrowMap[heading] || '▶', cx, cy - s * 0.65);
     }
 
-    // 5. Grinning mouth & sharp teeth
-    if (isStunned) {
-      // Wavy dizzy mouth
-      this.ctx.strokeStyle = '#450a0a';
-      this.ctx.lineWidth = 2.5;
-      this.ctx.beginPath();
-      this.ctx.moveTo(cx - s * 0.22, cy + s * 0.32);
-      this.ctx.quadraticCurveTo(cx - s * 0.11, cy + s * 0.24, cx, cy + s * 0.32);
-      this.ctx.quadraticCurveTo(cx + s * 0.11, cy + s * 0.40, cx + s * 0.22, cy + s * 0.32);
-      this.ctx.stroke();
-    } else {
-      this.ctx.fillStyle = '#450a0a';
-      this.ctx.beginPath();
-      this.ctx.arc(cx, cy + s * 0.28, s * 0.32, 0.1 * Math.PI, 0.9 * Math.PI);
-      this.ctx.closePath();
-      this.ctx.fill();
-
-      // Teeth
-      this.ctx.fillStyle = '#ffffff';
-      this.ctx.beginPath();
-      this.ctx.moveTo(cx - s * 0.18, cy + s * 0.3);
-      this.ctx.lineTo(cx - s * 0.09, cy + s * 0.44);
-      this.ctx.lineTo(cx, cy + s * 0.3);
-      this.ctx.moveTo(cx, cy + s * 0.3);
-      this.ctx.lineTo(cx + s * 0.09, cy + s * 0.44);
-      this.ctx.lineTo(cx + s * 0.18, cy + s * 0.3);
-      this.ctx.closePath();
-      this.ctx.fill();
-    }
+    // 6. Police Whistle / Stern Mouth
+    this.ctx.strokeStyle = '#78350f';
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(cx - s * 0.12, cy - s * 0.08);
+    this.ctx.lineTo(cx + s * 0.12, cy - s * 0.08);
+    this.ctx.stroke();
 
     this.ctx.restore();
   }

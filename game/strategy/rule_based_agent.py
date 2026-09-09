@@ -43,33 +43,33 @@ def format_condition_fa(cond: ConditionItem) -> str:
 
 
 CONDITION_NAMES_FA = {
-    "enemy_dist_le": "فاصله تا هیولا کمتر یا مساوی مقدار",
-    "enemy_dist_gt": "فاصله تا هیولا بیشتر از مقدار (محیط امن)",
-    "enemy_near": "هیولا در نزدیکی (فاصله ۲ یا کمتر)",
-    "enemy_adjacent": "هیولا در خانه مجاور",
+    "enemy_dist_le": "فاصله تا پلیس (هیولا) کمتر یا مساوی مقدار",
+    "enemy_dist_gt": "فاصله تا پلیس (هیولا) بیشتر از مقدار (محیط امن)",
+    "enemy_near": "پلیس (هیولا) در نزدیکی (فاصله ۲ یا کمتر)",
+    "enemy_adjacent": "پلیس (هیولا) در خانه مجاور",
     "coin_dist_le": "فاصله تا نزدیک‌ترین سکه کمتر یا مساوی مقدار",
-    "diamond_dist_le": "فاصله تا نزدیک‌ترین الماس کمتر یا مساوی مقدار",
-    "converter_dist_le": "فاصله تا مبدل کمتر یا مساوی مقدار",
-    "exit_dist_le": "فاصله تا در خروج کمتر یا مساوی مقدار",
-    "has_diamond": "الماس در کوله‌پشتی داری",
+    "diamond_dist_le": "فاصله تا نزدیک‌ترین کلید گنج (الماس) کمتر یا مساوی مقدار",
+    "converter_dist_le": "فاصله تا صندوق گنج (مبدل) کمتر یا مساوی مقدار",
+    "exit_dist_le": "فاصله تا مسیر فرار و در خروج کمتر یا مساوی مقدار",
+    "has_diamond": "کلید گنج (الماس در کوله‌پشتی داری)",
     "one_life": "فقط ۱ جان باقی مانده",
     "coins_cleared": "تمام سکه‌های نقشه جمع شده‌اند",
     "coin_exists": "سکه در نقشه وجود دارد",
-    "diamond_exists": "الماس در نقشه وجود دارد",
+    "diamond_exists": "کلید گنج (الماس) در نقشه وجود دارد",
     "always": "در هر شرایطی (همیشه)",
 }
 
 ACTION_NAMES_FA = {
-    "flee_enemy": "فرار هوشمند از هیولا",
-    "flee_dodge": "جاخالی دادن و چرخش تاکتیکی",
-    "flee_collect": "فرار فرصت‌طلبانه (جمع‌آوری سکه در مسیر)",
-    "flee_towards_exit": "فرار هوشمند با گرایش به در خروج",
-    "flee_towards_converter": "فرار هوشمند با گرایش به مبدل الماس",
-    "patrol_safe": "گشت‌زنی امن دور از هیولا",
-    "go_converter": "حرکت به سمت مبدل الماس",
-    "go_exit": "حرکت به سمت درب خروج",
-    "go_nearest_coin": "حرکت به سمت نزدیک‌ترین سکه",
-    "go_nearest_diamond": "حرکت به سمت نزدیک‌ترین الماس",
+    "flee_enemy": "فرار هوشمند سارق از پلیس (هیولا)",
+    "flee_dodge": "جاخالی دادن و چرخش تاکتیکی سارق از پلیس",
+    "flee_collect": "فرار فرصت‌طلبانه (سرقت سکه در مسیر فرار از پلیس)",
+    "flee_towards_exit": "فرار هوشمند از پلیس با گرایش به در خروج",
+    "flee_towards_converter": "فرار هوشمند از پلیس با گرایش به صندوق گنج (مبدل)",
+    "patrol_safe": "گشت‌زنی امن دور از پلیس (هیولا)",
+    "go_converter": "حرکت سارق به سمت صندوق گنج (مبدل) جهت باز کردن با کلید",
+    "go_exit": "حرکت سارق به سمت درب خروج و مسیر فرار",
+    "go_nearest_coin": "حرکت سارق به سمت نزدیک‌ترین سکه",
+    "go_nearest_diamond": "حرکت سارق به سمت نزدیک‌ترین کلید گنج (الماس)",
     "random_move": "حرکت تصادفی",
 }
 
@@ -280,7 +280,7 @@ class RuleBasedStrategyAgent:
                 state.agent_pos, state.enemy_pos, legal_actions, state, bias_target=state.exit_pos
             )
             exit_d = state.agent_pos.move(act).manhattan_distance(state.exit_pos)
-            detail = f"فرار هوشمند از هیولا با گرایش به سمت در خروج (فاصله هیولا: {n_dist}، خروج: {exit_d})"
+            detail = f"فرار هوشمند از پلیس (هیولا) با گرایش به سمت در خروج (فاصله پلیس: {n_dist}، خروج: {exit_d})"
             return act, detail
 
         elif action_name == "flee_towards_converter":
@@ -288,38 +288,38 @@ class RuleBasedStrategyAgent:
                 state.agent_pos, state.enemy_pos, legal_actions, state, bias_target=state.converter_pos
             )
             conv_d = state.agent_pos.move(act).manhattan_distance(state.converter_pos)
-            detail = f"فرار هوشمند از هیولا به سمت مبدل (فاصله هیولا: {n_dist}، مبدل: {conv_d})"
+            detail = f"فرار هوشمند از پلیس (هیولا) به سمت صندوق گنج (مبدل) (فاصله پلیس: {n_dist}، مبدل: {conv_d})"
             return act, detail
 
         elif action_name == "patrol_safe":
             act = self._patrol_safe(state.agent_pos, state.enemy_pos, legal_actions, state)
             enemy_d = state.agent_pos.move(act).manhattan_distance(state.enemy_pos)
-            detail = f"گشت‌زنی امن در نقشه دور از هیولا (فاصله کنونی با هیولا: {enemy_d})"
+            detail = f"گشت‌زنی امن سارق در نقشه دور از پلیس (هیولا) (فاصله کنونی: {enemy_d})"
             return act, detail
 
         elif action_name == "go_converter":
             act = self._best_step_towards(state.agent_pos, state.converter_pos, legal_actions)
             dist = state.agent_pos.move(act).manhattan_distance(state.converter_pos)
-            return act, f"حرکت مستقیم به سمت مبدل الماس (فاصله: {dist})"
+            return act, f"حرکت مستقیم به سمت صندوق گنج (مبدل) جهت باز کردن با کلید (فاصله: {dist})"
 
         elif action_name == "go_exit":
             act = self._best_step_towards(state.agent_pos, state.exit_pos, legal_actions)
             dist = state.agent_pos.move(act).manhattan_distance(state.exit_pos)
-            return act, f"پیش‌روی به سمت در خروج (فاصله: {dist})"
+            return act, f"پیش‌روی سارق به سمت در خروج و مسیر فرار (فاصله: {dist})"
 
         elif action_name == "go_nearest_coin":
             if state.nearest_coin_pos is not None:
                 act = self._best_step_towards(state.agent_pos, state.nearest_coin_pos, legal_actions)
                 dist = state.agent_pos.move(act).manhattan_distance(state.nearest_coin_pos)
-                return act, f"حرکت به سمت نزدیک‌ترین سکه (فاصله: {dist})"
+                return act, f"حرکت سارق به سمت نزدیک‌ترین سکه (فاصله: {dist})"
             return None, "سکه‌ای در نقشه یافت نشد"
 
         elif action_name == "go_nearest_diamond":
             if state.nearest_diamond_pos is not None:
                 act = self._best_step_towards(state.agent_pos, state.nearest_diamond_pos, legal_actions)
                 dist = state.agent_pos.move(act).manhattan_distance(state.nearest_diamond_pos)
-                return act, f"حرکت به سمت نزدیک‌ترین الماس (فاصله: {dist})"
-            return None, "الماسی در نقشه یافت نشد"
+                return act, f"حرکت سارق به سمت نزدیک‌ترین کلید گنج (الماس) (فاصله: {dist})"
+            return None, "کلید گنجی در نقشه یافت نشد"
 
         elif action_name == "random_move":
             return self.rng.choice(legal_actions), "حرکت تصادفی"
