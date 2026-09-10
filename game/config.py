@@ -17,6 +17,7 @@ class EnvironmentConfig:
     max_steps_per_episode: int = 100
 
     # Enemy settings
+    enemy_strictness: str = "normal"  # "lenient", "normal", "strict", "nightmare"
     enemy_detection_radius: int = 3  # Manhattan distance where enemy chases agent
     enemy_patrol_type: str = "bounce"  # "bounce", "clockwise", "random_safe"
 
@@ -79,6 +80,8 @@ class GameConfig:
             "initial_lives": self.env.initial_lives,
             "max_steps": self.env.max_steps_per_episode,
             "diamond_multiplier": self.env.diamond_to_coin_multiplier,
+            "enemy_strictness": self.env.enemy_strictness,
+            "enemy_detection_radius": self.env.enemy_detection_radius,
             "show_presets": self.show_presets,
             "show_reward_tuning": self.show_reward_tuning,
             "show_part2": self.show_part2,
@@ -128,6 +131,10 @@ class GameConfig:
             cfg.env.max_steps_per_episode = int(data["max_steps"])
         if "diamond_multiplier" in data:
             cfg.env.diamond_to_coin_multiplier = int(data["diamond_multiplier"])
+        if "enemy_strictness" in data:
+            cfg.env.enemy_strictness = str(data["enemy_strictness"])
+        if "enemy_detection_radius" in data:
+            cfg.env.enemy_detection_radius = int(data["enemy_detection_radius"])
         if "show_presets" in data:
             cfg.show_presets = bool(data["show_presets"])
         if "show_reward_tuning" in data:

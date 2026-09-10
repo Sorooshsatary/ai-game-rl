@@ -147,6 +147,46 @@ class TestEnvironment(unittest.TestCase):
         # Stunned enemy should not move
         self.assertNotIn("ENEMY_HIT", res2.events)
 
+    def test_enemy_strictness_levels(self):
+        """Test enemy strictness levels (lenient, normal, strict, nightmare)."""
+        import copy
+        grid = GridMap(
+            width=10,
+            height=10,
+            converter_pos=Position(9, 0),
+            exit_pos=Position(9, 9),
+            coins=set(),
+            diamonds=set(),
+        )
+
+        for strictness, exp_max_rad, exp_stun in [
+            ("lenient", 2, 3),
+            ("normal", 3, 2),
+            ("strict", 5, 1),
+            ("nightmare", 16, 1),
+        ]:
+            cfg = copy.deepcopy(DEFAULT_CONFIG)
+            cfg.env.enemy_strictness = strictness
+            env = GameEnvironment(
+                config=cfg,
+                grid_map=grid,
+                agent_start=Position(1, 1),
+                enemy_start=Position(8, 8),
+            )
+
+            self.assertEqual(env.enemy.strictness, strictness)
+            if strictness == "lenient":
+                self.assertLessEqual(env.enemy.detection_radius, exp_max_rad)
+            else:
+                self.assertGreaterEqual(env.enemy.detection_radius, exp_max_rad)
+
+            # Test stun duration on hit
+            env.enemy.position = Position(1, 2)
+            res = env.step(Action.DOWN)
+            self.assertIn("ENEMY_HIT", res.events)
+            self.assertIn("ENEMY_STUNNED", res.events)
+            self.assertEqual(env.enemy.stun_timer, exp_stun)
+
 
 if __name__ == "__main__":
     unittest.main()

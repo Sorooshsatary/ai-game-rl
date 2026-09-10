@@ -6,6 +6,8 @@
   "initial_lives": 3,
   "max_steps": 100,
   "diamond_multiplier": 2,
+  "enemy_strictness": "normal",
+  "enemy_detection_radius": 3,
   "show_presets": false,
   "show_reward_tuning": false,
   "show_part2": false,

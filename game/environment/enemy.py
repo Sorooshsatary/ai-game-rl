@@ -13,6 +13,7 @@ class Enemy:
     patrol_direction: Action = Action.RIGHT
     patrol_axis: str = "horizontal"  # "horizontal" or "vertical"
     stun_timer: int = 0
+    strictness: str = "normal"  # "lenient", "normal", "strict", "nightmare"
 
     def copy(self) -> "Enemy":
         return Enemy(
@@ -21,7 +22,40 @@ class Enemy:
             patrol_direction=self.patrol_direction,
             patrol_axis=self.patrol_axis,
             stun_timer=self.stun_timer,
+            strictness=self.strictness,
         )
+
+    def _patrol_step(
+        self,
+        grid_width: int,
+        grid_height: int,
+        forbidden_positions: List[Position],
+    ) -> Position:
+        """Standard back-and-forth bounce patrol behavior."""
+        next_pos = self.position.move(self.patrol_direction)
+        in_bounds = (
+            0 <= next_pos.x < grid_width
+            and 0 <= next_pos.y < grid_height
+            and next_pos not in forbidden_positions
+        )
+        if in_bounds:
+            return next_pos
+        else:
+            reverse_map = {
+                Action.UP: Action.DOWN,
+                Action.DOWN: Action.UP,
+                Action.LEFT: Action.RIGHT,
+                Action.RIGHT: Action.LEFT,
+            }
+            self.patrol_direction = reverse_map[self.patrol_direction]
+            bounce_pos = self.position.move(self.patrol_direction)
+            if (
+                0 <= bounce_pos.x < grid_width
+                and 0 <= bounce_pos.y < grid_height
+                and bounce_pos not in forbidden_positions
+            ):
+                return bounce_pos
+            return self.position
 
     def choose_move(
         self,
@@ -50,13 +84,19 @@ class Enemy:
 
         # Case 1: Agent within detection radius -> chase nearest agent
         if nearest_agent is not None and min_dist <= self.detection_radius:
+            # Lenient police: 25% chance of sleepy distraction (keeps routine patrol instead of instant chase)
+            if self.strictness == "lenient" and random.random() < 0.25:
+                return self._patrol_step(grid_width, grid_height, forbidden_positions)
+
             best_pos = self.position
             best_dist = min_dist
 
-            # Try 4 cardinal directions, find one that gets closest to agent and stays in bounds
             candidate_actions = [Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT]
-            # Shuffle slightly or sort deterministically
-            random.shuffle(candidate_actions)
+            if self.strictness in ("strict", "nightmare"):
+                # Strict / Nightmare: prioritize direct intercept without random shuffling
+                candidate_actions.sort(key=lambda a: self.position.move(a).manhattan_distance(nearest_agent))
+            else:
+                random.shuffle(candidate_actions)
 
             for act in candidate_actions:
                 new_pos = self.position.move(act)
@@ -70,35 +110,7 @@ class Enemy:
             return best_pos
 
         # Case 2: Outside detection radius -> Patrol predictably
-        # Try continuing along patrol direction
-        next_pos = self.position.move(self.patrol_direction)
-
-        # Check bounds
-        in_bounds = (
-            0 <= next_pos.x < grid_width
-            and 0 <= next_pos.y < grid_height
-            and next_pos not in forbidden_positions
-        )
-
-        if in_bounds:
-            return next_pos
-        else:
-            # Reverse patrol direction (Bounce behavior)
-            reverse_map = {
-                Action.UP: Action.DOWN,
-                Action.DOWN: Action.UP,
-                Action.LEFT: Action.RIGHT,
-                Action.RIGHT: Action.LEFT,
-            }
-            self.patrol_direction = reverse_map[self.patrol_direction]
-            bounce_pos = self.position.move(self.patrol_direction)
-            if (
-                0 <= bounce_pos.x < grid_width
-                and 0 <= bounce_pos.y < grid_height
-                and bounce_pos not in forbidden_positions
-            ):
-                return bounce_pos
-            return self.position  # Stand still if blocked
+        return self._patrol_step(grid_width, grid_height, forbidden_positions)
 
     def to_dict(self) -> dict:
         return {
@@ -108,4 +120,5 @@ class Enemy:
             "patrol_direction": self.patrol_direction.name,
             "stun_timer": self.stun_timer,
             "is_stunned": self.stun_timer > 0,
+            "strictness": self.strictness,
         }

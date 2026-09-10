@@ -269,6 +269,7 @@ const AdminUI = {
     setVal('cfg-initial-lives', cfg.initial_lives || 3);
     setVal('cfg-max-steps', cfg.max_steps || 100);
     setVal('cfg-diamond-multiplier', cfg.diamond_multiplier || 2);
+    setVal('cfg-enemy-strictness', cfg.enemy_strictness || 'normal');
 
     // Rewards
     const rew = cfg.rewards || {};
@@ -334,6 +335,7 @@ const AdminUI = {
       initial_lives: parseInt(document.getElementById('cfg-initial-lives').value),
       max_steps: parseInt(document.getElementById('cfg-max-steps').value),
       diamond_multiplier: parseInt(document.getElementById('cfg-diamond-multiplier').value) || 2,
+      enemy_strictness: document.getElementById('cfg-enemy-strictness') ? document.getElementById('cfg-enemy-strictness').value : 'normal',
       show_presets: document.getElementById('cfg-show-presets') ? document.getElementById('cfg-show-presets').checked : false,
       show_reward_tuning: document.getElementById('cfg-show-reward-tuning') ? document.getElementById('cfg-show-reward-tuning').checked : false,
       show_part2: document.getElementById('cfg-show-part2') ? document.getElementById('cfg-show-part2').checked : false,

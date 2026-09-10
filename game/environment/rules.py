@@ -50,12 +50,25 @@ class GameEnvironment:
             position=self.agent_start,
             lives=config.env.initial_lives,
         )
-        self.enemy = Enemy(
-            position=self.enemy_start,
-            detection_radius=config.env.enemy_detection_radius,
-        )
+        self.enemy = self._create_enemy(self.enemy_start)
         self.current_step = 0
         self.done = False
+
+    def _create_enemy(self, pos: Position) -> Enemy:
+        strictness = getattr(self.config.env, "enemy_strictness", "normal")
+        det_radius = self.config.env.enemy_detection_radius
+        if strictness == "lenient":
+            det_radius = min(det_radius, 2)
+        elif strictness == "strict":
+            det_radius = max(det_radius, 5)
+        elif strictness == "nightmare":
+            det_radius = max(det_radius, 16)
+
+        return Enemy(
+            position=pos,
+            detection_radius=det_radius,
+            strictness=strictness,
+        )
 
     def reset(self, new_map: bool = True, seed: Optional[int] = None) -> State:
         """Resets the environment for a new episode."""
@@ -79,10 +92,7 @@ class GameEnvironment:
             position=self.agent_start,
             lives=self.config.env.initial_lives,
         )
-        self.enemy = Enemy(
-            position=self.enemy_start,
-            detection_radius=self.config.env.enemy_detection_radius,
-        )
+        self.enemy = self._create_enemy(self.enemy_start)
         self.current_step = 0
         self.done = False
         return self.get_state()
@@ -209,8 +219,10 @@ class GameEnvironment:
                 events.append("DEATH")
                 self.done = True
             else:
-                # Stun enemy for 2 steps (no long-distance teleport/jump!)
-                self.enemy.stun_timer = 2
+                # Stun enemy based on strictness: lenient (3), normal (2), strict/nightmare (1)
+                strictness = getattr(self.config.env, "enemy_strictness", "normal")
+                stun_duration = 3 if strictness == "lenient" else (1 if strictness in ("strict", "nightmare") else 2)
+                self.enemy.stun_timer = stun_duration
                 events.append("ENEMY_STUNNED")
 
                 # If overlapping, separate them by 1 tile so they remain clearly visible

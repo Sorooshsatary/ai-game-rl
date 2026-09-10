@@ -118,6 +118,8 @@ class SystemConfigRequest(BaseModel):
     show_extra_strategies: bool = False
     unlock_advanced_rules: bool = False
     anti_loop_enabled: bool = False
+    enemy_strictness: str = "normal"
+    enemy_detection_radius: int = 3
     difficulty: str = "normal"
     rewards: Dict[str, float]
     rl: Dict[str, Any]

@@ -707,6 +707,15 @@
                 <label for="cfg-diamond-multiplier">تعداد سکه معادل یک الماس در مبدل (ضریب تبدیل):</label>
                 <input type="number" id="cfg-diamond-multiplier" min="1" max="50" step="1" dir="ltr" required>
               </div>
+              <div class="config-row" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0;">
+                <label for="cfg-enemy-strictness">🚨 سطح سخت‌گیری و هوشیاری پلیس:</label>
+                <select id="cfg-enemy-strictness" style="padding: 6px 10px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-weight: 700; color: #1e293b; font-family: inherit; background: #fff;">
+                  <option value="lenient">🟢 آسان (پلیس خواب‌آلود - شعاع دید ۲، گیجی ۳ گام)</option>
+                  <option value="normal" selected>🟡 استاندارد (پلیس گشت‌زن - شعاع دید ۳، تعقیب منظم)</option>
+                  <option value="strict">🟠 سخت‌گیر (پلیس زبده - شعاع دید ۵، تعقیب سریع، گیجی ۱ گام)</option>
+                  <option value="nightmare">🔴 کابوس (پلیس سراسری - ردیابی در کل نقشه، تعقیب بی‌امان)</option>
+                </select>
+              </div>
             </div>
 
             <!-- Group 2: Rewards Settings -->
