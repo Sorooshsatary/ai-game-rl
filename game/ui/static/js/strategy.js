@@ -298,7 +298,11 @@ const StrategyUI = {
     this.presets.forEach((p, idx) => {
       const chip = document.createElement('button');
       chip.className = `preset-chip ${p.id === 'balanced' || idx === 0 ? 'active' : ''}`;
-      chip.textContent = p.name;
+      if (p.is_extra) {
+        chip.innerHTML = `<span style="font-size: 0.72rem; background: #ede9fe; color: #6d28d9; padding: 1px 5px; border-radius: 4px; margin-left: 4px; font-weight: 800;">ویژه</span>${p.name}`;
+      } else {
+        chip.textContent = p.name;
+      }
       chip.addEventListener('click', () => {
         document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
@@ -306,6 +310,16 @@ const StrategyUI = {
       });
       container.appendChild(chip);
     });
+  },
+
+  async refreshPresets() {
+    try {
+      this.presets = await API.getPresets();
+      this.renderPresets();
+      await this.updatePresetVisibility();
+    } catch (err) {
+      console.warn("Could not refresh presets:", err);
+    }
   },
 
   loadPreset(preset) {

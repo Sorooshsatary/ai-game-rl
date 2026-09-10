@@ -115,6 +115,7 @@ class SystemConfigRequest(BaseModel):
     show_presets: bool = False
     show_reward_tuning: bool = False
     show_part2: bool = False
+    show_extra_strategies: bool = False
     difficulty: str = "normal"
     rewards: Dict[str, float]
     rl: Dict[str, Any]
@@ -162,8 +163,17 @@ async def get_config():
 
 
 @app.get("/api/presets")
-async def get_presets():
-    return StrategyBuilder.get_preset_list()
+async def get_presets(include_extra: Optional[bool] = None):
+    cfg = get_active_config()
+    should_include = include_extra if include_extra is not None else cfg.show_extra_strategies
+    return StrategyBuilder.get_preset_list(include_extra=should_include)
+
+
+@app.get("/api/presets/extra")
+async def get_extra_presets():
+    """Directly returns the list of extra advanced presets for preview/admin management."""
+    extra = StrategyBuilder.get_extra_presets()
+    return [{"id": k, "is_extra": True, **v.to_dict()} for k, v in extra.items()]
 
 
 # =========================================================================

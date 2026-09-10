@@ -35,6 +35,11 @@ const API = {
     return await res.json();
   },
 
+  async getExtraPresets() {
+    const res = await fetch('/api/presets/extra');
+    return await res.json();
+  },
+
   async getConfig() {
     const res = await fetch('/api/config');
     return await res.json();

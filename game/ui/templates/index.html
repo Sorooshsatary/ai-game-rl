@@ -777,6 +777,15 @@
                 <input type="checkbox" id="cfg-show-part2" style="width: 22px; height: 22px; cursor: pointer; accent-color: #4f46e5;">
               </div>
               <div class="config-row" style="align-items: center; display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e2e8f0;">
+                <label for="cfg-show-extra-strategies" style="cursor: pointer; flex: 1; margin: 0;">
+                  <strong style="color: #1e293b; font-size: 0.95rem;">✨ فعال‌سازی استراتژی‌های اضافه و حرفه‌ای (Extra Strategies):</strong>
+                  <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px; line-height: 1.5;">
+                    در صورت فعال بودن این گزینه، ۴ استراتژی حرفه‌ای و پیشرفته (شبح، زمان‌بند، کلکسیونر گنج و نینجا) به لیست الگوهای آماده اضافه شده و برای کاربران در دسترس قرار می‌گیرند.
+                  </div>
+                </label>
+                <input type="checkbox" id="cfg-show-extra-strategies" style="width: 22px; height: 22px; cursor: pointer; accent-color: #4f46e5;">
+              </div>
+              <div class="config-row" style="align-items: center; display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e2e8f0;">
                 <label for="cfg-difficulty-mode" style="cursor: pointer; flex: 1; margin: 0;">
                   <strong style="color: #1e293b; font-size: 0.95rem;">سطح سختی بخش اول (تعیین استراتژی شاه‌دزد):</strong>
                   <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px; line-height: 1.5;">
@@ -803,6 +812,20 @@
             </button>
           </div>
         </form>
+      </div>
+
+      <!-- Card C: Extra Strategies Live Injection & Management -->
+      <div class="card" style="margin-top: 1.5rem; border-right: 4px solid #8b5cf6;">
+        <div class="card-header">
+          <div class="card-title">⚡ استراتژی‌های اضافه و حرفه‌ای آماده تزریق (Extra Strategies)</div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">مشاهده، بارگذاری و اعمال فوری روی شاه‌دزد</span>
+        </div>
+        <p style="color: #64748b; font-size: 0.88rem; line-height: 1.6; margin-bottom: 1rem;">
+          این استراتژی‌های تاکتیکی با شروط پیشرفته (مانند جاخالی، مدیریت گام و فرار از بن‌بست) طراحی شده‌اند. شما می‌توانید هر کدام را در جدول زیر بررسی کرده یا با کلیک روی دکمه «⚡ بارگذاری روی شاه‌دزد»، فوراً آن را در بخش ۱ بازی فعال کنید:
+        </p>
+        <div id="admin-extra-strategies-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+          <!-- Populated dynamically by admin.js -->
+        </div>
       </div>
 
     </section>

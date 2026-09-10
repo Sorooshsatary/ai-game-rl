@@ -36,7 +36,7 @@ const AdminUI = {
   },
 
   async loadData() {
-    await Promise.all([this.loadUsers(), this.loadConfig()]);
+    await Promise.all([this.loadUsers(), this.loadConfig(), this.loadExtraStrategies()]);
   },
 
   async loadUsers() {
@@ -166,6 +166,84 @@ const AdminUI = {
     }
   },
 
+  async loadExtraStrategies() {
+    const grid = document.getElementById('admin-extra-strategies-grid');
+    if (!grid) return;
+    try {
+      const extraList = await API.getExtraPresets();
+      this.renderExtraStrategies(extraList);
+    } catch (err) {
+      grid.innerHTML = `<div style="color: #ef4444; font-size: 0.85rem;">خطا در دریافت استراتژی‌های اضافه: ${err.message}</div>`;
+    }
+  },
+
+  renderExtraStrategies(strategies) {
+    const grid = document.getElementById('admin-extra-strategies-grid');
+    if (!grid) return;
+    if (!strategies || strategies.length === 0) {
+      grid.innerHTML = '<div style="color: #64748b; font-size: 0.85rem;">هیچ استراتژی اضافه‌ای یافت نشد.</div>';
+      return;
+    }
+
+    grid.innerHTML = strategies.map(s => {
+      const rulesFa = (s.if_then_rules || []).map((r) => {
+        let condText = (r.conditions || []).map(c => {
+          if (c.type === 'enemy_adjacent') return '⚠️ مجاور پلیس';
+          if (c.type === 'enemy_dist_le') return `🚨 فاصله تا پلیس ≤ ${c.value}`;
+          if (c.type === 'one_life') return '❤️ فقط ۱ جان';
+          if (c.type === 'steps_gt') return `⏱️ گام‌ها > ${c.value}`;
+          if (c.type === 'steps_le') return `⏱️ گام‌ها ≤ ${c.value}`;
+          if (c.type === 'has_diamond') return '🗝️ کلید گنج دارد';
+          if (c.type === 'diamond_exists') return '💎 کلید در نقشه';
+          if (c.type === 'coins_cleared') return '🏁 تمام سکه‌ها جمع شد';
+          if (c.type === 'coin_dist_le') return `🪙 فاصله تا سکه ≤ ${c.value}`;
+          if (c.type === 'coin_exists') return '🪙 سکه در نقشه';
+          return c.type;
+        }).join(' و ');
+
+        let actText = r.action;
+        if (actText === 'flee_dodge') actText = '🔀 جاخالی تاکتیکی';
+        else if (actText === 'flee_towards_exit') actText = '🚪 فرار به سمت خروج';
+        else if (actText === 'go_exit') actText = '🏁 خروج از نقشه';
+        else if (actText === 'go_converter') actText = '🎁 باز کردن صندوق';
+        else if (actText === 'go_nearest_coin') actText = '🪙 جمع‌آوری سکه';
+        else if (actText === 'go_nearest_diamond') actText = '💎 برداشت کلید';
+        else if (actText === 'random_move') actText = '🎲 حرکت تصادفی';
+
+        return `<div style="font-size: 0.78rem; color: #334155; margin-bottom: 2px;">• <strong>اگر</strong> ${condText} ➔ <span style="color: #4338ca; font-weight: 700;">${actText}</span></div>`;
+      }).join('');
+
+      return `
+        <div style="background: #ffffff; border: 1.5px solid #ddd6fe; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 4px rgba(139,92,246,0.05);">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+              <h4 style="margin: 0; font-size: 0.95rem; color: #5b21b6; font-weight: 800;">⭐ ${s.name}</h4>
+              <span style="font-size: 0.7rem; background: #f3e8ff; color: #7e22ce; padding: 2px 8px; border-radius: 6px; font-weight: 700;">پیشرفته</span>
+            </div>
+            <div style="background: #f8fafc; border-radius: 8px; padding: 8px; margin-bottom: 12px; border: 1px solid #f1f5f9;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">شروط و رفتار تاکتیکی:</div>
+              ${rulesFa}
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary btn-apply-extra-strategy" data-strat-id="${s.id}" style="width: 100%; font-size: 0.82rem; padding: 7px 12px; background: linear-gradient(135deg, #7c3aed, #6366f1); font-weight: 700;">
+            ⚡ بارگذاری روی شاه‌دزد
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    grid.querySelectorAll('.btn-apply-extra-strategy').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const stratId = e.currentTarget.getAttribute('data-strat-id');
+        const strat = strategies.find(s => s.id === stratId);
+        if (strat && typeof StrategyUI !== 'undefined') {
+          StrategyUI.loadPreset(strat);
+          alert(`✅ استراتژی «${strat.name}» با موفقیت روی شاه‌دزد بارگذاری شد و در بخش ۱ فعال گردید!`);
+        }
+      });
+    });
+  },
+
   async loadConfig() {
     try {
       this.currentConfig = await API.adminGetConfig();
@@ -224,6 +302,10 @@ const AdminUI = {
     if (chkPart2) {
       chkPart2.checked = !!cfg.show_part2;
     }
+    const chkExtra = document.getElementById('cfg-show-extra-strategies');
+    if (chkExtra) {
+      chkExtra.checked = !!cfg.show_extra_strategies;
+    }
     const selDiff = document.getElementById('cfg-difficulty-mode');
     if (selDiff) {
       selDiff.value = cfg.difficulty || 'normal';
@@ -247,6 +329,7 @@ const AdminUI = {
       show_presets: document.getElementById('cfg-show-presets') ? document.getElementById('cfg-show-presets').checked : false,
       show_reward_tuning: document.getElementById('cfg-show-reward-tuning') ? document.getElementById('cfg-show-reward-tuning').checked : false,
       show_part2: document.getElementById('cfg-show-part2') ? document.getElementById('cfg-show-part2').checked : false,
+      show_extra_strategies: document.getElementById('cfg-show-extra-strategies') ? document.getElementById('cfg-show-extra-strategies').checked : false,
       difficulty: document.getElementById('cfg-difficulty-mode') ? document.getElementById('cfg-difficulty-mode').value : 'normal',
       rewards: {
         coin: getVal('cfg-rew-coin'),
@@ -297,6 +380,9 @@ const AdminUI = {
         if (StrategyUI.updatePresetVisibility) {
           StrategyUI.updatePresetVisibility();
         }
+        if (StrategyUI.refreshPresets) {
+          StrategyUI.refreshPresets();
+        }
       }
       if (typeof TrainingUI !== 'undefined' && TrainingUI.updateRewardTuningVisibility) {
         TrainingUI.cachedConfig = res.config;
@@ -342,9 +428,14 @@ const AdminUI = {
       if (typeof TrainingUI !== 'undefined' && TrainingUI.updateFromConfig) {
         TrainingUI.updateFromConfig(res.config);
       }
-      if (typeof StrategyUI !== 'undefined' && StrategyUI.updatePresetVisibility) {
+      if (typeof StrategyUI !== 'undefined') {
         StrategyUI.cachedConfig = res.config;
-        StrategyUI.updatePresetVisibility();
+        if (StrategyUI.updatePresetVisibility) {
+          StrategyUI.updatePresetVisibility();
+        }
+        if (StrategyUI.refreshPresets) {
+          StrategyUI.refreshPresets();
+        }
       }
       if (typeof TrainingUI !== 'undefined' && TrainingUI.updateRewardTuningVisibility) {
         TrainingUI.cachedConfig = res.config;

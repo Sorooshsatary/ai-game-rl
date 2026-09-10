@@ -307,6 +307,54 @@ class TestAuthAndAdmin(unittest.TestCase):
         self.assertFalse(get_active_config().show_part2)
         self.assertFalse(self.client.get("/api/config").json()["show_part2"])
 
+    def test_show_extra_strategies_admin_flag(self):
+        """Verify that show_extra_strategies flag is controllable by admin and affects /api/presets."""
+        admin_token = self.client.post("/api/auth/login", json={"username": "admin", "password": "admin123"}).json()["token"]
+        headers = {"Authorization": f"Bearer {admin_token}"}
+
+        # 1. Check current public config has show_extra_strategies field
+        cfg_res = self.client.get("/api/config")
+        self.assertEqual(cfg_res.status_code, 200)
+        self.assertIn("show_extra_strategies", cfg_res.json())
+
+        # /api/presets should have 5 by default when flag is False
+        presets_default = self.client.get("/api/presets").json()
+        self.assertEqual(len(presets_default), 5)
+
+        # /api/presets/extra endpoint should return 4 extra presets
+        extra_res = self.client.get("/api/presets/extra")
+        self.assertEqual(extra_res.status_code, 200)
+        self.assertEqual(len(extra_res.json()), 4)
+
+        # 2. Update flag to True via admin endpoint
+        admin_cfg_res = self.client.get("/api/admin/config", headers=headers)
+        self.assertEqual(admin_cfg_res.status_code, 200)
+        cfg_data = admin_cfg_res.json()["config"]
+        cfg_data["show_extra_strategies"] = True
+
+        save_res = self.client.post("/api/admin/config", json=cfg_data, headers=headers)
+        self.assertEqual(save_res.status_code, 200)
+        self.assertTrue(save_res.json()["config"]["show_extra_strategies"])
+        self.assertTrue(get_active_config().show_extra_strategies)
+
+        # Public config should reflect True
+        self.assertTrue(self.client.get("/api/config").json()["show_extra_strategies"])
+
+        # /api/presets should now include extra strategies (9 total)
+        presets_with_extra = self.client.get("/api/presets").json()
+        self.assertEqual(len(presets_with_extra), 9)
+
+        # 3. Toggle back to False
+        cfg_data["show_extra_strategies"] = False
+        save_res2 = self.client.post("/api/admin/config", json=cfg_data, headers=headers)
+        self.assertEqual(save_res2.status_code, 200)
+        self.assertFalse(save_res2.json()["config"]["show_extra_strategies"])
+        self.assertFalse(get_active_config().show_extra_strategies)
+        self.assertFalse(self.client.get("/api/config").json()["show_extra_strategies"])
+
+        # /api/presets should be back to 5
+        self.assertEqual(len(self.client.get("/api/presets").json()), 5)
+
     def test_custom_rewards_train_and_dual_comparison(self):
         """Verify train and dual comparison endpoints with custom reward shaping parameters."""
         custom_rewards = {
