@@ -171,8 +171,10 @@ class State:
             else:  # dist == 3
                 enemy_threat = f"WARN_{rel_dir}_{enemy_hd}"
 
-        # 6. Map coins
-        coins_status = "ZERO_LEFT" if self.total_coins_remaining == 0 else "AVAILABLE"
+        # 6. Map coins & held loot (distinguishes carrying coins to exit vs seeking coins)
+        map_status = "ZERO_LEFT" if self.total_coins_remaining == 0 else "AVAILABLE"
+        held_status = "HAS_COINS" if self.coins_held > 0 else "NO_COINS"
+        coins_status = f"{map_status}_{held_status}"
 
         # 7. Low lives
         low_lives = self.lives <= 1

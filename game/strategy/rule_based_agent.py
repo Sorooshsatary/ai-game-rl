@@ -118,6 +118,10 @@ class RuleBasedStrategyAgent:
         self.rng = random.Random(seed)
         self.position_history: List[Position] = []
 
+    def reset_history(self):
+        """Clears trajectory history across episodes or simulation runs."""
+        self.position_history.clear()
+
     def _is_in_loop(self) -> bool:
         """Detects if agent has fallen into periodic oscillation (period 2, 3, or 4).
         Requires at least 2 full repeated periods.

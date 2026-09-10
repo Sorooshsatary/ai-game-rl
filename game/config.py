@@ -36,6 +36,7 @@ class RewardConfig:
     exit_coin_bonus: float = 5.0  # Bonus per coin brought home through exit
     normal_step: float = -0.05
     invalid_move: float = -1.0  # hitting a wall or edge
+    timeout: float = -10.0  # Penalty when episode runs out of time without exiting
 
 
 import os
@@ -94,6 +95,7 @@ class GameConfig:
                 "exit": self.reward.successful_exit,
                 "exit_coin_bonus": self.reward.exit_coin_bonus,
                 "step": self.reward.normal_step,
+                "timeout": getattr(self.reward, "timeout", -10.0),
             },
             "rl": {
                 "alpha": self.rl.learning_rate,
@@ -159,6 +161,8 @@ class GameConfig:
             cfg.reward.exit_coin_bonus = float(rewards["exit_coin_bonus"])
         if "step" in rewards:
             cfg.reward.normal_step = float(rewards["step"])
+        if "timeout" in rewards:
+            cfg.reward.timeout = float(rewards["timeout"])
 
         # Reinforcement Learning
         rl = data.get("rl", {})

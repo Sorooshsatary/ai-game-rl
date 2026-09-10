@@ -11,6 +11,7 @@
   "show_part2": false,
   "show_extra_strategies": false,
   "unlock_advanced_rules": false,
+  "anti_loop_enabled": false,
   "difficulty": "normal",
   "rewards": {
     "coin": 10.0,
@@ -20,7 +21,8 @@
     "death": -25.0,
     "exit": 25.0,
     "exit_coin_bonus": 5.0,
-    "step": -0.05
+    "step": -0.05,
+    "timeout": -10.0
   },
   "rl": {
     "alpha": 0.2,

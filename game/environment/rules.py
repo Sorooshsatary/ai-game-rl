@@ -233,6 +233,7 @@ class GameEnvironment:
         # 5. Check Step Limit
         if not self.done and self.current_step >= self.config.env.max_steps_per_episode:
             self.done = True
+            reward += getattr(self.config.reward, "timeout", -10.0)
             events.append("TIMEOUT")
 
         self.agent.total_reward += reward

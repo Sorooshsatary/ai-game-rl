@@ -16,6 +16,8 @@ def run_episode(
 ) -> EpisodeReplay:
     """Executes a full episode on a randomized map and records detailed replay logs."""
     state = env.reset(new_map=True, seed=seed)
+    if hasattr(agent, "reset_history"):
+        agent.reset_history()
     map_config = env.grid_map.to_dict()
     map_config["agent_start"] = [env.agent_start.x, env.agent_start.y]
     map_config["enemy_start"] = [env.enemy_start.x, env.enemy_start.y]

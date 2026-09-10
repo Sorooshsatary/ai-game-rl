@@ -160,6 +160,8 @@ class AgentComparisonEngine:
         map_config = env_strat.grid_map.to_dict()
         map_config["agent_start"] = [env_strat.agent_start.x, env_strat.agent_start.y]
         map_config["enemy_start"] = [env_strat.enemy_start.x, env_strat.enemy_start.y]
+        if hasattr(strategy_agent, "reset_history"):
+            strategy_agent.reset_history()
         strat_run = self._execute_agent_run(
             env=env_strat,
             agent=strategy_agent,
@@ -171,16 +173,23 @@ class AgentComparisonEngine:
 
         # 2. Run RL Agent on IDENTICAL seed
         env_rl = GameEnvironment(config=self.config, seed=seed)
+        if hasattr(rl_agent, "reset_history"):
+            rl_agent.reset_history()
+        prev_locked = rl_agent.locked
         rl_agent.lock_for_competition()  # greedy, no epsilon exploration
-        rl_run = self._execute_agent_run(
-            env=env_rl,
-            agent=rl_agent,
-            agent_id="rl_agent",
-            agent_name="شاه‌دزد هوش مصنوعی یادگیرنده",
-            agent_type="rl",
-            max_steps=max_steps,
-            episodes_trained=episodes_trained,
-        )
+        try:
+            rl_run = self._execute_agent_run(
+                env=env_rl,
+                agent=rl_agent,
+                agent_id="rl_agent",
+                agent_name="شاه‌دزد هوش مصنوعی یادگیرنده",
+                agent_type="rl",
+                max_steps=max_steps,
+                episodes_trained=episodes_trained,
+            )
+        finally:
+            if not prev_locked:
+                rl_agent.unlock_for_training()
 
         # 3. Determine winner based primarily on total score (امتیاز کل / مجموع پاداش)
         if rl_run.total_reward > strat_run.total_reward:

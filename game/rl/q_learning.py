@@ -3,7 +3,7 @@
 from typing import Dict, Tuple, Optional, Any, List
 import random
 from game.config import GameConfig, DEFAULT_CONFIG
-from game.environment.entities import Action
+from game.environment.entities import Action, Position
 from game.environment.state import State
 from game.rl.policy import Policy
 from game.strategy.rule import ChildStrategy
@@ -39,6 +39,10 @@ class QLearningAgent:
         # Learning stats
         self.total_updates = 0
         self.position_history: List[Position] = []
+
+    def reset_history(self):
+        """Clears episode trajectory history to prevent leakage across episodes."""
+        self.position_history.clear()
 
     def _is_in_loop(self) -> bool:
         hist = self.position_history
