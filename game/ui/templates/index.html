@@ -435,23 +435,34 @@
           </div>
 
           <!-- Action bar -->
-          <div class="reward-tuning-action-bar">
-            <span style="font-size: 0.85rem; color: #3730a3; font-weight: 600;">
-              💡 با پاداش‌های فوق آموزش دهید تا رفتار جدید هوش مصنوعی را بلافاصله مشاهده کنید:
-            </span>
-            <button type="button" id="btn-train-and-observe" class="btn btn-primary" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); font-weight: 700; font-size: 0.88rem; padding: 7px 16px;">
-              ⚡ آموزش و شبیه‌سازی رفتار جدید روی نقشه
+          <div class="reward-tuning-action-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+              <div style="font-size: 0.88rem; color: #3730a3; font-weight: 700;">
+                🧪 آزمایش زنده اسلایدرهای پاداش روی نقشه:
+              </div>
+              <div style="font-size: 0.78rem; color: #4338ca; margin-top: 2px; line-height: 1.5;">
+                حافظه قبلی پاک شده و هوش مصنوعی با پاداش‌های جدید شما <u>از ابتدا</u> آموزش می‌بیند و نتیجه فوراً روی نقشه پخش می‌شود.
+              </div>
+            </div>
+            <button type="button" id="btn-train-and-observe" class="btn btn-primary" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); font-weight: 800; font-size: 0.88rem; padding: 8px 18px; white-space: nowrap;">
+              ⚡ آموزش از صفر با پاداش‌های جدید + اجرای نقشه
             </button>
           </div>
         </div>
 
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.25rem;">
-          <button id="btn-start-training" class="btn btn-primary" style="font-weight: bold;">
-            🚀 آموزش هوش مصنوعی (ادامه روند یادگیری)
-          </button>
-          <button id="btn-reset-training" class="btn btn-secondary" style="border-color: #cbd5e1; color: #64748b;">
-            🔄 بازنشانی حافظه آموزش (شروع از صفر)
-          </button>
+        <!-- Main Continual Training Section -->
+        <div style="margin-bottom: 1.25rem;">
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button id="btn-start-training" class="btn btn-primary" style="font-weight: 800; font-size: 0.95rem; padding: 9px 20px;">
+              🚀 ادامه آموزش هوش مصنوعی (+۱۰ مرحله یادگیری روی حافظه فعلی)
+            </button>
+            <button id="btn-reset-training" class="btn btn-secondary" style="border-color: #cbd5e1; color: #64748b; font-size: 0.88rem;">
+              🔄 پاکسازی حافظه (شروع مجدد از صفر)
+            </button>
+          </div>
+          <div style="font-size: 0.8rem; color: #64748b; margin-top: 6px; line-height: 1.5;">
+            💡 با زدن دکمه <strong>«ادامه آموزش»</strong>، تجربیات بازی‌های قبلی در ذهن عامل حفظ شده و با انجام ۱۰ بازی بیشتر، به تدریج ماهرتر و باهوش‌تر می‌شود.
+          </div>
         </div>
 
         <div id="train-success-banner" class="explanation-banner" style="display: none; margin-bottom: 1.25rem; background: #ecfdf5; border-right-color: #10b981;">

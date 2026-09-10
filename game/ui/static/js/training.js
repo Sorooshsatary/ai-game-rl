@@ -245,7 +245,7 @@ const TrainingUI = {
     const originalText = btn ? btn.innerHTML : '';
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '⏳ در حال آموزش و ارتقای تجربیات هوش مصنوعی...';
+      btn.innerHTML = '⏳ در حال افزودن ۱۰ مرحله تجربه به حافظه هوش مصنوعی...';
     }
 
     const strategy = StrategyUI.getStrategy();
@@ -273,7 +273,7 @@ const TrainingUI = {
           banner.style.display = 'block';
           banner.style.background = '#ecfdf5';
           banner.style.borderRightColor = '#10b981';
-          banner.innerHTML = `🎉 مرحله جدید آموزش با موفقیت پایان یافت! <strong>${epCount} اپیزود جدید</strong> آموزش داده شد (مجموعاً <strong>${resp.summary.total_episodes} اپیزود</strong>). میانگین پاداش به <strong>${resp.summary.avg_reward_last_5}</strong> و نرخ موفقیت به <strong>${Math.round(resp.summary.final_success_rate * 100)}%</strong> رسید.`;
+          banner.innerHTML = `🎉 مرحله جدید آموزش با موفقیت انجام شد! <strong>${epCount} مرحله دیگر</strong> به تجربیات قبلی هوش مصنوعی اضافه شد (مجموع تجربیات: <strong>${resp.summary.total_episodes} اپیزود</strong>). میانگین پاداش به <strong>${resp.summary.avg_reward_last_5}</strong> و نرخ موفقیت به <strong>${Math.round(resp.summary.final_success_rate * 100)}%</strong> رسید.`;
         }
       }
     } catch (err) {
@@ -291,7 +291,7 @@ const TrainingUI = {
     const originalText = btn ? btn.innerHTML : '';
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '⏳ در حال آموزش با پاداش‌های جدید...';
+      btn.innerHTML = '⏳ در حال آموزش از صفر با پاداش‌های جدید...';
     }
 
     const banner = document.getElementById('train-success-banner');
@@ -313,7 +313,7 @@ const TrainingUI = {
           banner.style.display = 'block';
           banner.style.background = '#ecfdf5';
           banner.style.borderRightColor = '#10b981';
-          banner.innerHTML = `⚡ هوش مصنوعی با ساختار پاداش جدید با موفقیت آموزش دید (${epCount} اپیزود)! اکنون شبیه‌سازی روی نقشه یکسان در حال اجراست تا تغییر ملموس رفتار را ببینید...`;
+          banner.innerHTML = `🧪 هوش مصنوعی با ساختار پاداش‌های جدید شما <strong>از ابتدا (بدون حافظه قدیمی)</strong> آموزش دید (${epCount} اپیزود)! اکنون شبیه‌سازی زنده روی نقشه در حال پخش است تا تغییر ملموس رفتار را ببینید...`;
         }
 
         // Run side-by-side comparison on identical map
