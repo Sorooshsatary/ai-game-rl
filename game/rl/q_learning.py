@@ -24,7 +24,7 @@ class QLearningAgent:
         self.config = config
         self.agent_id = agent_id
         self.mode = mode
-        self.prior_engine = StrategyPriorEngine(self.strategy)
+        self.prior_engine = StrategyPriorEngine(self.strategy, config=self.config)
         self.rng = random.Random(seed)
 
         # Q-table: discrete_state -> {Action: float}
@@ -130,9 +130,18 @@ class QLearningAgent:
     def update_strategy(self, new_strategy: ChildStrategy, retrain_from_scratch: bool = True):
         """Allows child to modify strategy and optionally reset Q-table."""
         self.strategy = new_strategy
-        self.prior_engine = StrategyPriorEngine(new_strategy)
+        self.prior_engine = StrategyPriorEngine(new_strategy, config=self.config)
         self.prior_table.clear()
         if retrain_from_scratch:
+            self.q_table.clear()
+            self.total_updates = 0
+
+    def update_config(self, new_config: GameConfig, reset_q: bool = False):
+        """Updates active game/reward config and syncs prior engine."""
+        self.config = new_config
+        self.prior_engine = StrategyPriorEngine(self.strategy, config=new_config)
+        self.prior_table.clear()
+        if reset_q:
             self.q_table.clear()
             self.total_updates = 0
 

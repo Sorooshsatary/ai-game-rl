@@ -297,11 +297,12 @@ const TrainingUI = {
     const banner = document.getElementById('train-success-banner');
     const strategy = (typeof StrategyUI !== 'undefined' && StrategyUI.getStrategy) ? StrategyUI.getStrategy() : [];
     const epInput = document.getElementById('train-episode-count');
-    const epCount = epInput ? (parseInt(epInput.value, 10) || 15) : 15;
+    const epCount = Math.max(25, epInput ? (parseInt(epInput.value, 10) || 25) : 25);
     const customRewards = this.getCustomRewards();
 
     try {
-      const resp = await API.train(strategy, epCount, 'hybrid', false, customRewards);
+      // Train from scratch so the agent immediately reflects the new reward shaping without stale Q-table memory
+      const resp = await API.train(strategy, epCount, 'hybrid', true, customRewards);
 
       if (resp.success) {
         this.lastSummary = resp.summary;
@@ -312,7 +313,7 @@ const TrainingUI = {
           banner.style.display = 'block';
           banner.style.background = '#ecfdf5';
           banner.style.borderRightColor = '#10b981';
-          banner.innerHTML = `⚡ آموزش با پاداش‌های مشخص‌شده انجام شد! اکنون مسابقه روی نقشه یکسان در حال آغاز است تا تغییر رفتار هوش مصنوعی را ببینید...`;
+          banner.innerHTML = `⚡ هوش مصنوعی با ساختار پاداش جدید با موفقیت آموزش دید (${epCount} اپیزود)! اکنون شبیه‌سازی روی نقشه یکسان در حال اجراست تا تغییر ملموس رفتار را ببینید...`;
         }
 
         // Run side-by-side comparison on identical map

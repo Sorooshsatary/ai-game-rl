@@ -315,6 +315,65 @@ class TestRL(unittest.TestCase):
         self.assertEqual(env.agent.heading, Action.LEFT)
         self.assertEqual(res2.next_state.agent_heading, Action.LEFT)
 
+    def test_reward_aware_prior_engine_rush_exit(self):
+        """When exit reward heavily dominates coin reward, priors prioritize exit over coins."""
+        from game.config import GameConfig, RewardConfig
+        rush_cfg = GameConfig(
+            reward=RewardConfig(
+                successful_exit=160.0,
+                collect_coin=2.0,
+                convert_diamond=0.0,
+                lose_life=-40.0,
+                normal_step=-0.4,
+                exit_coin_bonus=0.0,
+            )
+        )
+        strategy = ChildStrategy(
+            name="تست فرار",
+            coin_priority=7.0,
+            exit_eagerness=6.0,
+            enemy_fear=5.0,
+        )
+        agent = QLearningAgent(strategy=strategy, config=rush_cfg, mode="hybrid")
+
+        # State: Coin is UP, Exit is RIGHT
+        state = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(0, 0),  # safe
+            nearest_coin_pos=Position(4, 3),  # UP
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(5, 4),  # RIGHT
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=5,
+            grid_width=8,
+            grid_height=8,
+        )
+
+        priors = agent.get_initial_prior(state)
+        # Prior for RIGHT (exit) must be significantly higher than UP (coin)
+        self.assertGreater(priors[Action.RIGHT], priors[Action.UP])
+
+    def test_trainer_update_config_propagates_to_agent(self):
+        """Updating config on trainer propagates to agent and adjusts priors."""
+        from game.config import GameConfig, RewardConfig
+        from game.training.trainer import Trainer
+        strategy = ChildStrategy(name="تست", coin_priority=8.0, exit_eagerness=5.0)
+        trainer = Trainer(strategy=strategy, mode="hybrid")
+
+        rush_cfg = GameConfig(
+            reward=RewardConfig(
+                successful_exit=200.0,
+                collect_coin=1.0,
+            )
+        )
+        trainer.update_config(rush_cfg, reset_q=True)
+        self.assertEqual(trainer.agent.config.reward.successful_exit, 200.0)
+        self.assertEqual(trainer.agent.prior_engine.config.reward.successful_exit, 200.0)
+        self.assertEqual(len(trainer.agent.q_table), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,7 @@
 """Converts Child Strategy into initial Q-values (Priors)."""
 
 from typing import Dict, Tuple, List, Optional
+from game.config import GameConfig, DEFAULT_CONFIG
 from game.environment.entities import Action, Position
 from game.environment.state import State
 from game.strategy.rule import ChildStrategy
@@ -9,8 +10,9 @@ from game.strategy.rule import ChildStrategy
 class StrategyPriorEngine:
     """Evaluates state-action pairs using child strategy rules to generate Q_initial(s, a)."""
 
-    def __init__(self, strategy: ChildStrategy):
+    def __init__(self, strategy: ChildStrategy, config: Optional[GameConfig] = None):
         self.strategy = strategy
+        self.config = config or DEFAULT_CONFIG
 
     def compute_action_prior(self, state: State, action: Action) -> Tuple[float, List[str]]:
         """Computes Q_initial for a specific action in a given state, plus explanation tags."""
@@ -38,9 +40,38 @@ class StrategyPriorEngine:
         delta_exit = delta_dist(state.exit_pos)
         delta_enemy = delta_dist(state.enemy_pos)  # +1 means stepping closer to danger!
 
+        # Dynamic reward scaling factors relative to default baseline
+        rew = self.config.reward
+        exit_rew = getattr(rew, "successful_exit", 25.0)
+        coin_rew = getattr(rew, "collect_coin", 10.0)
+        convert_rew = getattr(rew, "convert_diamond", 20.0)
+        police_penalty = abs(getattr(rew, "lose_life", 10.0))
+
+        exit_scale = max(0.2, exit_rew / 25.0)
+        coin_scale = max(0.05, coin_rew / 10.0)
+        convert_scale = max(0.1, convert_rew / 20.0)
+        enemy_scale = max(0.2, police_penalty / 10.0)
+
+        # Detect rush exit scenario (either rules or reward shaping dominant exit)
+        should_rush_exit = False
+        if self.strategy.rules.get("exit_if_coins_cleared", False) and state.total_coins_remaining == 0:
+            should_rush_exit = True
+            reasons.append("تمام شدن سکه‌ها - رفتن به سمت مسیر فرار و خروج")
+
+        if self.strategy.rules.get("exit_if_one_life", False) and state.lives <= 1 and state.coins_held > 0:
+            should_rush_exit = True
+            reasons.append("جان اندک - اولویت فرار و حفظ غنایم")
+
+        # Reward-driven rush exit: when exit reward vastly exceeds coin reward (e.g. rush_exit preset)
+        is_reward_rush_exit = (coin_rew <= 3.0) or (exit_rew / max(0.1, coin_rew) >= 4.0)
+        if is_reward_rush_exit:
+            should_rush_exit = True
+
         # 2. Coin Evaluation
         if state.nearest_coin_pos is not None:
-            coin_weight = self.strategy.coin_priority * 0.6
+            coin_weight = self.strategy.coin_priority * 0.6 * coin_scale
+            if is_reward_rush_exit:
+                coin_weight *= 0.1  # Strongly suppress detours for low-value coins
             if delta_coin > 0:
                 q_value += coin_weight
                 reasons.append(f"نزدیک شدن به سکه (+{coin_weight:.1f})")
@@ -49,7 +80,9 @@ class StrategyPriorEngine:
 
         # 3. Diamond Evaluation
         if state.nearest_diamond_pos is not None:
-            diamond_weight = self.strategy.diamond_priority * 0.5
+            diamond_weight = self.strategy.diamond_priority * 0.5 * convert_scale
+            if is_reward_rush_exit:
+                diamond_weight *= 0.1
             # Rule: diamond_only_if_safe
             if self.strategy.rules.get("diamond_only_if_safe", False) and state.enemy_dist <= 2:
                 diamond_weight *= 0.2  # De-prioritize diamond when enemy lurks near!
@@ -62,7 +95,7 @@ class StrategyPriorEngine:
 
         # 4. Converter Evaluation (when holding diamonds)
         if state.diamonds_held > 0:
-            converter_weight = self.strategy.converter_urgency * 0.8
+            converter_weight = self.strategy.converter_urgency * 0.8 * convert_scale
             if self.strategy.rules.get("deposit_before_coins", False):
                 converter_weight *= 1.5  # Extra urgency
 
@@ -73,7 +106,7 @@ class StrategyPriorEngine:
                 q_value -= converter_weight * 0.4
 
         # 5. Enemy Danger & Survival
-        enemy_weight = self.strategy.enemy_fear * 1.0
+        enemy_weight = self.strategy.enemy_fear * 1.0 * enemy_scale
         if state.enemy_dist <= 3:
             # Danger zone
             if new_pos == state.enemy_pos:
@@ -107,26 +140,20 @@ class StrategyPriorEngine:
                     reasons.append("قانون فرار اضطراری از پلیس مجاور")
 
         # 6. Exit Evaluation
-        exit_weight = self.strategy.exit_eagerness * 0.6
-        should_rush_exit = False
-
-        if self.strategy.rules.get("exit_if_coins_cleared", False) and state.total_coins_remaining == 0:
-            should_rush_exit = True
-            reasons.append("تمام شدن سکه‌ها - رفتن به سمت مسیر فرار و خروج")
-
-        if self.strategy.rules.get("exit_if_one_life", False) and state.lives <= 1 and state.coins_held > 0:
-            should_rush_exit = True
-            reasons.append("جان اندک - اولویت فرار و حفظ غنایم")
+        exit_weight = self.strategy.exit_eagerness * 0.6 * exit_scale
 
         if should_rush_exit:
-            exit_weight *= 2.5
+            exit_weight *= 3.0
 
         if delta_exit > 0:
             q_value += exit_weight
             if should_rush_exit:
-                reasons.append(f"حرکت به سوی در خروج (+{exit_weight:.1f})")
+                if is_reward_rush_exit:
+                    reasons.append(f"شتاب فرار مستقیم به سوی خروج (+{exit_weight:.1f})")
+                else:
+                    reasons.append(f"حرکت به سوی در خروج (+{exit_weight:.1f})")
         elif delta_exit < 0 and should_rush_exit:
-            q_value -= exit_weight * 0.5
+            q_value -= exit_weight * 0.8
 
         # 7. Direction Continuity (heading momentum)
         if action == state.agent_heading:

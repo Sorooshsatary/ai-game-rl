@@ -83,6 +83,16 @@ class Trainer:
         self.all_metrics.clear()
         self.total_episodes_completed = 0
 
+    def update_config(self, new_config: GameConfig, reset_q: bool = False):
+        """Updates trainer configuration and propagates to agent and environment."""
+        self.config = new_config
+        self.env = GameEnvironment(config=new_config)
+        self.agent.update_config(new_config, reset_q=reset_q)
+        if reset_q:
+            self.history_replays.clear()
+            self.all_metrics.clear()
+            self.total_episodes_completed = 0
+
     def train(
         self,
         num_episodes: Optional[int] = None,

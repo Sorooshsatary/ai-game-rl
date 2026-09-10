@@ -136,6 +136,9 @@ def make_cfg_with_rewards(base_cfg: GameConfig, custom_rewards: Optional[Dict[st
         cfg.reward.normal_step = float(custom_rewards["step"])
     if "diamond" in custom_rewards:
         cfg.reward.collect_diamond_raw = float(custom_rewards["diamond"])
+    if "coin" in custom_rewards:
+        coin_val = float(custom_rewards["coin"])
+        cfg.reward.exit_coin_bonus = max(0.0, 5.0 * min(1.0, coin_val / 10.0))
     return cfg
 
 
@@ -279,9 +282,7 @@ async def admin_save_config(req: SystemConfigRequest, admin: Dict[str, Any] = De
     new_cfg = GameConfig.from_dict(req.model_dump())
     saved = set_active_config(new_cfg)
     if current_session.get("trainer"):
-        current_session["trainer"].config = saved
-        current_session["trainer"].env = GameEnvironment(config=saved)
-        current_session["trainer"].agent.config = saved
+        current_session["trainer"].update_config(saved)
     return {
         "success": True,
         "message": "تنظیمات بازی و یادگیری تقویتی با موفقیت ذخیره و در فایل کانفیگ اعمال شد.",
@@ -293,9 +294,7 @@ async def admin_save_config(req: SystemConfigRequest, admin: Dict[str, Any] = De
 async def admin_reset_config(admin: Dict[str, Any] = Depends(require_admin)):
     cfg = reset_active_config()
     if current_session.get("trainer"):
-        current_session["trainer"].config = cfg
-        current_session["trainer"].env = GameEnvironment(config=cfg)
-        current_session["trainer"].agent.config = cfg
+        current_session["trainer"].update_config(cfg)
     return {
         "success": True,
         "message": "تنظیمات با موفقیت به مقادیر اولیه کارخانه بازگردانده و در فایل کانفیگ ذخیره شد.",
@@ -342,6 +341,7 @@ async def dual_comparison_endpoint(req: DualComparisonRequest):
         current_session["trainer"] = trainer
         current_session["player_agent"] = trainer.agent
     else:
+        trainer.update_config(dual_cfg, reset_q=False)
         current_session["player_agent"] = trainer.agent
 
     strat_agent = RuleBasedStrategyAgent(strategy=strat, config=dual_cfg)
@@ -370,14 +370,13 @@ async def train_agent(req: TrainRequest):
         current_session["custom_rewards"] = req.custom_rewards
 
     trainer = current_session.get("trainer")
-    # If no trainer exists, or mode changed, or explicitly requested from_scratch, or custom rewards provided
+    # If no trainer exists, or mode changed, or explicitly requested from_scratch
     if trainer is None or trainer.mode != req.mode or req.from_scratch:
         trainer = Trainer(strategy=strat, config=train_cfg, mode=req.mode)
         current_session["trainer"] = trainer
     else:
-        trainer.config = train_cfg
-        trainer.env = GameEnvironment(config=train_cfg)
         trainer.strategy = strat
+        trainer.update_config(train_cfg, reset_q=False)
 
     episodes = req.episodes if (req.episodes is not None and req.episodes > 0) else active_cfg.rl.training_episodes
     result = trainer.train(num_episodes=episodes)
