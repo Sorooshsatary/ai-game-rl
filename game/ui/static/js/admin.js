@@ -306,6 +306,10 @@ const AdminUI = {
     if (chkExtra) {
       chkExtra.checked = !!cfg.show_extra_strategies;
     }
+    const chkUnlockAdv = document.getElementById('cfg-unlock-advanced-rules');
+    if (chkUnlockAdv) {
+      chkUnlockAdv.checked = !!cfg.unlock_advanced_rules;
+    }
     const selDiff = document.getElementById('cfg-difficulty-mode');
     if (selDiff) {
       selDiff.value = cfg.difficulty || 'normal';
@@ -330,6 +334,7 @@ const AdminUI = {
       show_reward_tuning: document.getElementById('cfg-show-reward-tuning') ? document.getElementById('cfg-show-reward-tuning').checked : false,
       show_part2: document.getElementById('cfg-show-part2') ? document.getElementById('cfg-show-part2').checked : false,
       show_extra_strategies: document.getElementById('cfg-show-extra-strategies') ? document.getElementById('cfg-show-extra-strategies').checked : false,
+      unlock_advanced_rules: document.getElementById('cfg-unlock-advanced-rules') ? document.getElementById('cfg-unlock-advanced-rules').checked : false,
       difficulty: document.getElementById('cfg-difficulty-mode') ? document.getElementById('cfg-difficulty-mode').value : 'normal',
       rewards: {
         coin: getVal('cfg-rew-coin'),
@@ -383,6 +388,9 @@ const AdminUI = {
         if (StrategyUI.refreshPresets) {
           StrategyUI.refreshPresets();
         }
+        if (StrategyUI.applyAdvancedRulesFlag) {
+          StrategyUI.applyAdvancedRulesFlag();
+        }
       }
       if (typeof TrainingUI !== 'undefined' && TrainingUI.updateRewardTuningVisibility) {
         TrainingUI.cachedConfig = res.config;
@@ -435,6 +443,9 @@ const AdminUI = {
         }
         if (StrategyUI.refreshPresets) {
           StrategyUI.refreshPresets();
+        }
+        if (StrategyUI.applyAdvancedRulesFlag) {
+          StrategyUI.applyAdvancedRulesFlag();
         }
       }
       if (typeof TrainingUI !== 'undefined' && TrainingUI.updateRewardTuningVisibility) {

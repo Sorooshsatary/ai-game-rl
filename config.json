@@ -10,6 +10,7 @@
   "show_reward_tuning": false,
   "show_part2": false,
   "show_extra_strategies": false,
+  "unlock_advanced_rules": false,
   "difficulty": "normal",
   "rewards": {
     "coin": 10.0,

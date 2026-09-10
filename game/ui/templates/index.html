@@ -205,6 +205,14 @@
               <div id="preset-chips" class="preset-chips" style="margin-top: 2px;"></div>
             </div>
 
+            <!-- Advanced Rules Unlocked Banner (Controlled by Admin Flag) -->
+            <div id="advanced-rules-unlocked-banner" style="display: none; background: #faf5ff; border: 1.5px solid #d8b4fe; border-radius: 10px; padding: 10px 14px; margin-bottom: 0.85rem; color: #6b21a8; font-size: 0.85rem; line-height: 1.5;">
+              <div style="font-weight: 800; display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                <span>✨ شروط و دستورات پیشرفته (مرحله دوم چالش) فعال شدند!</span>
+              </div>
+              <span>گزینه‌های جدیدی مانند <strong>فاصله تا سکه</strong>، <strong>بررسی محیط امن پلیس</strong> و <strong>فرار با سرقت همزمان سکه</strong> به منوها اضافه شدند. استراتژی خود را بازبینی و ارتقا دهید!</span>
+            </div>
+
             <!-- If-Then Rule Builder List -->
             <div id="rules-list-container" class="rules-container">
               <!-- Dynamic rule rows injected by strategy.js -->
@@ -784,6 +792,15 @@
                   </div>
                 </label>
                 <input type="checkbox" id="cfg-show-extra-strategies" style="width: 22px; height: 22px; cursor: pointer; accent-color: #4f46e5;">
+              </div>
+              <div class="config-row" style="align-items: center; display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e2e8f0;">
+                <label for="cfg-unlock-advanced-rules" style="cursor: pointer; flex: 1; margin: 0;">
+                  <strong style="color: #1e293b; font-size: 0.95rem;">🎓 آزادسازی شروط و دستورات پیشرفته (چالش مرحله ۲):</strong>
+                  <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px; line-height: 1.5;">
+                    با فعال‌سازی این فلگ در حین کلاس، <strong>۲ شرط تاکتیکی جدید</strong> (فاصله تا نزدیک‌ترین سکه، فاصله امن از پلیس) و <strong>۲ دستور جدید</strong> (فرار با سرقت سکه، فرار به سمت صندوق گنج) به منوی بلوک‌های دانش‌آموز اضافه می‌شوند تا او مجبور شود استراتژی قبلی‌اش را ارتقا داده و هوشمندانه‌تر بازی کند.
+                  </div>
+                </label>
+                <input type="checkbox" id="cfg-unlock-advanced-rules" style="width: 22px; height: 22px; cursor: pointer; accent-color: #4f46e5;">
               </div>
               <div class="config-row" style="align-items: center; display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e2e8f0;">
                 <label for="cfg-difficulty-mode" style="cursor: pointer; flex: 1; margin: 0;">

@@ -563,6 +563,67 @@ class TestRuleBasedStrategyAgent(unittest.TestCase):
         self.assertEqual(act2, Action.LEFT)
         self.assertIn("خروج", reason2)
 
+    def test_flee_collect_action(self):
+        """Test flee_collect flees while attempting to step on coins."""
+        from game.strategy.rule import ConditionItem
+        strat = ChildStrategy(
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="enemy_near")], action="flee_collect"),
+            ]
+        )
+        agent = RuleBasedStrategyAgent(strategy=strat)
+        # Agent at (4, 4), Enemy at (4, 3) (UP)
+        # Coin at (4, 5) (DOWN)
+        # Stepping DOWN increases distance from enemy and lands on coin!
+        state = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(4, 3),
+            nearest_coin_pos=Position(4, 5),
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=1,
+            grid_width=8,
+            grid_height=8,
+        )
+        act, reason = agent.select_action(state)
+        self.assertEqual(act, Action.DOWN)
+        self.assertIn("فرار فرصت‌طلبانه", reason)
+
+    def test_flee_towards_converter_action(self):
+        """Test flee_towards_converter steers fleeing agent towards chest/converter."""
+        from game.strategy.rule import ConditionItem
+        strat = ChildStrategy(
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="enemy_near")], action="flee_towards_converter"),
+            ]
+        )
+        agent = RuleBasedStrategyAgent(strategy=strat)
+        # Agent at (4, 4), Enemy at (4, 3) (UP)
+        # Converter at (6, 4) (RIGHT)
+        # Stepping RIGHT increases distance from enemy and moves toward converter!
+        state = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(4, 3),
+            nearest_coin_pos=None,
+            nearest_diamond_pos=None,
+            converter_pos=Position(6, 4),
+            exit_pos=Position(0, 0),
+            lives=3,
+            coins_held=0,
+            diamonds_held=1,
+            total_coins_remaining=0,
+            grid_width=8,
+            grid_height=8,
+        )
+        act, reason = agent.select_action(state)
+        self.assertEqual(act, Action.RIGHT)
+        self.assertIn("صندوق گنج", reason)
+
 
 if __name__ == "__main__":
     unittest.main()
+

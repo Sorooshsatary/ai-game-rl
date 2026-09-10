@@ -116,6 +116,7 @@ class SystemConfigRequest(BaseModel):
     show_reward_tuning: bool = False
     show_part2: bool = False
     show_extra_strategies: bool = False
+    unlock_advanced_rules: bool = False
     difficulty: str = "normal"
     rewards: Dict[str, float]
     rl: Dict[str, Any]

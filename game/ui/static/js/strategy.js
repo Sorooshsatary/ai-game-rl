@@ -5,7 +5,7 @@
 const StrategyUI = {
   presets: [],
   cachedConfig: null,
-  conditions: [
+  baseConditions: [
     { id: "enemy_adjacent", name: "⚠️ پلیس در خانه مجاور است (خطر فوری)", hasDistance: false },
     { id: "enemy_dist_le", name: "🚨 فاصله تا پلیس کمتر یا مساوی", hasDistance: true, defaultDist: 2, unit: "خانه", min: 1, max: 15 },
     { id: "steps_gt", name: "⏱️ تعداد گام‌های طی‌شده بیشتر از", hasDistance: true, defaultDist: 20, unit: "گام", min: 1, max: 100 },
@@ -17,7 +17,15 @@ const StrategyUI = {
     { id: "coins_cleared", name: "🏁 تمام سکه‌های نقشه جمع شده‌اند", hasDistance: false },
     { id: "always", name: "♾️ در هر شرایطی (همیشه)", hasDistance: false }
   ],
-  actions: [
+  advancedConditions: [
+    { id: "coin_dist_le", name: "⭐ 🪙 فاصله تا نزدیک‌ترین سکه کمتر یا مساوی", hasDistance: true, defaultDist: 2, unit: "خانه", min: 1, max: 15, isAdvanced: true },
+    { id: "enemy_dist_gt", name: "⭐ 🛡️ فاصله تا پلیس بیشتر از (محیط امن)", hasDistance: true, defaultDist: 3, unit: "خانه", min: 1, max: 15, isAdvanced: true }
+  ],
+  get conditions() {
+    return [...this.baseConditions, ...this.advancedConditions];
+  },
+
+  baseActions: [
     { id: "flee_dodge", name: "🔀 جاخالی دادن و فرار از پلیس" },
     { id: "flee_towards_exit", name: "🚪 فرار از دست پلیس به سمت مسیر خروج" },
     { id: "go_nearest_coin", name: "🪙 حرکت به سمت نزدیک‌ترین سکه" },
@@ -26,6 +34,62 @@ const StrategyUI = {
     { id: "go_exit", name: "🏁 حرکت به سمت مسیر فرار و درِ خروج" },
     { id: "random_move", name: "🎲 حرکت تصادفی" }
   ],
+  advancedActions: [
+    { id: "flee_collect", name: "⭐ 🪙 فرار فرصت‌طلبانه (سرقت سکه همزمان با فرار از پلیس)", isAdvanced: true },
+    { id: "flee_towards_converter", name: "⭐ 🏆 فرار هوشمند از پلیس به سمت صندوق گنج", isAdvanced: true }
+  ],
+  get actions() {
+    return [...this.baseActions, ...this.advancedActions];
+  },
+
+  isAdvancedUnlocked() {
+    return !!(this.cachedConfig && this.cachedConfig.unlock_advanced_rules);
+  },
+
+  getActiveConditions(selectedId = null) {
+    if (this.isAdvancedUnlocked()) {
+      return [...this.baseConditions, ...this.advancedConditions];
+    }
+    const list = [...this.baseConditions];
+    if (selectedId) {
+      const adv = this.advancedConditions.find(c => c.id === selectedId);
+      if (adv && !list.some(c => c.id === selectedId)) {
+        list.push(adv);
+      }
+    }
+    return list;
+  },
+
+  getActiveActions(selectedId = null) {
+    if (this.isAdvancedUnlocked()) {
+      return [...this.baseActions, ...this.advancedActions];
+    }
+    const list = [...this.baseActions];
+    if (selectedId) {
+      const adv = this.advancedActions.find(a => a.id === selectedId);
+      if (adv && !list.some(a => a.id === selectedId)) {
+        list.push(adv);
+      }
+    }
+    return list;
+  },
+
+  updateAdvancedRulesNotice() {
+    const banner = document.getElementById('advanced-rules-unlocked-banner');
+    if (banner) {
+      banner.style.display = this.isAdvancedUnlocked() ? 'block' : 'none';
+    }
+  },
+
+  async applyAdvancedRulesFlag() {
+    try {
+      this.cachedConfig = await API.getConfig();
+      this.updateAdvancedRulesNotice();
+      this.renderRulesList();
+    } catch (e) {
+      console.warn("Could not refresh advanced rules flag:", e);
+    }
+  },
   easyAnswers: {
     police: 'dodge',
     diamond: 'converter',
@@ -57,6 +121,7 @@ const StrategyUI = {
       this.renderRulesList();
       await this.updatePresetVisibility();
       await this.applyDifficultyMode();
+      this.updateAdvancedRulesNotice();
 
       const btnAdd = document.getElementById('btn-add-rule');
       if (btnAdd) {
@@ -72,6 +137,7 @@ const StrategyUI = {
       this.renderRulesList();
       await this.updatePresetVisibility();
       await this.applyDifficultyMode();
+      this.updateAdvancedRulesNotice();
     }
   },
 
@@ -433,7 +499,8 @@ const StrategyUI = {
         // Condition Select
         const condSelect = document.createElement('select');
         condSelect.className = 'rule-cond-select';
-        this.conditions.forEach(c => {
+        const activeConds = this.getActiveConditions(cond.type);
+        activeConds.forEach(c => {
           const opt = document.createElement('option');
           opt.value = c.id;
           opt.textContent = c.name;
@@ -510,7 +577,8 @@ const StrategyUI = {
 
       const actSelect = document.createElement('select');
       actSelect.className = 'rule-action-select';
-      this.actions.forEach(a => {
+      const activeActs = this.getActiveActions(rule.action);
+      activeActs.forEach(a => {
         const opt = document.createElement('option');
         opt.value = a.id;
         opt.textContent = a.name;
