@@ -38,6 +38,18 @@ class QLearningAgent:
 
         # Learning stats
         self.total_updates = 0
+        self.position_history: List[Position] = []
+
+    def _is_in_loop(self) -> bool:
+        hist = self.position_history
+        n = len(hist)
+        if n >= 4 and hist[-1] == hist[-3] and hist[-2] == hist[-4] and hist[-1] != hist[-2]:
+            return True
+        if n >= 6 and hist[-1] == hist[-4] and hist[-2] == hist[-5] and hist[-3] == hist[-6]:
+            return True
+        if n >= 8 and hist[-1] == hist[-5] and hist[-2] == hist[-6] and hist[-3] == hist[-7] and hist[-4] == hist[-8]:
+            return True
+        return False
 
     def get_initial_prior(self, state: State) -> Dict[Action, float]:
         """Calculates child strategy prior for all actions in this state."""
@@ -75,6 +87,16 @@ class QLearningAgent:
 
         if legal_actions is None:
             legal_actions = state.get_legal_actions()
+
+        self.position_history.append(state.agent_pos)
+        anti_loop = getattr(self.config, "anti_loop_enabled", False)
+        if anti_loop and self._is_in_loop():
+            prev_pos = self.position_history[-2] if len(self.position_history) >= 2 else None
+            break_actions = [a for a in legal_actions if prev_pos is None or state.agent_pos.move(a) != prev_pos]
+            if not break_actions:
+                break_actions = legal_actions
+            self.position_history = [state.agent_pos]
+            return self.rng.choice(break_actions), True, dict(curr_q), dict(prior_q)
 
         effective_epsilon = 0.0 if self.locked else epsilon
         chosen_action, was_exploratory = Policy.select_action(

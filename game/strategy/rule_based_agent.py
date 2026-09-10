@@ -116,6 +116,32 @@ class RuleBasedStrategyAgent:
         self.agent_id = agent_id
         self.total_steps = 0
         self.rng = random.Random(seed)
+        self.position_history: List[Position] = []
+
+    def _is_in_loop(self) -> bool:
+        """Detects if agent has fallen into periodic oscillation (period 2, 3, or 4).
+        Requires at least 2 full repeated periods.
+        """
+        hist = self.position_history
+        n = len(hist)
+        # Period 2: e.g. A, B, A, B
+        if n >= 4 and hist[-1] == hist[-3] and hist[-2] == hist[-4] and hist[-1] != hist[-2]:
+            return True
+        # Period 3: e.g. A, B, C, A, B, C
+        if n >= 6 and hist[-1] == hist[-4] and hist[-2] == hist[-5] and hist[-3] == hist[-6]:
+            return True
+        # Period 4: e.g. A, B, C, D, A, B, C, D
+        if n >= 8 and hist[-1] == hist[-5] and hist[-2] == hist[-6] and hist[-3] == hist[-7] and hist[-4] == hist[-8]:
+            return True
+        return False
+
+    def _get_loop_break_actions(self, current: Position, legal_actions: List[Action]) -> List[Action]:
+        """Returns candidate legal actions that do not move back into the immediate previous cycle tile."""
+        if len(legal_actions) <= 1 or len(self.position_history) < 2:
+            return legal_actions
+        prev_pos = self.position_history[-2]
+        non_reversing = [act for act in legal_actions if current.move(act) != prev_pos]
+        return non_reversing if non_reversing else legal_actions
 
     def get_legal_actions(self, state: State) -> List[Action]:
         return state.get_legal_actions()
@@ -444,6 +470,17 @@ class RuleBasedStrategyAgent:
     def select_action(self, state: State) -> Tuple[Action, str]:
         legal_actions = self.get_legal_actions(state)
         self.total_steps += 1
+        self.position_history.append(state.agent_pos)
+
+        # Anti-loop protection under admin flag: break oscillation if trapped in repetitive cycles
+        anti_loop = getattr(self.config, "anti_loop_enabled", False)
+        if anti_loop and self._is_in_loop():
+            break_actions = self._get_loop_break_actions(state.agent_pos, legal_actions)
+            action = self.rng.choice(break_actions)
+            reason = "🔄 شکستن حرکت تناوبی (لوپ تکراری با پلیس) ➔ اجرای مانور و حرکت تصادفی تاکتیکی"
+            # Trim history to avoid immediate continuous re-triggering
+            self.position_history = [state.agent_pos]
+            return action, reason
 
         # Check child's If-Then rules in order of priority (1, 2, 3, ...)
         skipped_notes = []

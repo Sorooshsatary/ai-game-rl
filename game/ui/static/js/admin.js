@@ -310,6 +310,10 @@ const AdminUI = {
     if (chkUnlockAdv) {
       chkUnlockAdv.checked = !!cfg.unlock_advanced_rules;
     }
+    const chkAntiLoop = document.getElementById('cfg-anti-loop-enabled');
+    if (chkAntiLoop) {
+      chkAntiLoop.checked = !!cfg.anti_loop_enabled;
+    }
     const selDiff = document.getElementById('cfg-difficulty-mode');
     if (selDiff) {
       selDiff.value = cfg.difficulty || 'normal';
@@ -335,6 +339,7 @@ const AdminUI = {
       show_part2: document.getElementById('cfg-show-part2') ? document.getElementById('cfg-show-part2').checked : false,
       show_extra_strategies: document.getElementById('cfg-show-extra-strategies') ? document.getElementById('cfg-show-extra-strategies').checked : false,
       unlock_advanced_rules: document.getElementById('cfg-unlock-advanced-rules') ? document.getElementById('cfg-unlock-advanced-rules').checked : false,
+      anti_loop_enabled: document.getElementById('cfg-anti-loop-enabled') ? document.getElementById('cfg-anti-loop-enabled').checked : false,
       difficulty: document.getElementById('cfg-difficulty-mode') ? document.getElementById('cfg-difficulty-mode').value : 'normal',
       rewards: {
         coin: getVal('cfg-rew-coin'),

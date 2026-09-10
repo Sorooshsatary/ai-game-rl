@@ -280,9 +280,12 @@ class AgentComparisonEngine:
             if agent_type == "rule_based":
                 action, reason = agent.select_action(curr_state)
             else:
-                action, _, curr_q, _ = agent.select_action(curr_state, epsilon=0.0)
-                best_action_q = curr_q.get(action, 0.0)
-                reason = f"تجربه هوش مصنوعی: بالاترین ارزش پاداش (\u200e{best_action_q:.1f})"
+                action, was_exploratory, curr_q, _ = agent.select_action(curr_state, epsilon=0.0)
+                if was_exploratory:
+                    reason = "🔄 هوش مصنوعی: شکستن چرخه تناوبی با مانور و حرکت تصادفی"
+                else:
+                    best_action_q = curr_q.get(action, 0.0)
+                    reason = f"تجربه هوش مصنوعی: بالاترین ارزش پاداش (\u200e{best_action_q:.1f})"
 
             step_result = env.step(action)
             total_reward += step_result.reward

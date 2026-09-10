@@ -652,8 +652,50 @@ class TestRuleBasedStrategyAgent(unittest.TestCase):
         self.assertIn("اولویت 1 رد شد", reason)
         self.assertIn("کلید در کوله‌پشتی نداری", reason)
 
+    def test_anti_loop_flag_breaks_oscillation(self):
+        """When anti_loop_enabled=True, detecting an oscillation (A-B-A-B) triggers a random break move."""
+        from game.config import GameConfig
+        cfg = GameConfig()
+        cfg.anti_loop_enabled = True
+
+        strat = ChildStrategy(
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="always")], action="go_nearest_coin"),
+            ]
+        )
+        agent = RuleBasedStrategyAgent(strategy=strat, config=cfg, seed=42)
+
+        # Simulate agent oscillating between (4, 4) and (4, 5)
+        # Sequence: (4, 4), (4, 5), (4, 4), (4, 5)
+        agent.position_history = [
+            Position(4, 4),
+            Position(4, 5),
+            Position(4, 4),
+        ]
+        # Current state is at (4, 5)
+        state = State(
+            agent_pos=Position(4, 5),
+            enemy_pos=Position(0, 0),
+            nearest_coin_pos=Position(4, 4),  # UP -> would step back to (4, 4), perpetuating the loop!
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(0, 0),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=1,
+            grid_width=8,
+            grid_height=8,
+        )
+
+        action, reason = agent.select_action(state)
+        self.assertIn("شکستن حرکت تناوبی", reason)
+        # Moving UP would return to (4, 4). The break actions should exclude UP if alternatives exist!
+        self.assertNotEqual(action, Action.UP)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

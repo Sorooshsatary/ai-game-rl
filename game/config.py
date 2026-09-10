@@ -66,6 +66,7 @@ class GameConfig:
     show_part2: bool = False  # Admin flag: lock/unlock Part 2 (AI & Dual Comparison) for normal users
     show_extra_strategies: bool = False  # Admin flag: unlock extra advanced strategy presets
     unlock_advanced_rules: bool = False  # Admin flag: unlock 2 advanced conditions and 2 advanced actions
+    anti_loop_enabled: bool = False  # Admin flag: break periodic oscillation between thief and enemy with random moves
     difficulty: str = "normal"  # "easy" (interactive questionnaire) vs "normal" (If-Then rule blocks)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -82,6 +83,7 @@ class GameConfig:
             "show_part2": self.show_part2,
             "show_extra_strategies": self.show_extra_strategies,
             "unlock_advanced_rules": self.unlock_advanced_rules,
+            "anti_loop_enabled": self.anti_loop_enabled,
             "difficulty": self.difficulty,
             "rewards": {
                 "coin": self.reward.collect_coin,
@@ -134,6 +136,8 @@ class GameConfig:
             cfg.show_extra_strategies = bool(data["show_extra_strategies"])
         if "unlock_advanced_rules" in data:
             cfg.unlock_advanced_rules = bool(data["unlock_advanced_rules"])
+        if "anti_loop_enabled" in data:
+            cfg.anti_loop_enabled = bool(data["anti_loop_enabled"])
         if "difficulty" in data:
             cfg.difficulty = str(data["difficulty"])
 
