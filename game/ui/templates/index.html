@@ -50,39 +50,172 @@
     <section id="tab-strategy" class="tab-content active">
       <div class="two-col-layout">
 
-        <!-- Right Column: If-Then Rule Builder -->
+        <!-- Right Column: Strategy Builder (Advanced Block Mode or Easy Questionnaire Mode) -->
         <div class="card" style="margin-bottom: 0;">
           <div class="card-header">
-            <div class="card-title">💡 چیدمان شروط و فرامین شاه‌دزد</div>
-            <span style="font-size: 0.85rem; color: var(--text-muted);">اولویت‌ها از بالا به پایین بررسی می‌شوند</span>
-          </div>
-
-          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 0.75rem;">
-            شما با انتخاب شرط و دستور، هوش شاه‌دزد را برای جمع‌آوری سکه‌ها، به دست آوردن کلید گنج، باز کردن صندوق گنج و فرار از دست پلیس هدایت می‌کنید:
-          </p>
-
-          <!-- Preset Chips (Controlled by Admin Flag) -->
-          <div id="presets-wrapper" style="margin-bottom: 0.75rem; display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
-              <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">الگوهای آماده برای شروع سریع:</span>
-              <span id="preset-admin-badge" style="display: none; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; font-weight: 700;"></span>
+            <div class="card-title" id="strategy-section-title">💡 تنظیم استراتژی شاه‌دزد</div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span id="strategy-difficulty-badge" style="font-size: 0.78rem; padding: 3px 10px; border-radius: 6px; font-weight: 700; background: #e0e7ff; color: #3730a3;"></span>
+              <span id="strategy-section-subtitle" style="font-size: 0.85rem; color: var(--text-muted);">اولویت‌ها از بالا به پایین بررسی می‌شوند</span>
             </div>
-            <div id="preset-chips" class="preset-chips" style="margin-top: 2px;"></div>
           </div>
 
-          <!-- If-Then Rule Builder List -->
-          <div id="rules-list-container" class="rules-container">
-            <!-- Dynamic rule rows injected by strategy.js -->
+          <!-- Mode 1: Easy Mode (Interactive Questionnaire) -->
+          <div id="strategy-easy-mode" style="display: none;">
+            <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1rem;">
+              🎯 <strong>حالت آسان فعال است:</strong> به ۴ سوال زیر درباره رفتار شاه‌دزد پاسخ دهید تا استراتژی هوشمند شما بدون نیاز به ساخت دستی بلوک‌ها به طور خودکار تنظیم شود:
+            </p>
+
+            <div class="easy-questions-list">
+              <!-- Question 1: Police Encounter -->
+              <div class="easy-q-card">
+                <div style="font-weight: 800; color: #1e293b; font-size: 0.88rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                  <span>🚨 سوال ۱:</span> وقتی پلیس در نزدیکی توست، شاه‌دزد چه واکنشی نشان دهد؟
+                </div>
+                <div class="easy-q-options">
+                  <label class="easy-opt-label">
+                    <input type="radio" name="easy_q_police" value="dodge" checked>
+                    <div class="easy-opt-content">
+                      <span class="easy-opt-title">🔀 جاخالی تاکتیکی</span>
+                      <span class="easy-opt-desc">چرخش به پهلو و شکستن خط دید پلیس</span>
+                    </div>
+                  </label>
+                  <label class="easy-opt-label">
+                    <input type="radio" name="easy_q_police" value="flee">
+                    <div class="easy-opt-content">
+                      <span class="easy-opt-title">🏃‍♂️ فرار مستقیم</span>
+                      <span class="easy-opt-desc">عقب‌نشینی سریع به دورترین فضای باز</span>
+                    </div>
+                  </label>
+                  <label class="easy-opt-label">
+                    <input type="radio" name="easy_q_police" value="exit">
+                    <div class="easy-opt-content">
+                      <span class="easy-opt-title">🚪 دویدن سمت خروج</span>
+                      <span class="easy-opt-desc">فرار فوری به سمت درِ خروج نقشه</span>
+                    </div>
+                  </label>
+                  <label class="easy-opt-label">
+                    <input type="radio" name="easy_q_police" value="collect">
+                    <div class="easy-opt-content">
+                      <span class="easy-opt-title">🪙 فرار فرصت‌طلبانه</span>
+                      <span class="easy-opt-desc">فرار همزمان با ربودن سکه‌های مسیر</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Question 2: Diamond / Key Handling -->
+              <div class="easy-q-card">
+                <div style="font-weight: 800; color: #1e293b; font-size: 0.88rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                  <span>🗝️ سوال ۲:</span> وقتی کلید گنج (الماس) را پیدا کردی، اولویت اصلی‌ات چیست؟
+                </div>
+                <div class="easy-q-options">
+                  <label class="easy-opt-label">
+                    <input type="radio" name="easy_q_diamond" value="converter" checked>
+                    <div class="easy-opt-content">
+                      <span class="easy-opt-title">🏆 باز کردن فوری صندوق</span>
+                      <span class="easy-opt-desc">تبدیل فوری کلید به سکه‌های ۲ برابری</span>
+                    </div>
+                  </label>
+                  <label class="easy-opt-label">
+                    <input type="radio" name="easy_q_diamond" value="exit_safe">
+                    <div class="easy-opt-content">
+                      <span class="easy-opt-title">🚪 خروج امن با غنیمت</span>
+                      <span class="easy-opt-desc">حفظ کلید و حرکت مستقیم به سمت خروج</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Question 3: General Playstyle -->
+              <div class="easy-q-card">
+                <div style="font-weight: 800; color: #1e293b; font-size: 0.88rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                  <span>🪙 سوال ۳:</span> در حالت عادی، اولویت حرکت شاه‌دزد به کدام سمت باشد؟
+                </div>
+                <div class="easy-q-options">
+                  <label class="easy-opt-label">
+                    <input type="radio" name="easy_q_goal" value="coins_first" checked>
+                    <div class="easy-opt-content">
+                      <span class="easy-opt-title">🪙 شکارچی سکه‌ها</span>
+                      <span class="easy-opt-desc">جارو کردن نزدیک‌ترین سکه‌های نقشه</span>
+                    </div>
+                  </label>
+                  <label class="easy-opt-label">
+                    <input type="radio" name="easy_q_goal" value="diamonds_first">
+                    <div class="easy-opt-content">
+                      <span class="easy-opt-title">💎 جوینده کلیدهای گنج</span>
+                      <span class="easy-opt-desc">حرکت اول به سمت الماس و صندوق گنج</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Question 4: Low Life Emergency -->
+              <div class="easy-q-card">
+                <div style="font-weight: 800; color: #1e293b; font-size: 0.88rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                  <span>❤️ سوال ۴:</span> اگر فقط ۱ جان برایت باقی بماند، چه تصمیمی می‌گیری؟
+                </div>
+                <div class="easy-q-options">
+                  <label class="easy-opt-label">
+                    <input type="radio" name="easy_q_emergency" value="exit_rush" checked>
+                    <div class="easy-opt-content">
+                      <span class="easy-opt-title">🏁 فرار نجات‌بخش</span>
+                      <span class="easy-opt-desc">حرکت فوری به سمت خروج برای بقا و پیروزی</span>
+                    </div>
+                  </label>
+                  <label class="easy-opt-label">
+                    <input type="radio" name="easy_q_emergency" value="keep_stealing">
+                    <div class="easy-opt-content">
+                      <span class="easy-opt-title">⚡ شجاعت تا آخرین نفس</span>
+                      <span class="easy-opt-desc">ادامه ریسک و سرقت سکه‌ها برای رکورد امتیاز</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Live Strategy Summary Box -->
+            <div id="easy-strategy-summary" style="margin-top: 14px; background: #eef2ff; border: 1.5px solid #c7d2fe; border-radius: 12px; padding: 12px 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                <strong style="color: #3730a3; font-size: 0.9rem;">✨ استراتژی ایجادشده بر اساس پاسخ‌های شما:</strong>
+                <button type="button" id="btn-reset-easy-questions" class="btn btn-secondary" style="font-size: 0.75rem; padding: 2px 8px; color: #64748b;">🔄 بازنشانی پاسخ‌ها</button>
+              </div>
+              <div id="easy-rules-summary-list" style="font-size: 0.85rem; color: #334155; line-height: 1.8;">
+                <!-- Filled dynamically by strategy.js -->
+              </div>
+            </div>
           </div>
 
-          <!-- Buttons to Add Rule & Reset -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; flex-wrap: wrap; gap: 8px;">
-            <button id="btn-add-rule" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px;">
-              ➕ افزودن شرط جدید
-            </button>
-            <button id="btn-reset-rules" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px; color: #64748b;">
-              🔄 بازنشانی شروط
-            </button>
+          <!-- Mode 2: Advanced Mode (If-Then Block Builder) -->
+          <div id="strategy-advanced-mode">
+            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 0.75rem;">
+              شما با انتخاب شرط و دستور، هوش شاه‌دزد را برای جمع‌آوری سکه‌ها، به دست آوردن کلید گنج، باز کردن صندوق گنج و فرار از دست پلیس هدایت می‌کنید:
+            </p>
+
+            <!-- Preset Chips (Controlled by Admin Flag) -->
+            <div id="presets-wrapper" style="margin-bottom: 0.75rem; display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+                <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">الگوهای آماده برای شروع سریع:</span>
+                <span id="preset-admin-badge" style="display: none; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; font-weight: 700;"></span>
+              </div>
+              <div id="preset-chips" class="preset-chips" style="margin-top: 2px;"></div>
+            </div>
+
+            <!-- If-Then Rule Builder List -->
+            <div id="rules-list-container" class="rules-container">
+              <!-- Dynamic rule rows injected by strategy.js -->
+            </div>
+
+            <!-- Buttons to Add Rule & Reset -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; flex-wrap: wrap; gap: 8px;">
+              <button id="btn-add-rule" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px;">
+                ➕ افزودن شرط جدید
+              </button>
+              <button id="btn-reset-rules" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px; color: #64748b;">
+                🔄 بازنشانی شروط
+              </button>
+            </div>
           </div>
 
           <!-- Default Fallback Rule Notice -->
@@ -624,6 +757,18 @@
                   </div>
                 </label>
                 <input type="checkbox" id="cfg-show-reward-tuning" style="width: 22px; height: 22px; cursor: pointer; accent-color: #4f46e5;">
+              </div>
+              <div class="config-row" style="align-items: center; display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e2e8f0;">
+                <label for="cfg-difficulty-mode" style="cursor: pointer; flex: 1; margin: 0;">
+                  <strong style="color: #1e293b; font-size: 0.95rem;">سطح سختی بخش اول (تعیین استراتژی شاه‌دزد):</strong>
+                  <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px; line-height: 1.5;">
+                    در صورت انتخاب <strong>«آسان»</strong>، به جای حالت‌بندی و بلوک‌های شرطی پیچیده، یک پرسشنامه ساده و جذاب چندگزینه‌ای به کاربر نمایش داده می‌شود و استراتژی شاه‌دزد خودکار ساخته می‌شود. در حالت <strong>«پیشرفته»</strong>، ساخت دستی بلوک‌های شرطی اگر-آنگاه فعال خواهد بود.
+                  </div>
+                </label>
+                <select id="cfg-difficulty-mode" style="padding: 8px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-weight: 700; color: #1e293b; font-family: inherit; background: #fff; min-width: 175px;">
+                  <option value="easy">🎯 آسان (پرسش و پاسخ)</option>
+                  <option value="normal" selected>🧩 پیشرفته (بلوک‌های شرطی)</option>
+                </select>
               </div>
             </div>
 

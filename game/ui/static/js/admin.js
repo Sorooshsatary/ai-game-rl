@@ -220,6 +220,10 @@ const AdminUI = {
     if (chkRewardTuning) {
       chkRewardTuning.checked = !!cfg.show_reward_tuning;
     }
+    const selDiff = document.getElementById('cfg-difficulty-mode');
+    if (selDiff) {
+      selDiff.value = cfg.difficulty || 'normal';
+    }
   },
 
   async submitSaveConfig() {
@@ -238,6 +242,7 @@ const AdminUI = {
       diamond_multiplier: parseInt(document.getElementById('cfg-diamond-multiplier').value) || 2,
       show_presets: document.getElementById('cfg-show-presets') ? document.getElementById('cfg-show-presets').checked : false,
       show_reward_tuning: document.getElementById('cfg-show-reward-tuning') ? document.getElementById('cfg-show-reward-tuning').checked : false,
+      difficulty: document.getElementById('cfg-difficulty-mode') ? document.getElementById('cfg-difficulty-mode').value : 'normal',
       rewards: {
         coin: getVal('cfg-rew-coin'),
         convert: getVal('cfg-rew-convert'),
@@ -279,9 +284,14 @@ const AdminUI = {
       if (typeof TrainingUI !== 'undefined' && TrainingUI.updateFromConfig) {
         TrainingUI.updateFromConfig(res.config);
       }
-      if (typeof StrategyUI !== 'undefined' && StrategyUI.updatePresetVisibility) {
+      if (typeof StrategyUI !== 'undefined') {
         StrategyUI.cachedConfig = res.config;
-        StrategyUI.updatePresetVisibility();
+        if (StrategyUI.applyDifficultyMode) {
+          StrategyUI.applyDifficultyMode();
+        }
+        if (StrategyUI.updatePresetVisibility) {
+          StrategyUI.updatePresetVisibility();
+        }
       }
       if (typeof TrainingUI !== 'undefined' && TrainingUI.updateRewardTuningVisibility) {
         TrainingUI.cachedConfig = res.config;

@@ -24,6 +24,12 @@ const StrategyUI = {
     { id: "go_exit", name: "🏁 حرکت به سمت مسیر فرار و درِ خروج" },
     { id: "random_move", name: "🎲 حرکت تصادفی" }
   ],
+  easyAnswers: {
+    police: 'dodge',
+    diamond: 'converter',
+    goal: 'coins_first',
+    emergency: 'exit_rush'
+  },
   currentStrategy: {
     name: "استراتژی شاه‌دزد من",
     if_then_rules: [
@@ -41,11 +47,14 @@ const StrategyUI = {
       console.warn("Could not fetch initial config for StrategyUI:", e);
     }
 
+    this.setupEasyQuestionnaire();
+
     try {
       this.presets = await API.getPresets();
       this.renderPresets();
       this.renderRulesList();
       await this.updatePresetVisibility();
+      await this.applyDifficultyMode();
 
       const btnAdd = document.getElementById('btn-add-rule');
       if (btnAdd) {
@@ -60,6 +69,153 @@ const StrategyUI = {
       console.error("Failed to load presets:", err);
       this.renderRulesList();
       await this.updatePresetVisibility();
+      await this.applyDifficultyMode();
+    }
+  },
+
+  async applyDifficultyMode() {
+    try {
+      if (!this.cachedConfig) {
+        this.cachedConfig = await API.getConfig();
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    const isEasy = (this.cachedConfig && this.cachedConfig.difficulty === 'easy');
+    const easyContainer = document.getElementById('strategy-easy-mode');
+    const advancedContainer = document.getElementById('strategy-advanced-mode');
+    const badge = document.getElementById('strategy-difficulty-badge');
+    const title = document.getElementById('strategy-section-title');
+    const subtitle = document.getElementById('strategy-section-subtitle');
+
+    if (isEasy) {
+      if (easyContainer) easyContainer.style.display = 'block';
+      if (advancedContainer) advancedContainer.style.display = 'none';
+      if (title) title.textContent = '🎯 تعیین استراتژی شاه‌دزد (حالت آسان)';
+      if (subtitle) subtitle.textContent = 'پاسخ به سوالات جهت تنظیم خودکار هوش سارق';
+      if (badge) {
+        badge.style.display = 'inline-block';
+        badge.textContent = '🎯 حالت آسان: پرسش و پاسخ';
+        badge.style.background = '#dcfce7';
+        badge.style.color = '#15803d';
+        badge.style.border = '1px solid #bbf7d0';
+      }
+      this.compileEasyStrategy();
+    } else {
+      if (easyContainer) easyContainer.style.display = 'none';
+      if (advancedContainer) advancedContainer.style.display = 'block';
+      if (title) title.textContent = '💡 چیدمان شروط و فرامین شاه‌دزد';
+      if (subtitle) subtitle.textContent = 'اولویت‌ها از بالا به پایین بررسی می‌شوند';
+      if (badge) {
+        badge.style.display = 'inline-block';
+        badge.textContent = '🧩 حالت پیشرفته: بلوک‌های شرطی';
+        badge.style.background = '#e0e7ff';
+        badge.style.color = '#3730a3';
+        badge.style.border = '1px solid #c7d2fe';
+      }
+      this.renderRulesList();
+    }
+  },
+
+  setupEasyQuestionnaire() {
+    const questions = ['easy_q_police', 'easy_q_diamond', 'easy_q_goal', 'easy_q_emergency'];
+    const mapProp = {
+      'easy_q_police': 'police',
+      'easy_q_diamond': 'diamond',
+      'easy_q_goal': 'goal',
+      'easy_q_emergency': 'emergency'
+    };
+
+    questions.forEach(qName => {
+      const inputs = document.querySelectorAll(`input[name="${qName}"]`);
+      inputs.forEach(input => {
+        input.addEventListener('change', () => {
+          const prop = mapProp[qName];
+          if (prop && input.checked) {
+            this.easyAnswers[prop] = input.value;
+            this.compileEasyStrategy();
+          }
+        });
+      });
+    });
+
+    const btnResetEasy = document.getElementById('btn-reset-easy-questions');
+    if (btnResetEasy) {
+      btnResetEasy.addEventListener('click', () => {
+        this.easyAnswers = {
+          police: 'dodge',
+          diamond: 'converter',
+          goal: 'coins_first',
+          emergency: 'exit_rush'
+        };
+        // Reset radio buttons in UI
+        document.querySelectorAll('input[name="easy_q_police"]').forEach(r => { r.checked = (r.value === 'dodge'); });
+        document.querySelectorAll('input[name="easy_q_diamond"]').forEach(r => { r.checked = (r.value === 'converter'); });
+        document.querySelectorAll('input[name="easy_q_goal"]').forEach(r => { r.checked = (r.value === 'coins_first'); });
+        document.querySelectorAll('input[name="easy_q_emergency"]').forEach(r => { r.checked = (r.value === 'exit_rush'); });
+        this.compileEasyStrategy();
+      });
+    }
+  },
+
+  compileEasyStrategy() {
+    const ans = this.easyAnswers;
+    const rules = [];
+    const summaryBullets = [];
+
+    // 1. Police rule
+    if (ans.police === 'dodge') {
+      rules.push({ conditions: [{ type: 'enemy_adjacent', value: 1 }], action: 'flee_dodge' });
+      summaryBullets.push('🚨 <strong>در مواجهه با پلیس:</strong> جاخالی دادن تاکتیکی و چرخش زاویه برای خروج از دید');
+    } else if (ans.police === 'flee') {
+      rules.push({ conditions: [{ type: 'enemy_adjacent', value: 1 }], action: 'flee_enemy' });
+      summaryBullets.push('🏃‍♂️ <strong>در مواجهه با پلیس:</strong> فرار مستقیم و افزایش حداکثری فاصله');
+    } else if (ans.police === 'exit') {
+      rules.push({ conditions: [{ type: 'enemy_dist_le', value: 2 }], action: 'flee_towards_exit' });
+      summaryBullets.push('🚪 <strong>در مواجهه با پلیس:</strong> فرار فوری به سمت درِ خروج نقشه');
+    } else if (ans.police === 'collect') {
+      rules.push({ conditions: [{ type: 'enemy_adjacent', value: 1 }], action: 'flee_collect' });
+      summaryBullets.push('🪙 <strong>در مواجهه با پلیس:</strong> فرار همراه با سرقت فرصت‌طلبانه سکه‌ها');
+    }
+
+    // 2. Emergency 1-life rule
+    if (ans.emergency === 'exit_rush') {
+      rules.push({ conditions: [{ type: 'one_life', value: 1 }], action: 'go_exit' });
+      summaryBullets.push('❤️ <strong>هنگام ۱ جان باقی‌مانده:</strong> فرار نجات‌بخش و حرکت فوری به سمت درِ خروج');
+    } else {
+      summaryBullets.push('⚡ <strong>هنگام ۱ جان باقی‌مانده:</strong> شجاعت تا آخرین نفس و ادامه جمع‌آوری سکه‌ها');
+    }
+
+    // 3. Diamond handling rule
+    if (ans.diamond === 'converter') {
+      rules.push({ conditions: [{ type: 'has_diamond', value: 1 }], action: 'go_converter' });
+      summaryBullets.push('🏆 <strong>هنگام حمل کلید گنج:</strong> باز کردن فوری صندوق گنج و دریافت سکه‌های ۲ برابری');
+    } else {
+      rules.push({ conditions: [{ type: 'has_diamond', value: 1 }], action: 'go_exit' });
+      summaryBullets.push('🚪 <strong>هنگام حمل کلید گنج:</strong> خروج مستقیم از نقشه جهت حفظ کلید گران‌بها');
+    }
+
+    // 4. Roaming goal rule
+    if (ans.goal === 'diamonds_first') {
+      rules.push({ conditions: [{ type: 'diamond_exists', value: 1 }], action: 'go_nearest_diamond' });
+      rules.push({ conditions: [{ type: 'coin_exists', value: 1 }], action: 'go_nearest_coin' });
+      summaryBullets.push('💎 <strong>اولویت در گشت عادی:</strong> ابتدا جستجوی الماس و کلیدها، سپس سکه‌ها');
+    } else {
+      rules.push({ conditions: [{ type: 'coin_exists', value: 1 }], action: 'go_nearest_coin' });
+      rules.push({ conditions: [{ type: 'diamond_exists', value: 1 }], action: 'go_nearest_diamond' });
+      summaryBullets.push('🪙 <strong>اولویت در گشت عادی:</strong> ابتدا جمع‌آوری تمام سکه‌های نقشه، سپس الماس‌ها');
+    }
+
+    this.currentStrategy.name = 'شاه‌دزد هوشمند (حالت آسان)';
+    this.currentStrategy.if_then_rules = rules;
+
+    const summaryContainer = document.getElementById('easy-rules-summary-list');
+    if (summaryContainer) {
+      summaryContainer.innerHTML = summaryBullets
+        .map((b, i) => `<div style="margin-bottom: 5px;">${i + 1}. ${b}</div>`)
+        .join('') +
+        `<div style="margin-top: 8px; font-size: 0.8rem; color: #4338ca; font-weight: 700;">✅ این قوانین به صورت زنده برای شاه‌دزد فعال شدند و با زدن دکمه «اجرای استراتژی» یا «نبرد هوش مصنوعی» روی نقشه شبیه‌سازی می‌شوند.</div>`;
     }
   },
 

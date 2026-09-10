@@ -114,6 +114,7 @@ class SystemConfigRequest(BaseModel):
     diamond_multiplier: int = Field(2, ge=1, le=50)
     show_presets: bool = False
     show_reward_tuning: bool = False
+    difficulty: str = "normal"
     rewards: Dict[str, float]
     rl: Dict[str, Any]
 

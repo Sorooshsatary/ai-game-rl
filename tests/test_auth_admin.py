@@ -243,6 +243,38 @@ class TestAuthAndAdmin(unittest.TestCase):
         self.assertFalse(get_active_config().show_reward_tuning)
         self.assertFalse(self.client.get("/api/config").json()["show_reward_tuning"])
 
+    def test_difficulty_admin_setting(self):
+        """Verify that difficulty setting ('easy' vs 'normal') is controllable by admin and readable via public config."""
+        admin_token = self.client.post("/api/auth/login", json={"username": "admin", "password": "admin123"}).json()["token"]
+        headers = {"Authorization": f"Bearer {admin_token}"}
+
+        # 1. Check current public config has difficulty field
+        cfg_res = self.client.get("/api/config")
+        self.assertEqual(cfg_res.status_code, 200)
+        self.assertIn("difficulty", cfg_res.json())
+
+        # 2. Update difficulty to 'easy' via admin endpoint
+        admin_cfg_res = self.client.get("/api/admin/config", headers=headers)
+        self.assertEqual(admin_cfg_res.status_code, 200)
+        cfg_data = admin_cfg_res.json()["config"]
+        cfg_data["difficulty"] = "easy"
+
+        save_res = self.client.post("/api/admin/config", json=cfg_data, headers=headers)
+        self.assertEqual(save_res.status_code, 200)
+        self.assertEqual(save_res.json()["config"]["difficulty"], "easy")
+        self.assertEqual(get_active_config().difficulty, "easy")
+
+        # Public config should reflect 'easy'
+        self.assertEqual(self.client.get("/api/config").json()["difficulty"], "easy")
+
+        # 3. Toggle back to 'normal'
+        cfg_data["difficulty"] = "normal"
+        save_res2 = self.client.post("/api/admin/config", json=cfg_data, headers=headers)
+        self.assertEqual(save_res2.status_code, 200)
+        self.assertEqual(save_res2.json()["config"]["difficulty"], "normal")
+        self.assertEqual(get_active_config().difficulty, "normal")
+        self.assertEqual(self.client.get("/api/config").json()["difficulty"], "normal")
+
     def test_custom_rewards_train_and_dual_comparison(self):
         """Verify train and dual comparison endpoints with custom reward shaping parameters."""
         custom_rewards = {

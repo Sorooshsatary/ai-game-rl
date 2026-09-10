@@ -1544,6 +1544,87 @@ html, body {
   border: 1px solid #c7d2fe;
 }
 
+/* Easy Strategy Questionnaire Mode */
+.easy-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.easy-q-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: border-color 0.2s;
+}
+
+.easy-q-card:hover {
+  border-color: #cbd5e1;
+}
+
+.easy-q-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.easy-opt-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.easy-opt-label:hover {
+  border-color: #818cf8;
+  background: #faf5ff;
+}
+
+.easy-opt-label input[type="radio"] {
+  accent-color: #4f46e5;
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.easy-opt-label input[type="radio"]:checked + .easy-opt-content {
+  color: #312e81;
+}
+
+.easy-opt-label.active,
+.easy-opt-label:has(input[type="radio"]:checked) {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  box-shadow: 0 0 0 1px #4f46e5;
+}
+
+.easy-opt-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.easy-opt-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.easy-opt-desc {
+  font-size: 0.74rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+
 
 
 
