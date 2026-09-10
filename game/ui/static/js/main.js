@@ -1,9 +1,20 @@
-﻿/**
+/**
  * Main application coordinator and tab router
  */
 document.addEventListener('DOMContentLoaded', async () => {
   // Tab switcher
   window.switchTab = function(tabId) {
+    // If attempting to switch to Part 2 while locked for the current user
+    if (tabId === 'comparison' && typeof ComparisonUI !== 'undefined' && ComparisonUI.isLockedForCurrentUser && ComparisonUI.isLockedForCurrentUser()) {
+      const modal = document.getElementById('modal-part2-locked');
+      if (modal) {
+        modal.classList.add('active');
+      } else {
+        alert('🔒 بخش دوم در حال حاضر توسط مدرس یا مدیر قفل شده است. لطفاً ابتدا در بخش ۱ استراتژی شاه‌دزد خود را طراحی و ارزیابی کنید.');
+      }
+      return;
+    }
+
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 

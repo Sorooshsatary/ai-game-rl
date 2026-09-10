@@ -37,7 +37,10 @@
   <!-- Navigation Tabs -->
   <nav class="tab-nav">
     <button class="tab-btn active" data-tab="strategy">🎮 بخش ۱: استراتژی شرطی من (قانون‌محور)</button>
-    <button class="tab-btn" data-tab="comparison">🧠 بخش ۲: هوش مصنوعی و مقایسه رو‌در‌رو</button>
+    <button class="tab-btn" id="tab-btn-comparison" data-tab="comparison">
+      <span id="tab-btn-comparison-text">🧠 بخش ۲: هوش مصنوعی و مقایسه رو‌در‌رو</span>
+      <span id="tab-comparison-badge" style="display: none; margin-right: 6px; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; font-weight: 700;"></span>
+    </button>
     <button id="tab-btn-admin" class="tab-btn" data-tab="admin" style="display: none;">⚙️ پنل مدیریت</button>
   </nav>
 
@@ -225,7 +228,7 @@
 
           <!-- Next Step Call to Action -->
           <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
-            <button class="btn btn-primary" onclick="switchTab('comparison')" style="font-size: 0.95rem;">
+            <button id="btn-goto-comparison" class="btn btn-primary" onclick="switchTab('comparison')" style="font-size: 0.95rem;">
               رفتن به بخش مقایسه با هوش مصنوعی ➔
             </button>
           </div>
@@ -306,6 +309,12 @@
     <!-- ========================================================================= -->
     <section id="tab-comparison" class="tab-content">
       
+      <!-- Part 2 Admin Preview Notice (when locked for normal users) -->
+      <div id="part2-admin-notice-banner" style="display: none; margin-bottom: 1.25rem; padding: 12px 18px; border-radius: 12px; background: #fef3c7; border: 1.5px solid #f59e0b; color: #92400e; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <span>👑 <strong>پیش‌نمایش مدیر:</strong> بخش دوم هم‌اکنون برای کاربران عادی قفل است و فقط شما به عنوان مدیر دسترسی دارید.</span>
+        <span style="font-size: 0.78rem; background: rgba(0,0,0,0.06); padding: 3px 8px; border-radius: 6px;">فلگ show_part2 خاموش است</span>
+      </div>
+
       <!-- Top Card: RL Training & Learning Curves -->
       <div class="card">
         <div class="card-header">
@@ -759,6 +768,15 @@
                 <input type="checkbox" id="cfg-show-reward-tuning" style="width: 22px; height: 22px; cursor: pointer; accent-color: #4f46e5;">
               </div>
               <div class="config-row" style="align-items: center; display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e2e8f0;">
+                <label for="cfg-show-part2" style="cursor: pointer; flex: 1; margin: 0;">
+                  <strong style="color: #1e293b; font-size: 0.95rem;">قفل بودن / باز بودن بخش دوم (هوش مصنوعی و مقایسه رو‌در‌رو):</strong>
+                  <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px; line-height: 1.5;">
+                    در صورت <strong>فعال بودن (تیک روشن)</strong>، زبانه بخش ۲ برای تمامی کاربران باز و قابل دسترسی است. در صورت <strong>خاموش بودن (قفل)</strong>، بخش دوم برای کاربران عادی قفل می‌شود تا ابتدا تمرکز خود را روی بخش ۱ بگذارند (کاربر ادمین همواره دسترسی پیش‌نمایش دارد).
+                  </div>
+                </label>
+                <input type="checkbox" id="cfg-show-part2" style="width: 22px; height: 22px; cursor: pointer; accent-color: #4f46e5;">
+              </div>
+              <div class="config-row" style="align-items: center; display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e2e8f0;">
                 <label for="cfg-difficulty-mode" style="cursor: pointer; flex: 1; margin: 0;">
                   <strong style="color: #1e293b; font-size: 0.95rem;">سطح سختی بخش اول (تعیین استراتژی شاه‌دزد):</strong>
                   <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px; line-height: 1.5;">
@@ -817,6 +835,22 @@
           </div>
         </form>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Part 2 Locked Notice for Normal Users -->
+  <div id="modal-part2-locked" class="modal-overlay">
+    <div class="modal-dialog" style="max-width: 440px; text-align: center; padding: 2rem 1.5rem;">
+      <div style="font-size: 3.2rem; margin-bottom: 0.5rem; line-height: 1;">🔒</div>
+      <h3 style="margin-bottom: 0.75rem; color: #1e293b; font-size: 1.25rem; font-weight: 800;">بخش دوم در حال حاضر قفل است</h3>
+      <p style="color: #64748b; font-size: 0.92rem; line-height: 1.7; margin-bottom: 1.5rem;">
+        دسترسی به بخش شبیه‌ساز و مقایسه هوش مصنوعی توسط مدرس یا مدیر سیستم موقتاً قفل شده است.
+        <br><br>
+        لطفاً ابتدا در <strong>بخش اول</strong>، استراتژی شاه‌دزد را به دقت طراحی کرده و عملکرد آن را روی نقشه زنده ارزیابی کنید.
+      </p>
+      <button class="btn btn-primary" onclick="document.getElementById('modal-part2-locked').classList.remove('active')" style="width: 100%; padding: 10px; font-weight: 800; font-size: 0.95rem;">
+        متوجه شدم، بازگشت به بخش اول 👍
+      </button>
     </div>
   </div>
 

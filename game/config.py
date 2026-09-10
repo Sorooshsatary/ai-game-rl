@@ -63,6 +63,7 @@ class GameConfig:
     rl: RLConfig = field(default_factory=RLConfig)
     show_presets: bool = False  # Admin flag: display ready-made strategy presets for normal users
     show_reward_tuning: bool = False  # Admin flag: display reward tuning lab in RL section for normal users
+    show_part2: bool = False  # Admin flag: lock/unlock Part 2 (AI & Dual Comparison) for normal users
     difficulty: str = "normal"  # "easy" (interactive questionnaire) vs "normal" (If-Then rule blocks)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -76,6 +77,7 @@ class GameConfig:
             "diamond_multiplier": self.env.diamond_to_coin_multiplier,
             "show_presets": self.show_presets,
             "show_reward_tuning": self.show_reward_tuning,
+            "show_part2": self.show_part2,
             "difficulty": self.difficulty,
             "rewards": {
                 "coin": self.reward.collect_coin,
@@ -122,6 +124,8 @@ class GameConfig:
             cfg.show_presets = bool(data["show_presets"])
         if "show_reward_tuning" in data:
             cfg.show_reward_tuning = bool(data["show_reward_tuning"])
+        if "show_part2" in data:
+            cfg.show_part2 = bool(data["show_part2"])
         if "difficulty" in data:
             cfg.difficulty = str(data["difficulty"])
 

@@ -101,6 +101,9 @@ const AuthUI = {
     if (typeof TrainingUI !== 'undefined' && TrainingUI.updateRewardTuningVisibility) {
       TrainingUI.updateRewardTuningVisibility();
     }
+    if (typeof ComparisonUI !== 'undefined' && ComparisonUI.updatePart2LockStatus) {
+      ComparisonUI.updatePart2LockStatus();
+    }
   },
 
   openLoginModal() {

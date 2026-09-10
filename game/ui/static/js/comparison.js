@@ -8,10 +8,104 @@ const ComparisonUI = {
   dualAnimId: null,
   currentPart1Seed: 12345,
   currentPart2Seed: 54321,
+  cachedConfig: null,
 
   async init() {
     this.bindEvents();
+    await this.updatePart2LockStatus();
     await this.renderInitialMaps();
+  },
+
+  isLockedForCurrentUser() {
+    const user = (typeof AuthUI !== 'undefined' && AuthUI.currentUser) ? AuthUI.currentUser : null;
+    const isAdmin = user && user.role === 'admin';
+    if (isAdmin) return false;
+    const isUnlocked = !!(this.cachedConfig && this.cachedConfig.show_part2);
+    return !isUnlocked;
+  },
+
+  async updatePart2LockStatus() {
+    try {
+      if (!this.cachedConfig) {
+        this.cachedConfig = await API.getConfig();
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    const isUnlocked = !!(this.cachedConfig && this.cachedConfig.show_part2);
+    const user = (typeof AuthUI !== 'undefined' && AuthUI.currentUser) ? AuthUI.currentUser : null;
+    const isAdmin = user && user.role === 'admin';
+
+    const tabBtn = document.getElementById('tab-btn-comparison');
+    const tabTitle = document.getElementById('tab-btn-comparison-text');
+    const tabBadge = document.getElementById('tab-comparison-badge');
+    const adminBanner = document.getElementById('part2-admin-notice-banner');
+    const gotoBtn = document.getElementById('btn-goto-comparison');
+
+    if (isAdmin) {
+      if (tabBtn) {
+        tabBtn.classList.remove('tab-locked');
+        tabBtn.title = '';
+      }
+      if (tabTitle) tabTitle.textContent = '🧠 بخش ۲: هوش مصنوعی و مقایسه رو‌در‌رو';
+      if (tabBadge) {
+        tabBadge.style.display = 'inline-block';
+        if (isUnlocked) {
+          tabBadge.textContent = '👑 قفل باز برای همه';
+          tabBadge.style.background = '#dcfce7';
+          tabBadge.style.color = '#15803d';
+        } else {
+          tabBadge.textContent = '👑 پیش‌نمایش مدیر (برای کاربر عادی قفل است)';
+          tabBadge.style.background = '#fef3c7';
+          tabBadge.style.color = '#92400e';
+        }
+      }
+      if (adminBanner) {
+        adminBanner.style.display = isUnlocked ? 'none' : 'flex';
+      }
+      if (gotoBtn) {
+        gotoBtn.disabled = false;
+        gotoBtn.innerHTML = 'رفتن به بخش مقایسه با هوش مصنوعی ➔';
+      }
+    } else if (isUnlocked) {
+      if (tabBtn) {
+        tabBtn.classList.remove('tab-locked');
+        tabBtn.title = '';
+      }
+      if (tabTitle) tabTitle.textContent = '🧠 بخش ۲: هوش مصنوعی و مقایسه رو‌در‌رو';
+      if (tabBadge) tabBadge.style.display = 'none';
+      if (adminBanner) adminBanner.style.display = 'none';
+      if (gotoBtn) {
+        gotoBtn.disabled = false;
+        gotoBtn.innerHTML = 'رفتن به بخش مقایسه با هوش مصنوعی ➔';
+      }
+    } else {
+      // Locked for normal users
+      if (tabBtn) {
+        tabBtn.classList.add('tab-locked');
+        tabBtn.title = 'این بخش توسط مدرس یا مدیر سیستم قفل شده است';
+      }
+      if (tabTitle) tabTitle.textContent = '🔒 بخش ۲: هوش مصنوعی و مقایسه (قفل)';
+      if (tabBadge) {
+        tabBadge.style.display = 'inline-block';
+        tabBadge.textContent = '🔒 قفل مدرس';
+        tabBadge.style.background = '#fee2e2';
+        tabBadge.style.color = '#b91c1c';
+      }
+      if (adminBanner) adminBanner.style.display = 'none';
+      if (gotoBtn) {
+        gotoBtn.innerHTML = '🔒 بخش مقایسه با هوش مصنوعی (قفل مدرس)';
+      }
+
+      // If normal user is currently on Part 2 tab, switch them back to Part 1
+      const activeTabContent = document.querySelector('.tab-content.active');
+      if (activeTabContent && activeTabContent.id === 'tab-comparison') {
+        if (typeof window.switchTab === 'function') {
+          window.switchTab('strategy');
+        }
+      }
+    }
   },
 
   bindEvents() {

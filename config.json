@@ -8,6 +8,7 @@
   "diamond_multiplier": 2,
   "show_presets": false,
   "show_reward_tuning": false,
+  "show_part2": false,
   "difficulty": "normal",
   "rewards": {
     "coin": 10.0,

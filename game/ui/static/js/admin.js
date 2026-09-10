@@ -220,6 +220,10 @@ const AdminUI = {
     if (chkRewardTuning) {
       chkRewardTuning.checked = !!cfg.show_reward_tuning;
     }
+    const chkPart2 = document.getElementById('cfg-show-part2');
+    if (chkPart2) {
+      chkPart2.checked = !!cfg.show_part2;
+    }
     const selDiff = document.getElementById('cfg-difficulty-mode');
     if (selDiff) {
       selDiff.value = cfg.difficulty || 'normal';
@@ -242,6 +246,7 @@ const AdminUI = {
       diamond_multiplier: parseInt(document.getElementById('cfg-diamond-multiplier').value) || 2,
       show_presets: document.getElementById('cfg-show-presets') ? document.getElementById('cfg-show-presets').checked : false,
       show_reward_tuning: document.getElementById('cfg-show-reward-tuning') ? document.getElementById('cfg-show-reward-tuning').checked : false,
+      show_part2: document.getElementById('cfg-show-part2') ? document.getElementById('cfg-show-part2').checked : false,
       difficulty: document.getElementById('cfg-difficulty-mode') ? document.getElementById('cfg-difficulty-mode').value : 'normal',
       rewards: {
         coin: getVal('cfg-rew-coin'),
@@ -297,6 +302,10 @@ const AdminUI = {
         TrainingUI.cachedConfig = res.config;
         TrainingUI.updateRewardTuningVisibility();
       }
+      if (typeof ComparisonUI !== 'undefined' && ComparisonUI.updatePart2LockStatus) {
+        ComparisonUI.cachedConfig = res.config;
+        ComparisonUI.updatePart2LockStatus();
+      }
     } catch (err) {
       if (statusBox) {
         statusBox.style.display = 'block';
@@ -340,6 +349,10 @@ const AdminUI = {
       if (typeof TrainingUI !== 'undefined' && TrainingUI.updateRewardTuningVisibility) {
         TrainingUI.cachedConfig = res.config;
         TrainingUI.updateRewardTuningVisibility();
+      }
+      if (typeof ComparisonUI !== 'undefined' && ComparisonUI.updatePart2LockStatus) {
+        ComparisonUI.cachedConfig = res.config;
+        ComparisonUI.updatePart2LockStatus();
       }
     } catch (err) {
       alert('خطا در بازنشانی: ' + err.message);
