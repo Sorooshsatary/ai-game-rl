@@ -336,6 +336,132 @@ class TestRuleBasedStrategyAgent(unittest.TestCase):
         act2, _ = agent2.select_action(state)
         self.assertEqual(act2, Action.LEFT)
 
+    def test_flee_dodge_avoids_dead_end_and_chooses_open_corridor(self):
+        """Test flee_dodge refuses to enter a 1-exit dead-end trap even if lateral."""
+        from game.strategy.rule import ConditionItem
+        strat = ChildStrategy(
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="enemy_adjacent")], action="flee_dodge"),
+            ]
+        )
+        agent = RuleBasedStrategyAgent(strategy=strat)
+        # Agent at (2, 2), Enemy at (2, 3)
+        # Left (1, 2) is a 1-exit dead end (walls at (1, 1), (1, 3), (0, 2))
+        # Right (3, 2) is blocked by wall
+        # Up (2, 1) is a wide open corridor
+        walls = {Position(1, 1), Position(1, 3), Position(0, 2), Position(3, 2)}
+        state = State(
+            agent_pos=Position(2, 2),
+            enemy_pos=Position(2, 3),
+            nearest_coin_pos=None,
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=0,
+            grid_width=8,
+            grid_height=8,
+            walls=walls,
+        )
+        act, reason = agent.select_action(state)
+        self.assertEqual(act, Action.UP)
+        self.assertIn("جاخالی", reason)
+
+    def test_flee_dodge_lateral_evasion_in_open_field(self):
+        """Test flee_dodge prefers lateral sidestep when distances are equal in open space."""
+        from game.strategy.rule import ConditionItem
+        strat = ChildStrategy(
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="enemy_adjacent")], action="flee_dodge"),
+            ]
+        )
+        agent = RuleBasedStrategyAgent(strategy=strat)
+        # Agent at (4, 4), Enemy at (4, 5) (Enemy below in same column)
+        state = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(4, 5),
+            nearest_coin_pos=None,
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=0,
+            grid_width=8,
+            grid_height=8,
+        )
+        act, reason = agent.select_action(state)
+        # Lateral sidestep (LEFT or RIGHT) breaks enemy charge line
+        self.assertIn(act, [Action.LEFT, Action.RIGHT])
+        self.assertIn("جاخالی", reason)
+
+    def test_flee_dodge_prioritizes_distance_over_closer_lateral(self):
+        """Test flee_dodge increases distance to 3 and breaks charge line, never moving closer."""
+        from game.strategy.rule import ConditionItem
+        strat = ChildStrategy(
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=2)], action="flee_dodge"),
+            ]
+        )
+        agent = RuleBasedStrategyAgent(strategy=strat)
+        # Enemy at (4, 6), Agent at (4, 4). Distance = 2.
+        # Moving DOWN to (4, 5) decreases distance to 1 (dangerous).
+        # Moving UP (4, 3), LEFT (3, 4), or RIGHT (5, 4) all increase distance to 3.
+        # LEFT and RIGHT additionally break column 4 line of sight.
+        state = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(4, 6),
+            nearest_coin_pos=None,
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=0,
+            grid_width=8,
+            grid_height=8,
+        )
+        act, reason = agent.select_action(state)
+        # Must increase distance to 3 (never move closer DOWN)
+        self.assertNotEqual(act, Action.DOWN)
+        new_dist = state.agent_pos.move(act).manhattan_distance(state.enemy_pos)
+        self.assertEqual(new_dist, 3)
+        # Must break charge lane (LEFT or RIGHT)
+        self.assertIn(act, [Action.LEFT, Action.RIGHT])
+
+    def test_flee_dodge_avoids_predicted_enemy_charge_step(self):
+        """Test flee_dodge does not step into enemy's next patrol/charge position."""
+        from game.strategy.rule import ConditionItem
+        strat = ChildStrategy(
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="enemy_dist_le", value=2)], action="flee_dodge"),
+            ]
+        )
+        agent = RuleBasedStrategyAgent(strategy=strat)
+        # Enemy at (3, 3) heading UP (will step to (3, 2)).
+        # Agent is at (2, 2). Moving RIGHT steps onto (3, 2) which intercepts enemy.
+        state = State(
+            agent_pos=Position(2, 2),
+            enemy_pos=Position(3, 3),
+            nearest_coin_pos=None,
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=0,
+            grid_width=8,
+            grid_height=8,
+            enemy_heading=Action.UP,
+        )
+        act, _ = agent.select_action(state)
+        self.assertNotEqual(act, Action.RIGHT)
+
 
 if __name__ == "__main__":
     unittest.main()

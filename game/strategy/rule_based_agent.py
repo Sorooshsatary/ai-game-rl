@@ -1,6 +1,6 @@
 """Rule-Based Strategy Agent executing If-Then block rules."""
 
-from typing import Tuple, List, Optional, Dict, Any
+from typing import Tuple, List, Optional, Dict, Any, Set
 import random
 from game.config import GameConfig, DEFAULT_CONFIG
 from game.environment.entities import Action, Position
@@ -74,6 +74,25 @@ ACTION_NAMES_FA = {
 }
 
 
+def check_line_of_sight(p1: Position, p2: Position, walls: Set[Position]) -> bool:
+    """Checks if p1 and p2 have direct unobstructed line of sight without walls in between."""
+    if p1.x == p2.x:
+        min_y = min(p1.y, p2.y)
+        max_y = max(p1.y, p2.y)
+        for y in range(min_y + 1, max_y):
+            if Position(p1.x, y) in walls:
+                return False
+        return True
+    elif p1.y == p2.y:
+        min_x = min(p1.x, p2.x)
+        max_x = max(p1.x, p2.x)
+        for x in range(min_x + 1, max_x):
+            if Position(x, p1.y) in walls:
+                return False
+        return True
+    return False
+
+
 class RuleBasedStrategyAgent:
     """Agent executing child's explicit If-Then rules sequentially.
     Supports logical AND across multiple conditions and distance thresholds.
@@ -106,6 +125,7 @@ class RuleBasedStrategyAgent:
                 best_act = act
         return best_act
 
+
     def _smart_flee(
         self,
         current: Position,
@@ -115,57 +135,102 @@ class RuleBasedStrategyAgent:
         bias_target: Optional[Position] = None,
         style: str = "balanced",
     ) -> Tuple[Action, int, int]:
-        """Smart flee maximizing distance from threat, avoiding dead ends,
-        and taking advantage of tactical maneuvering styles.
+        """Smart flee maximizing distance from threat, avoiding dead ends and cul-de-sacs,
+        predicting enemy pursuit, and executing tactical dodging maneuvers.
         Returns: (chosen_action, curr_dist, new_dist)
         """
         curr_dist = current.manhattan_distance(threat)
+        curr_los = check_line_of_sight(current, threat, state.walls)
         best_act = legal_actions[0]
         best_score = -999999.0
+
+        # Predict enemy's direct charge / next patrol step if not stunned
+        enemy_next_step = None
+        if not state.enemy_stunned:
+            enemy_next_step = threat.move(state.enemy_heading)
+
+        # Opposite of previous heading (to avoid rapid 2-step oscillation)
+        reverse_act = None
+        if state.agent_heading is not None:
+            rev_map = {
+                Action.UP: Action.DOWN,
+                Action.DOWN: Action.UP,
+                Action.LEFT: Action.RIGHT,
+                Action.RIGHT: Action.LEFT,
+            }
+            reverse_act = rev_map.get(state.agent_heading)
 
         for act in legal_actions:
             next_pos = current.move(act)
             new_dist = next_pos.manhattan_distance(threat)
 
-            # Degree of freedom (open non-wall exits from next position)
-            open_exits = 0
+            # Degree of freedom: count safe non-wall exits from next_pos
+            open_exits = 0.0
             for cand in Action:
                 p = next_pos.move(cand)
                 if (
                     0 <= p.x < state.grid_width
                     and 0 <= p.y < state.grid_height
-                    and p != threat
                     and p not in state.walls
+                    and p != threat
                 ):
-                    open_exits += 1
+                    # Exit is substantially safer if not adjacent to active threat
+                    if state.enemy_stunned or p.manhattan_distance(threat) > 1:
+                        open_exits += 1.0
+                    else:
+                        open_exits += 0.3
 
+            # Base distance and escape mobility scoring
+            score = (new_dist * 60.0) + (open_exits * 20.0)
+
+            # Dead-end avoidance: heavily penalize alcoves, corners, and cul-de-sacs
+            if open_exits == 0:
+                score -= 1500.0
+            elif open_exits <= 1.0:
+                score -= 500.0
+
+            # Immediate danger penalties
+            if next_pos == threat:
+                score -= 3000.0  # Stepping directly into enemy
+            elif not state.enemy_stunned and new_dist <= 1:
+                # Adjacent to active enemy: enemy will step into agent on its turn!
+                score -= 800.0
+            elif new_dist < curr_dist:
+                score -= 400.0  # Moving closer to threat
+
+            # Intercept prevention: avoid enemy's predicted next step
+            if enemy_next_step is not None and next_pos == enemy_next_step:
+                score -= 700.0
+
+            # Tactical style adjustments
             if style == "dodge":
-                # Dodge style: focus on lateral movement and breaking direct line of sight
-                score = (new_dist * 35.0) + (open_exits * 15.0)
-                curr_aligned = (current.x == threat.x or current.y == threat.y)
-                new_aligned = (next_pos.x == threat.x or next_pos.y == threat.y)
-                if curr_aligned and not new_aligned:
-                    score += 60.0  # Successfully slipped out of enemy charge lane
+                next_los = check_line_of_sight(next_pos, threat, state.walls)
+                # 1. Break Line of Sight (slip behind cover or out of charge corridor)
+                if curr_los and not next_los:
+                    score += 35.0
+                elif not curr_los and next_los:
+                    score -= 25.0
+
+                # 2. Tactical lateral sidestep when in direct line with threat
+                if current.x == threat.x and next_pos.x != current.x:
+                    score += 20.0
+                elif current.y == threat.y and next_pos.y != current.y:
+                    score += 20.0
+
+                # 3. Prevent rapid oscillation back into previous tile if multiple open exits exist
+                if act == reverse_act and open_exits >= 2.0:
+                    score -= 20.0
+
             elif style == "collect":
-                # Opportunistic flee: grab nearby items while keeping safe
-                score = (new_dist * 40.0) + (open_exits * 12.0)
+                # Opportunistic flee: prioritize nearby coins if safe
                 if state.nearest_coin_pos is not None:
                     c_dist = next_pos.manhattan_distance(state.nearest_coin_pos)
-                    score -= c_dist * 12.0
-            else:
-                # Balanced thoughtful flee
-                score = (new_dist * 50.0) + (open_exits * 14.0)
+                    score -= c_dist * 10.0
 
-            # Penalty for moving directly into threat or closer to it
-            if next_pos == threat:
-                score -= 1000.0
-            elif new_dist < curr_dist:
-                score -= 350.0
-
-            # Bias towards target (like exit or converter)
+            # Steering bias towards target (e.g. exit or converter)
             if bias_target is not None:
-                target_dist = next_pos.manhattan_distance(bias_target)
-                score -= target_dist * 10.0
+                t_dist = next_pos.manhattan_distance(bias_target)
+                score -= t_dist * 12.0
 
             if score > best_score:
                 best_score = score
@@ -267,7 +332,12 @@ class RuleBasedStrategyAgent:
 
         elif action_name == "flee_dodge":
             act, c_dist, n_dist = self._smart_flee(state.agent_pos, state.enemy_pos, legal_actions, state, style="dodge")
-            detail = f"جاخالی دادن تاکتیکی و چرخش زاویه برای خروج از دید مستقیم هیولا"
+            if n_dist > c_dist:
+                detail = f"جاخالی تاکتیکی شاه‌دزد و افزایش فاصله از پلیس به {n_dist} خانه"
+            elif n_dist == c_dist:
+                detail = f"جاخالی تاکتیکی شاه‌دزد به پهلو و شکستن خط دید پلیس (فاصله امن {c_dist} خانه)"
+            else:
+                detail = f"مانور اضطراری جاخالی شاه‌دزد در بن‌بست (فاصله {n_dist} خانه)"
             return act, detail
 
         elif action_name == "flee_collect":
