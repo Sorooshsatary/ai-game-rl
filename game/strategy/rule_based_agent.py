@@ -267,61 +267,91 @@ class RuleBasedStrategyAgent:
             return self._best_step_towards(current, state.nearest_diamond_pos, cand_actions)
         return self.rng.choice(cand_actions)
 
-    def _check_condition_item(self, cond: ConditionItem, state: State) -> bool:
+    def _check_condition_item_with_failure(self, cond: ConditionItem, state: State) -> Tuple[bool, str]:
         t = cond.type
         v = cond.value
 
         if t == "enemy_dist_le":
-            return state.enemy_dist <= v
+            ok = state.enemy_dist <= v
+            return ok, "" if ok else f"فاصله تا پلیس ({state.enemy_dist}) > {v}"
         elif t == "enemy_dist_gt":
-            return state.enemy_dist > v
+            ok = state.enemy_dist > v
+            return ok, "" if ok else f"فاصله تا پلیس ({state.enemy_dist}) ≤ {v}"
         elif t == "enemy_near":
-            return state.enemy_dist <= 2
+            ok = state.enemy_dist <= 2
+            return ok, "" if ok else f"پلیس نزدیک نیست (فاصله {state.enemy_dist})"
         elif t == "enemy_adjacent":
-            return state.enemy_dist <= 1
+            ok = state.enemy_dist <= 1
+            return ok, "" if ok else f"پلیس در خانه مجاور نیست (فاصله {state.enemy_dist})"
         elif t == "enemy_in_los":
-            return state.is_enemy_in_line_of_sight()
+            ok = state.is_enemy_in_line_of_sight()
+            return ok, "" if ok else "پلیس در خط دید مستقیم نیست"
         elif t == "enemy_blocked":
-            return state.is_enemy_blocked_by_wall()
+            ok = state.is_enemy_blocked_by_wall()
+            return ok, "" if ok else "پلیس پشت دیوار مسدود نیست"
         elif t == "lives_le":
-            return state.lives <= v
+            ok = state.lives <= v
+            return ok, "" if ok else f"جان‌ها ({state.lives}) > {v}"
         elif t == "lives_gt":
-            return state.lives > v
+            ok = state.lives > v
+            return ok, "" if ok else f"جان‌ها ({state.lives}) ≤ {v}"
         elif t == "steps_gt":
-            return state.step_count > v
+            ok = state.step_count > v
+            return ok, "" if ok else f"گام‌ها ({state.step_count}) ≤ {v}"
         elif t == "steps_le":
-            return state.step_count <= v
+            ok = state.step_count <= v
+            return ok, "" if ok else f"گام‌ها ({state.step_count}) > {v}"
         elif t == "coin_dist_le":
             if state.nearest_coin_pos is None:
-                return False
-            return state.agent_pos.manhattan_distance(state.nearest_coin_pos) <= v
+                return False, "سکه‌ای در نقشه وجود ندارد"
+            d = state.agent_pos.manhattan_distance(state.nearest_coin_pos)
+            return d <= v, "" if d <= v else f"فاصله تا سکه ({d}) > {v}"
         elif t == "diamond_dist_le":
             if state.nearest_diamond_pos is None:
-                return False
-            return state.agent_pos.manhattan_distance(state.nearest_diamond_pos) <= v
+                return False, "کلیدی در نقشه وجود ندارد"
+            d = state.agent_pos.manhattan_distance(state.nearest_diamond_pos)
+            return d <= v, "" if d <= v else f"فاصله تا کلید ({d}) > {v}"
         elif t == "converter_dist_le":
-            return state.agent_pos.manhattan_distance(state.converter_pos) <= v
+            d = state.agent_pos.manhattan_distance(state.converter_pos)
+            return d <= v, "" if d <= v else f"فاصله تا صندوق ({d}) > {v}"
         elif t == "exit_dist_le":
-            return state.agent_pos.manhattan_distance(state.exit_pos) <= v
+            d = state.agent_pos.manhattan_distance(state.exit_pos)
+            return d <= v, "" if d <= v else f"فاصله تا خروج ({d}) > {v}"
         elif t == "has_diamond":
-            return state.diamonds_held > 0
+            ok = state.diamonds_held > 0
+            return ok, "" if ok else "کلید در کوله‌پشتی نداری"
         elif t == "one_life":
-            return state.lives <= 1
+            ok = state.lives <= 1
+            return ok, "" if ok else f"{state.lives} جان داری"
         elif t == "coins_cleared":
-            return state.total_coins_remaining == 0
+            ok = state.total_coins_remaining == 0
+            return ok, "" if ok else f"{state.total_coins_remaining} سکه باقی مانده"
         elif t == "coin_exists":
-            return state.nearest_coin_pos is not None
+            ok = state.nearest_coin_pos is not None
+            return ok, "" if ok else "سکه‌ای باقی نمانده"
         elif t == "diamond_exists":
-            return state.nearest_diamond_pos is not None
+            ok = state.nearest_diamond_pos is not None
+            return ok, "" if ok else "کلیدی در نقشه نمانده"
         elif t == "always":
-            return True
-        return False
+            return True, ""
+        return False, "شرط نامشخص"
 
-    def _check_rule(self, rule: IfThenRule, state: State) -> bool:
-        """Evaluates conditions with logical AND (all must match)."""
+    def _check_condition_item(self, cond: ConditionItem, state: State) -> bool:
+        ok, _ = self._check_condition_item_with_failure(cond, state)
+        return ok
+
+    def _check_rule(self, rule: IfThenRule, state: State) -> Tuple[bool, List[str]]:
+        """Evaluates conditions with logical AND (all must match).
+        Returns (is_matched, list_of_failure_reasons).
+        """
         if not rule.conditions:
-            return True
-        return all(self._check_condition_item(c, state) for c in rule.conditions)
+            return True, []
+        failed = []
+        for c in rule.conditions:
+            ok, fail_msg = self._check_condition_item_with_failure(c, state)
+            if not ok:
+                failed.append(fail_msg)
+        return len(failed) == 0, failed
 
     def _execute_action_rule(
         self,
@@ -378,6 +408,11 @@ class RuleBasedStrategyAgent:
             return act, detail
 
         elif action_name == "go_converter":
+            if state.agent_pos == state.converter_pos:
+                if state.diamonds_held > 0:
+                    return legal_actions[0], f"باز کردن صندوق گنج با {state.diamonds_held} کلید"
+                else:
+                    return None, "عامل روی خانه صندوق گنج است ولی کلیدی در کوله‌پشتی ندارد"
             act = self._best_step_towards(state.agent_pos, state.converter_pos, legal_actions)
             dist = state.agent_pos.move(act).manhattan_distance(state.converter_pos)
             return act, f"حرکت مستقیم به سمت صندوق گنج (مبدل) جهت باز کردن با کلید (فاصله: {dist})"
@@ -411,16 +446,26 @@ class RuleBasedStrategyAgent:
         self.total_steps += 1
 
         # Check child's If-Then rules in order of priority (1, 2, 3, ...)
+        skipped_notes = []
         for idx, rule in enumerate(self.strategy.if_then_rules, 1):
-            if self._check_rule(rule, state):
+            matched, failed_reasons = self._check_rule(rule, state)
+            if matched:
                 action, detail = self._execute_action_rule(rule.action, state, legal_actions)
                 if action is not None:
                     conds_text = " و ".join(format_condition_fa(c) for c in rule.conditions)
                     reason = f"شرط {idx} برقرار شد: اگر [{conds_text}] ➔ {detail}"
+                    if skipped_notes:
+                        reason += f" ◂ (اولویت‌های بالاتر رد شدند: {'; '.join(skipped_notes[:2])})"
                     return action, reason
+                else:
+                    skipped_notes.append(f"اولویت {idx} انجام نشد ({detail})")
+            else:
+                skipped_notes.append(f"اولویت {idx} رد شد: {', '.join(failed_reasons)}")
 
         # Fallback: No rule matched! Perform random move
         fallback_action = self.rng.choice(legal_actions)
         reason = "هیچ شرطی برای این وضعیت برقرار نشد؛ حرکت تصادفی انجام شد."
+        if skipped_notes:
+            reason += f" ◂ (شروط بررسی‌شده: {'; '.join(skipped_notes[:2])})"
         return fallback_action, reason
 

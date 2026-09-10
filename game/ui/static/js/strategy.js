@@ -257,7 +257,7 @@ const StrategyUI = {
     // 3. Diamond handling rule
     if (ans.diamond === 'converter') {
       rules.push({ conditions: [{ type: 'has_diamond', value: 1 }], action: 'go_converter' });
-      summaryBullets.push('🏆 <strong>هنگام حمل کلید گنج:</strong> باز کردن فوری صندوق گنج و دریافت سکه‌های ۲ برابری');
+      summaryBullets.push('🏆 <strong>هنگام حمل کلید گنج (الماس):</strong> باز کردن فوری صندوق گنج و دریافت سکه‌های ۲ برابری (به محض برداشتن کلید فعال می‌شود)');
     } else {
       rules.push({ conditions: [{ type: 'has_diamond', value: 1 }], action: 'go_exit' });
       summaryBullets.push('🚪 <strong>هنگام حمل کلید گنج:</strong> خروج مستقیم از نقشه جهت حفظ کلید گران‌بها');

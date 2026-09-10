@@ -1,7 +1,7 @@
 """Unit tests for RuleBasedStrategyAgent with If-Then rules."""
 
 import unittest
-from game.strategy.rule import ChildStrategy, IfThenRule
+from game.strategy.rule import ChildStrategy, IfThenRule, ConditionItem
 from game.strategy.rule_based_agent import RuleBasedStrategyAgent
 from game.environment.state import State
 from game.environment.entities import Action, Position
@@ -623,7 +623,37 @@ class TestRuleBasedStrategyAgent(unittest.TestCase):
         self.assertEqual(act, Action.RIGHT)
         self.assertIn("صندوق گنج", reason)
 
+    def test_priority_skip_reason_explanation(self):
+        """When priority 1 fails (e.g. has_diamond when diamonds=0), reason explains why priority 1 was skipped."""
+        strat = ChildStrategy(
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="has_diamond")], action="go_converter"),
+                IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
+            ]
+        )
+        agent = RuleBasedStrategyAgent(strategy=strat)
+        state = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(0, 0),
+            nearest_coin_pos=Position(4, 2),
+            nearest_diamond_pos=None,
+            converter_pos=Position(6, 4),
+            exit_pos=Position(0, 4),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,  # 0 diamonds -> priority 1 fails!
+            total_coins_remaining=3,
+            grid_width=8,
+            grid_height=8,
+        )
+        action, reason = agent.select_action(state)
+        self.assertEqual(action, Action.UP)
+        self.assertIn("شرط 2 برقرار شد", reason)
+        self.assertIn("اولویت 1 رد شد", reason)
+        self.assertIn("کلید در کوله‌پشتی نداری", reason)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
