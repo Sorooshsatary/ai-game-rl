@@ -22,6 +22,43 @@ class TestStrategy(unittest.TestCase):
             self.assertGreater(strat.coin_priority, 0)
             self.assertGreater(strat.enemy_fear, 0)
 
+    def test_default_strategy_is_weak_and_does_not_flee_police(self):
+        """Verify default strategy is naive and does not flee from adjacent police."""
+        from game.strategy.rule_based_agent import RuleBasedStrategyAgent
+
+        default_strat = StrategyBuilder.get_default_strategy()
+        self.assertIsInstance(default_strat, ChildStrategy)
+        self.assertIn("ساده‌لوح", default_strat.name)
+
+        # Rule list has no police evasion rule
+        for rule in default_strat.if_then_rules:
+            self.assertNotIn("flee", rule.action)
+            for cond in rule.conditions:
+                self.assertNotIn("enemy", cond.type)
+
+        # Agent with default strategy steps toward coin even when police is adjacent
+        agent = RuleBasedStrategyAgent(strategy=default_strat)
+        state = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(4, 5),  # adjacent police (DOWN)
+            nearest_coin_pos=Position(4, 3),  # UP
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(7, 7),
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=2,
+            grid_width=8,
+            grid_height=8,
+        )
+        action, reason = agent.select_action(state)
+        # Agent naively goes to coin (UP) rather than fleeing or dodging police!
+        self.assertEqual(action, Action.UP)
+        self.assertIn("سکه", reason)
+        self.assertNotIn("پلیس", reason)
+        self.assertNotIn("فرار", reason)
+
     def test_prior_divergence_between_strategies(self):
         strat_coin = ChildStrategy(coin_priority=10.0, diamond_priority=1.0)
         strat_diamond = ChildStrategy(coin_priority=1.0, diamond_priority=10.0)

@@ -97,9 +97,8 @@ const StrategyUI = {
     emergency: 'exit_rush'
   },
   currentStrategy: {
-    name: "استراتژی شاه‌دزد من",
+    name: "شاه‌دزد ساده‌لوح (پیش‌فرض)",
     if_then_rules: [
-      { conditions: [{ type: "enemy_adjacent", value: 1 }], action: "flee_dodge" },
       { conditions: [{ type: "has_diamond", value: 2 }], action: "go_converter" },
       { conditions: [{ type: "coin_exists", value: 2 }], action: "go_nearest_coin" }
     ],
@@ -361,9 +360,9 @@ const StrategyUI = {
     if (!container) return;
     container.innerHTML = '';
 
-    this.presets.forEach((p, idx) => {
+    this.presets.forEach((p) => {
       const chip = document.createElement('button');
-      chip.className = `preset-chip ${p.id === 'balanced' || idx === 0 ? 'active' : ''}`;
+      chip.className = 'preset-chip';
       if (p.is_extra) {
         chip.innerHTML = `<span style="font-size: 0.72rem; background: #ede9fe; color: #6d28d9; padding: 1px 5px; border-radius: 4px; margin-left: 4px; font-weight: 800;">ویژه</span>${p.name}`;
       } else {
@@ -397,13 +396,14 @@ const StrategyUI = {
   },
 
   resetRules() {
-    const balancedPreset = this.presets.find(p => p.id === 'balanced') || this.presets[0];
-    if (balancedPreset) {
-      this.loadPreset(balancedPreset);
-      document.querySelectorAll('.preset-chip').forEach((c, idx) => {
-        c.classList.toggle('active', idx === 0);
-      });
-    }
+    this.currentStrategy.name = "شاه‌دزد ساده‌لوح (پیش‌فرض)";
+    this.currentStrategy.if_then_rules = [
+      { conditions: [{ type: "has_diamond", value: 2 }], action: "go_converter" },
+      { conditions: [{ type: "coin_exists", value: 2 }], action: "go_nearest_coin" }
+    ];
+    this.currentStrategy.default_action = "random_move";
+    document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+    this.renderRulesList();
   },
 
   renderRulesList() {

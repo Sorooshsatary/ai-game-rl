@@ -6,6 +6,23 @@ from game.strategy.rule import ChildStrategy, IfThenRule, ConditionItem
 
 class StrategyBuilder:
     @staticmethod
+    def get_default_strategy() -> ChildStrategy:
+        """Returns the default naive/weak strategy (greedy coin collector that does NOT flee from police)."""
+        return ChildStrategy(
+            name="شاه‌دزد ساده‌لوح (پیش‌فرض)",
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="has_diamond")], action="go_converter"),
+                IfThenRule(conditions=[ConditionItem(type="coin_exists")], action="go_nearest_coin"),
+            ],
+            default_action="random_move",
+            coin_priority=8.0,
+            diamond_priority=5.0,
+            converter_urgency=6.0,
+            enemy_fear=1.0,
+            exit_eagerness=2.0,
+        )
+
+    @staticmethod
     def get_extra_presets() -> Dict[str, ChildStrategy]:
         """Returns extra high-performance tactical strategies for admin injection."""
         return {

@@ -51,7 +51,7 @@ init_db()
 
 # Global state for active session
 current_session = {
-    "strategy": StrategyBuilder.get_presets()["balanced"],
+    "strategy": StrategyBuilder.get_default_strategy(),
     "trainer": None,
     "last_train_result": None,
     "player_agent": None,
