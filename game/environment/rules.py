@@ -116,6 +116,7 @@ class GameEnvironment:
             stun_timer=self.enemy.stun_timer,
             agent_heading=self.agent.heading,
             enemy_heading=self.enemy.patrol_direction,
+            step_count=self.current_step,
         )
 
     def step(self, action: Action) -> StepResult:

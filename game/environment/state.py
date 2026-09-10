@@ -56,6 +56,7 @@ class State:
     stun_timer: int = 0
     agent_heading: Action = Action.RIGHT
     enemy_heading: Action = Action.RIGHT
+    step_count: int = 0
 
     def get_legal_actions(self) -> List[Action]:
         """Returns list of actions that stay within grid bounds and avoid walls."""

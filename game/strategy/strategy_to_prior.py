@@ -62,6 +62,14 @@ class StrategyPriorEngine:
             should_rush_exit = True
             reasons.append("جان اندک - اولویت فرار و حفظ غنایم")
 
+        # Step count condition from If-Then rules
+        for r in getattr(self.strategy, "if_then_rules", []):
+            if getattr(r, "action", "") in ("go_exit", "flee_towards_exit"):
+                for c in getattr(r, "conditions", []):
+                    if getattr(c, "type", "") == "steps_gt" and state.step_count > getattr(c, "value", 20):
+                        should_rush_exit = True
+                        reasons.append(f"سپری شدن بیش از {c.value} گام - اولویت فرار و خروج")
+
         # Reward-driven rush exit: when exit reward vastly exceeds coin reward (e.g. rush_exit preset)
         is_reward_rush_exit = (coin_rew <= 3.0) or (exit_rew / max(0.1, coin_rew) >= 4.0)
         if is_reward_rush_exit:

@@ -7,7 +7,9 @@ const StrategyUI = {
   cachedConfig: null,
   conditions: [
     { id: "enemy_adjacent", name: "⚠️ پلیس در خانه مجاور است (خطر فوری)", hasDistance: false },
-    { id: "enemy_dist_le", name: "🚨 فاصله تا پلیس کمتر یا مساوی", hasDistance: true, defaultDist: 2 },
+    { id: "enemy_dist_le", name: "🚨 فاصله تا پلیس کمتر یا مساوی", hasDistance: true, defaultDist: 2, unit: "خانه", min: 1, max: 15 },
+    { id: "steps_gt", name: "⏱️ تعداد گام‌های طی‌شده بیشتر از", hasDistance: true, defaultDist: 20, unit: "گام", min: 1, max: 100 },
+    { id: "steps_le", name: "⏱️ تعداد گام‌های طی‌شده کمتر یا مساوی", hasDistance: true, defaultDist: 15, unit: "گام", min: 1, max: 100 },
     { id: "one_life", name: "❤️ فقط ۱ جان باقی مانده (خطر دستگیری)", hasDistance: false },
     { id: "has_diamond", name: "🗝️ کلید گنج در کوله‌پشتی داری", hasDistance: false },
     { id: "diamond_exists", name: "💎 کلید گنج در نقشه وجود دارد", hasDistance: false },
@@ -425,24 +427,24 @@ const StrategyUI = {
           condSelect.appendChild(opt);
         });
 
-        // Distance wrapper
+        // Distance/Numeric wrapper
+        const condDef = this.conditions.find(c => c.id === cond.type);
         const distWrap = document.createElement('div');
         distWrap.className = 'rule-dist-wrap';
         const distInput = document.createElement('input');
         distInput.type = 'number';
-        distInput.min = '1';
-        distInput.max = '15';
-        distInput.value = cond.value || 2;
+        distInput.min = (condDef && condDef.min) ? condDef.min : '1';
+        distInput.max = (condDef && condDef.max) ? condDef.max : '100';
+        distInput.value = cond.value || (condDef ? condDef.defaultDist : 2);
         distInput.className = 'rule-dist-input';
 
         const distLabel = document.createElement('span');
         distLabel.className = 'rule-dist-label';
-        distLabel.textContent = 'خانه';
+        distLabel.textContent = (condDef && condDef.unit) ? condDef.unit : 'خانه';
 
         distWrap.appendChild(distInput);
         distWrap.appendChild(distLabel);
 
-        const condDef = this.conditions.find(c => c.id === cond.type);
         distWrap.style.display = (condDef && condDef.hasDistance) ? 'inline-flex' : 'none';
 
         condSelect.addEventListener('change', (e) => {
@@ -450,7 +452,10 @@ const StrategyUI = {
           const updatedDef = this.conditions.find(c => c.id === cond.type);
           if (updatedDef && updatedDef.hasDistance) {
             distWrap.style.display = 'inline-flex';
-            if (!cond.value) cond.value = updatedDef.defaultDist;
+            distLabel.textContent = updatedDef.unit || 'خانه';
+            distInput.min = updatedDef.min || 1;
+            distInput.max = updatedDef.max || 100;
+            cond.value = updatedDef.defaultDist || 2;
             distInput.value = cond.value;
           } else {
             distWrap.style.display = 'none';

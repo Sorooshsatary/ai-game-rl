@@ -27,6 +27,10 @@ def format_condition_fa(cond: ConditionItem) -> str:
         return f"فاصله تا مبدل الماس ≤ {v}"
     elif t == "exit_dist_le":
         return f"فاصله تا در خروج ≤ {v}"
+    elif t == "steps_gt":
+        return f"تعداد گام‌ها > {v}"
+    elif t == "steps_le":
+        return f"تعداد گام‌ها ≤ {v}"
     elif t == "has_diamond":
         return "الماس در کوله‌پشتی داری"
     elif t == "one_life":
@@ -47,6 +51,8 @@ CONDITION_NAMES_FA = {
     "enemy_dist_gt": "فاصله تا پلیس (هیولا) بیشتر از مقدار (محیط امن)",
     "enemy_near": "پلیس (هیولا) در نزدیکی (فاصله ۲ یا کمتر)",
     "enemy_adjacent": "پلیس (هیولا) در خانه مجاور",
+    "steps_gt": "تعداد گام‌های طی شده بیشتر از مقدار",
+    "steps_le": "تعداد گام‌های طی شده کمتر یا مساوی مقدار",
     "coin_dist_le": "فاصله تا نزدیک‌ترین سکه کمتر یا مساوی مقدار",
     "diamond_dist_le": "فاصله تا نزدیک‌ترین کلید گنج (الماس) کمتر یا مساوی مقدار",
     "converter_dist_le": "فاصله تا صندوق گنج (مبدل) کمتر یا مساوی مقدار",
@@ -281,6 +287,10 @@ class RuleBasedStrategyAgent:
             return state.lives <= v
         elif t == "lives_gt":
             return state.lives > v
+        elif t == "steps_gt":
+            return state.step_count > v
+        elif t == "steps_le":
+            return state.step_count <= v
         elif t == "coin_dist_le":
             if state.nearest_coin_pos is None:
                 return False

@@ -198,6 +198,7 @@ class MultiAgentArena:
                     walls=set(grid_map.walls),
                     agent_heading=w.status.heading,
                     enemy_heading=enemy.patrol_direction,
+                    step_count=step_idx,
                 )
 
                 # Select action (locked greedy)

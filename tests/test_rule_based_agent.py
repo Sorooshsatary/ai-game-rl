@@ -463,5 +463,106 @@ class TestRuleBasedStrategyAgent(unittest.TestCase):
         self.assertNotEqual(act, Action.RIGHT)
 
 
+    def test_steps_gt_condition(self):
+        """Test rule with steps_gt condition."""
+        from game.strategy.rule import ConditionItem
+        strat = ChildStrategy(
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="steps_gt", value=15)], action="go_exit"),
+                IfThenRule(conditions=[ConditionItem(type="always")], action="go_nearest_coin"),
+            ]
+        )
+        agent = RuleBasedStrategyAgent(strategy=strat)
+
+        state_early = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(0, 0),
+            nearest_coin_pos=Position(4, 2),  # UP
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(2, 4),          # LEFT
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=3,
+            grid_width=8,
+            grid_height=8,
+            step_count=10,  # <= 15
+        )
+        act, reason = agent.select_action(state_early)
+        self.assertEqual(act, Action.UP)
+        self.assertIn("سکه", reason)
+
+        state_late = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(0, 0),
+            nearest_coin_pos=Position(4, 2),  # UP
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(2, 4),          # LEFT
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=3,
+            grid_width=8,
+            grid_height=8,
+            step_count=20,  # > 15
+        )
+        act2, reason2 = agent.select_action(state_late)
+        self.assertEqual(act2, Action.LEFT)
+        self.assertIn("خروج", reason2)
+        self.assertIn("تعداد گام‌ها > 15", reason2)
+
+    def test_steps_le_condition(self):
+        """Test rule with steps_le condition."""
+        from game.strategy.rule import ConditionItem
+        strat = ChildStrategy(
+            if_then_rules=[
+                IfThenRule(conditions=[ConditionItem(type="steps_le", value=10)], action="go_nearest_coin"),
+                IfThenRule(conditions=[ConditionItem(type="always")], action="go_exit"),
+            ]
+        )
+        agent = RuleBasedStrategyAgent(strategy=strat)
+
+        state_early = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(0, 0),
+            nearest_coin_pos=Position(4, 2),  # UP
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(2, 4),          # LEFT
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=3,
+            grid_width=8,
+            grid_height=8,
+            step_count=8,  # <= 10
+        )
+        act, reason = agent.select_action(state_early)
+        self.assertEqual(act, Action.UP)
+        self.assertIn("سکه", reason)
+        self.assertIn("تعداد گام‌ها ≤ 10", reason)
+
+        state_late = State(
+            agent_pos=Position(4, 4),
+            enemy_pos=Position(0, 0),
+            nearest_coin_pos=Position(4, 2),  # UP
+            nearest_diamond_pos=None,
+            converter_pos=Position(0, 0),
+            exit_pos=Position(2, 4),          # LEFT
+            lives=3,
+            coins_held=0,
+            diamonds_held=0,
+            total_coins_remaining=3,
+            grid_width=8,
+            grid_height=8,
+            step_count=12,  # > 10
+        )
+        act2, reason2 = agent.select_action(state_late)
+        self.assertEqual(act2, Action.LEFT)
+        self.assertIn("خروج", reason2)
+
+
 if __name__ == "__main__":
     unittest.main()
