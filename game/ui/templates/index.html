@@ -596,7 +596,7 @@
           <form id="form-create-user" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
             <div style="flex: 1; min-width: 160px;">
               <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">نام کاربری:</label>
-              <input type="text" id="new-username" class="form-control" placeholder="مثال: student2" required style="padding: 8px 12px; font-size: 0.9rem;">
+              <input type="text" id="new-username" class="form-control" placeholder="نام کاربری جدید" required style="padding: 8px 12px; font-size: 0.9rem;">
             </div>
             <div style="flex: 1; min-width: 160px;">
               <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px;">رمز عبور:</label>
@@ -844,16 +844,15 @@
         <form id="form-login">
           <div class="form-group">
             <label for="login-username">نام کاربری:</label>
-            <input type="text" id="login-username" class="form-control" placeholder="مثال: admin یا student" required autocomplete="username">
+            <input type="text" id="login-username" class="form-control" placeholder="نام کاربری خود را وارد کنید" required autocomplete="username">
           </div>
           <div class="form-group">
             <label for="login-password">رمز عبور:</label>
             <input type="password" id="login-password" class="form-control" placeholder="رمز عبور خود را وارد کنید" required autocomplete="current-password">
           </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
-            <span style="font-size: 0.8rem; color: #475569;">🔑 ورود مدیر: <b>admin</b> (یا <b>ادمین</b>) | رمز: <b>123</b> یا <b>admin123</b></span>
-            <button type="submit" id="btn-submit-login" class="btn btn-primary" style="padding: 8px 20px;">
-              ورود به حساب
+          <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 1.5rem;">
+            <button type="submit" id="btn-submit-login" class="btn btn-primary" style="padding: 9px 24px; font-weight: 700;">
+              ورود به حساب کاربری
             </button>
           </div>
         </form>
